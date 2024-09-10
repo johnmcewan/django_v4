@@ -15,15 +15,15 @@ shape_options = [('', 'None')]
 classname_options = [('', 'None')]
 group_options = [('', 'None')]
 
-for e in Printgroup.objects.order_by('printgroup_order'):
-	group_options.append((e.pk_printgroup, e.printgroup))
-
 for e in Repository.objects.order_by('repository_fulltitle'):
 	repositories_options.append((e.fk_repository, e.repository_fulltitle))
 
 for e in Series.objects.order_by('series_name').distinct('series_name'):
 	appendvalue = str(e.fk_repository) + " : " + e.series_name
 	series_options.append((e.pk_series, appendvalue))
+
+for e in Printgroup.objects.order_by('printgroup_order'):
+	group_options.append((e.pk_printgroup, e.printgroup))
 
 for e in Region.objects.order_by('region_label').distinct('region_label'):
 	location_options.append((e.pk_region, e.region_label))
@@ -55,3 +55,4 @@ class ManifestationForm(forms.Form):
 	classname = forms.ChoiceField(label='Digisig Class', choices=classname_options, required=False)
 	pagination = forms.IntegerField(initial=1, widget=forms.HiddenInput)
 	group = forms.ChoiceField(choices=group_options, required=False, initial={'': 'None'})
+

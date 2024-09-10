@@ -31,10 +31,10 @@ import shutil
 
 def seriesset():
 	# code prepares the array of series and repositories to pass to the frontend
-	series_set = Series.objects.all()
-	series_object = []
-	for g in series_set:
-		series_object.append((g.pk_series, g.fk_repository))
+	# series_set = Series.objects.all()
+	# series_object = []
+	# for g in series_set:
+	# 	series_object.append((g.pk_series, g.fk_repository))
 
 	series_object = serializers.serialize('json', Series.objects.all(), fields=('pk_series','fk_repository'))
 
@@ -1273,28 +1273,27 @@ def externallinkgenerator(digisig_entity_number):
 	return (externallinkset)	
 
 #gets event set
-def eventset_data(item_object):
+def eventset_data(event_object, part_object):
 	event_dic = {}
 
-	part_object = Part.objects.filter(fk_item = item_object).first()
 	event_dic["part_object"] = part_object
 
-	if part_object.fk_event.repository_startdate is not None: 
-		yeartemp = part_object.fk_event.repository_startdate
+	if event_object.repository_startdate is not None: 
+		yeartemp = event_object.repository_startdate
 		event_dic["year1"] = yeartemp.year
-		if part_object.fk_event.repository_enddate is not None: 
-			yeartemp = part_object.fk_event.repository_enddate
+		if event_object.repository_enddate is not None: 
+			yeartemp = event_object.repository_enddate
 			event_dic["year2"] = yeartemp.year
 
-	if part_object.fk_event.startdate is not None:
-		yeartemp = part_object.fk_event.startdate
+	if event_object.startdate is not None:
+		yeartemp = event_object.startdate
 		event_dic["year3"] = yeartemp.year
-		if part_object.fk_event.enddate is not None: 
-			yeartemp = part_object.fk_event.enddate
+		if event_object.enddate is not None: 
+			yeartemp = event_object.enddate
 			event_dic["year4"] = yeartemp.year
 
-	if part_object.fk_event is not None:
-		targetlocation = part_object.fk_event.pk_event
+	if event_object is not None:
+		targetlocation = event_object.pk_event
 		location_object = Location.objects.filter(locationname__locationreference__fk_event=targetlocation, locationname__locationreference__location_reference_primary = False).first()
 
 		location_name = location_object.location
@@ -1305,7 +1304,7 @@ def eventset_data(item_object):
 	location= {"type": "Point", "coordinates":[location_longitude, location_latitude]}
 	location_dict = {'location': location_name, 'latitude': location_latitude, 'longitude': location_longitude} 
 
-	event_dic["repository_location"] = part_object.fk_event.repository_location 
+	event_dic["repository_location"] = event_object.repository_location 
 	event_dic["location"] = location_object
 	event_dic["location_name"] = location_name 
 	event_dic["location_id"] = location_id 
@@ -1313,11 +1312,13 @@ def eventset_data(item_object):
 	event_dic["location_latitude"] = location_latitude 
 
 	reference_dict = {}
-	referenceset = Referenceindividual.objects.filter(fk_event=part_object.fk_event).order_by("fk_referencerole__role_order", "pk_referenceindividual")
+	referenceset = Referenceindividual.objects.filter(
+		fk_event=part_object.fk_event).order_by(
+		"fk_referencerole__role_order", "pk_referenceindividual").select_related(
+		'fk_individual').select_related(
+		'fk_referencerole')
 
 	event_dic["referenceset"] = referenceset
-
-	print (event_dic)
 
 	return(location, location_dict, event_dic)
 
