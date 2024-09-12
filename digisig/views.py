@@ -47,6 +47,206 @@ def index(request):
 def search(request, searchtype):
 	starttime = time()
 
+### Actor Search
+
+	if searchtype == "actors":
+		pagetitle = 'title'
+
+		individual_object = Digisigindividualview.objects.all().order_by('group_name', 'descriptor_name')
+
+		if request.method == "POST":
+			form = PeopleForm(request.POST)
+			if form.is_valid():
+				challengeurl(request, searchtype, form)
+				qname = form.cleaned_data['name']   
+				qpagination = form.cleaned_data['pagination']
+				qgroup = form.cleaned_data['group']
+				qclass = form.cleaned_data['personclass']
+				qorder = form.cleaned_data['personorder']
+
+				if qgroup.isdigit():
+					qgroup = int(qgroup)
+					if int(qgroup) == 2: individual_object = individual_object.filter(corporateentity=True)
+					if int(qgroup) == 1: individual_object = individual_object.filter(corporateentity=False)
+
+				if len(qname) > 0:
+					individual_object = individual_object.filter(
+						Q(group_name__icontains=qname) | Q(descriptor_name__icontains=qname) | Q(descriptor1__icontains=qname) | Q(descriptor2__icontains=qname) | Q(descriptor3__icontains=qname)
+						)
+
+				if qclass.isdigit():
+					if int(qclass) > 0:
+						qclass = int(qclass)
+						individual_object = individual_object.filter(fk_group_class=qclass)
+
+				if qorder.isdigit():
+					if int(qorder) > 0:
+						qorder = int(qorder)
+						individual_object = individual_object.filter(fk_group_order=qorder)
+
+				form = PeopleForm(request.POST)
+
+		else:
+			form = PeopleForm()
+			qpagination = 1
+
+
+	# preparing the data for individual_object
+		qpaginationend = int(qpagination) * 10
+		qpaginationstart = int(qpaginationend) -9 
+		totalrows = len(individual_object)
+
+		# if the dataset is less than the page limit
+		if qpaginationend > totalrows:
+			qpaginationend = totalrows
+
+		if totalrows > 1:
+			if qpaginationend < 10:
+				print(totalrows)
+			else:
+				individual_object = individual_object[qpaginationstart:qpaginationend]
+		totaldisplay = str(qpaginationstart) + " - " + str(qpaginationend)
+
+		pagecountercurrent = qpagination
+		pagecounternext = int(qpagination)+1
+		pagecounternextnext = int(qpagination)+2
+
+	# this code prepares the list of links to associated seals for each individual
+		sealindividual = []
+		for e in individual_object:
+			testvalue = e.id_individual
+			testseal = Seal.objects.filter(
+				fk_individual_realizer=testvalue)
+
+			for f in testseal:
+				current_id_seal = f.id_seal
+				sealindividual.append((testvalue, current_id_seal))
+
+		context = {
+			'pagetitle': pagetitle,
+			'individual_object': individual_object,
+			'sealindividual': sealindividual,
+			'totalrows': totalrows,
+			'totaldisplay': totaldisplay,
+			'form': form,
+			'pagecountercurrent': pagecountercurrent,
+			'pagecounternext': pagecounternext,
+			'pagecounternextnext': pagecounternextnext,
+			}
+
+		template = loader.get_template('digisig/search_actor.html')
+		print("Compute Time:", time()-starttime)
+		return HttpResponse(template.render(context, request))
+
+### Search Item
+
+	if searchtype == "items":
+
+		pagetitle = 'title'
+
+		#default values in case there is nothing specific in form or in else clause
+		repository = 0
+		series = 0
+		shelfmark = ""
+		searchphrase = ""
+		pagination = 1
+
+		if request.method == "POST":
+			form = ItemForm(request.POST)
+
+			if form.is_valid():
+				challengeurl(request, searchtype, form)
+				if form.cleaned_data['repository'].isdigit(): repository = int(form.cleaned_data['repository']) 
+				if form.cleaned_data['series'].isdigit(): series = int(form.cleaned_data['series'])
+				if len(form.cleaned_data['shelfmark']) > 0: shelfmark = form.cleaned_data['shelfmark']
+				if len(form.cleaned_data['searchphrase']) > 0: searchphrase = form.cleaned_data['searchphrase']
+				pagination = int(form.cleaned_data['pagination'])
+
+		else:
+			form = ItemForm()
+			repository = 26
+			series = 347
+			form.initial["repository"] = 26
+			form.initial["series"] = 347
+
+		# code prepares the array of series and repositories to pass to the frontend
+		series_object= seriesset()
+
+		itemset, Repositorycases, Seriescases, Shelfmarkcases, Phrasecases, pagecountercurrent, pagecounternext, pagecounternextnext, totaldisplay, totalrows \
+		= itemsearch(repository, series, shelfmark, searchphrase, pagination)
+
+		context = {
+			'pagetitle': pagetitle,
+			'itemset': itemset,
+			'totalrows': totalrows,
+			'totaldisplay': totaldisplay,
+			'form': form,
+			'Repositorycases': Repositorycases,
+			'Seriescases': Seriescases,
+			'Shelfmarkcases': Shelfmarkcases,
+			'series_object': series_object,
+			'Phrasecases': Phrasecases,
+			'pagecountercurrent': pagecountercurrent,
+			'pagecounternext': pagecounternext,
+			'pagecounternextnext': pagecounternextnext,
+			}
+
+		template = loader.get_template('digisig/search_item.html')
+		print("Compute Time:", time()-starttime)
+		return HttpResponse(template.render(context, request))
+
+### Search Seals
+
+	if searchtype == "seals":
+
+		pagetitle = 'Impressions, Matrices and Casts'
+		manifestation_object = sealsearch()
+
+		qpagination = 1
+
+		if request.method == 'POST':
+			form = ManifestationForm(request.POST)
+
+			if form.is_valid(): 
+				manifestation_object, qpagination = sealsearchfilter(manifestation_object, form)
+				manifestation_object, totalrows, totaldisplay, qpagination = sealsearchpagination(manifestation_object, qpagination)
+
+			else:
+				manifestation_object, totalrows, totaldisplay, qpagination = sealsearchpagination(manifestation_object, qpagination)			
+
+		else:
+			form = ManifestationForm()
+			manifestation_object, totalrows, totaldisplay, qpagination = sealsearchpagination(manifestation_object, qpagination)			
+
+		pagecountercurrent = qpagination 
+		pagecounternext = qpagination + 1
+		pagecounternextnext = qpagination +2
+
+		## prepare the data for each displayed seal manifestation
+		manifestation_set = sealsearchmanifestationmetadata(manifestation_object)
+
+	# code prepares the array of series and repositories to pass to the frontend
+		series_object= seriesset()
+
+		context = {
+			'pagetitle': pagetitle, 
+			'manifestation_set': manifestation_set,
+			'totalrows': totalrows,
+			'totaldisplay': totaldisplay,
+			'form': form,
+			'pagecountercurrent': pagecountercurrent,
+			'pagecounternext': pagecounternext,
+			'pagecounternextnext': pagecounternextnext,
+			'series_object': series_object,
+			}
+
+		template = loader.get_template('digisig/search_seal.html')                    
+
+		print("Compute Time:", time()-starttime)
+		return HttpResponse(template.render(context, request))
+
+
+
 ###### Search Seal Descriptions ##########
 
 	if searchtype == "sealdescriptions":
@@ -180,208 +380,7 @@ def search(request, searchtype):
 		return HttpResponse(template.render(context, request))
 
 
-### Search Seals
 
-	if searchtype == "seals":
-
-		pagetitle = 'Impressions, Matrices and Casts'
-
-		if request.method == 'POST':
-			manifestation_object, form = sealsearch()
-			totalrows = manifestation_object.count()
-
-		else:
-			manifestation_object = Manifestation.objects.all().select_related(
-				'fk_face__fk_seal').select_related(
-				'fk_support__fk_part__fk_item__fk_repository').select_related(
-				'fk_support__fk_number_currentposition').select_related(
-				'fk_support__fk_attachment').select_related(
-				'fk_support__fk_supportstatus').select_related(
-				'fk_support__fk_nature').select_related(
-				'fk_imagestate').select_related(
-				'fk_position').select_related(
-				'fk_support__fk_part__fk_event').order_by(
-				'id_manifestation').prefetch_related(
-				Prefetch('fk_manifestation', queryset=Representation.objects.filter(primacy=1)))[:10]
-
-			totalrows = Manifestation.objects.count()			
-			form = ManifestationForm()
-			qpagination = 1
-
-		pagecountercurrent, pagecounternext, pagecounternextnext, totaldisplay = paginatorJM(qpagination, totalrows, manifestation_object)
-
-		## prepare the data for each displayed seal manifestation
-		manifestation_set = sealsearchmanifestationmetadata(manifestation_object)
-
-	# code prepares the array of series and repositories to pass to the frontend
-		series_object= seriesset()
-
-		context = {
-			'pagetitle': pagetitle, 
-			'manifestation_set': manifestation_set,
-			'totalrows': totalrows,
-			'totaldisplay': totaldisplay,
-			'form': form,
-			'pagecountercurrent': pagecountercurrent,
-			'pagecounternext': pagecounternext,
-			'pagecounternextnext': pagecounternextnext,
-			'series_object': series_object,
-			}
-
-		template = loader.get_template('digisig/search_seal.html')                    
-
-		print("Compute Time:", time()-starttime)
-		return HttpResponse(template.render(context, request))
-
-### Search Item
-
-	if searchtype == "items":
-
-		pagetitle = 'title'
-
-		#default values in case there is nothing specific in form or in else clause
-		repository = 0
-		series = 0
-		shelfmark = ""
-		searchphrase = ""
-		pagination = 1
-
-		if request.method == "POST":
-			form = ItemForm(request.POST)
-
-			if form.is_valid():
-				challengeurl(request, searchtype, form)
-				if form.cleaned_data['repository'].isdigit(): repository = int(form.cleaned_data['repository']) 
-				if form.cleaned_data['series'].isdigit(): series = int(form.cleaned_data['series'])
-				if len(form.cleaned_data['shelfmark']) > 0: shelfmark = form.cleaned_data['shelfmark']
-				if len(form.cleaned_data['searchphrase']) > 0: searchphrase = form.cleaned_data['searchphrase']
-				pagination = int(form.cleaned_data['pagination'])
-
-		else:
-			form = ItemForm()
-			repository = 26
-			series = 347
-			form.initial["repository"] = 26
-			form.initial["series"] = 347
-
-		# code prepares the array of series and repositories to pass to the frontend
-		series_object= seriesset()
-
-		itemset, Repositorycases, Seriescases, Shelfmarkcases, Phrasecases, pagecountercurrent, pagecounternext, pagecounternextnext, totaldisplay, totalrows \
-		= itemsearch(repository, series, shelfmark, searchphrase, pagination)
-
-		context = {
-			'pagetitle': pagetitle,
-			'itemset': itemset,
-			'totalrows': totalrows,
-			'totaldisplay': totaldisplay,
-			'form': form,
-			'Repositorycases': Repositorycases,
-			'Seriescases': Seriescases,
-			'Shelfmarkcases': Shelfmarkcases,
-			'series_object': series_object,
-			'Phrasecases': Phrasecases,
-			'pagecountercurrent': pagecountercurrent,
-			'pagecounternext': pagecounternext,
-			'pagecounternextnext': pagecounternextnext,
-			}
-
-		template = loader.get_template('digisig/search_item.html')
-		print("Compute Time:", time()-starttime)
-		return HttpResponse(template.render(context, request))
-
-
-### Actor Search
-
-	if searchtype == "actors":
-
-		pagetitle = 'title'
-
-		individual_object = Digisigindividualview.objects.all().order_by('group_name', 'descriptor_name')
-
-		if request.method == "POST":
-			form = PeopleForm(request.POST)
-			if form.is_valid():
-				challengeurl(request, searchtype, form)
-				qname = form.cleaned_data['name']   
-				qpagination = form.cleaned_data['pagination']
-				qgroup = form.cleaned_data['group']
-				qclass = form.cleaned_data['personclass']
-				qorder = form.cleaned_data['personorder']
-
-				if qgroup.isdigit():
-					qgroup = int(qgroup)
-					if int(qgroup) == 2: individual_object = individual_object.filter(corporateentity=True)
-					if int(qgroup) == 1: individual_object = individual_object.filter(corporateentity=False)
-
-				if len(qname) > 0:
-					individual_object = individual_object.filter(
-						Q(group_name__icontains=qname) | Q(descriptor_name__icontains=qname) | Q(descriptor1__icontains=qname) | Q(descriptor2__icontains=qname) | Q(descriptor3__icontains=qname)
-						)
-
-				if qclass.isdigit():
-					if int(qclass) > 0:
-						qclass = int(qclass)
-						individual_object = individual_object.filter(fk_group_class=qclass)
-
-				if qorder.isdigit():
-					if int(qorder) > 0:
-						qorder = int(qorder)
-						individual_object = individual_object.filter(fk_group_order=qorder)
-
-				form = PeopleForm(request.POST)
-
-		else:
-			form = PeopleForm()
-			qpagination = 1
-
-
-	# preparing the data for individual_object
-		qpaginationend = int(qpagination) * 10
-		qpaginationstart = int(qpaginationend) -9 
-		totalrows = len(individual_object)
-
-		# if the dataset is less than the page limit
-		if qpaginationend > totalrows:
-			qpaginationend = totalrows
-
-		if totalrows > 1:
-			if qpaginationend < 10:
-				print(totalrows)
-			else:
-				individual_object = individual_object[qpaginationstart:qpaginationend]
-		totaldisplay = str(qpaginationstart) + " - " + str(qpaginationend)
-
-		pagecountercurrent = qpagination
-		pagecounternext = int(qpagination)+1
-		pagecounternextnext = int(qpagination)+2
-
-	# this code prepares the list of links to associated seals for each individual
-		sealindividual = []
-		for e in individual_object:
-			testvalue = e.id_individual
-			testseal = Seal.objects.filter(
-				fk_individual_realizer=testvalue)
-
-			for f in testseal:
-				current_id_seal = f.id_seal
-				sealindividual.append((testvalue, current_id_seal))
-
-		context = {
-			'pagetitle': pagetitle,
-			'individual_object': individual_object,
-			'sealindividual': sealindividual,
-			'totalrows': totalrows,
-			'totaldisplay': totaldisplay,
-			'form': form,
-			'pagecountercurrent': pagecountercurrent,
-			'pagecounternext': pagecounternext,
-			'pagecounternextnext': pagecounternextnext,
-			}
-
-		template = loader.get_template('digisig/search_actor.html')
-		print("Compute Time:", time()-starttime)
-		return HttpResponse(template.render(context, request))
 
 
 ######################### information ################################
