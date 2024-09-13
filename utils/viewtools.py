@@ -155,8 +155,6 @@ def sealsearchmanifestationmetadata(manifestation_object):
 		manifestation_dic["medium"] = connection.medium
 		manifestation_dic["representation_thumbnail_hash"] = representation_set.representation_thumbnail_hash
 		manifestation_dic["representation_filename_hash"] = representation_set.representation_filename_hash 
-		#manifestation_dic["representation_thumbnail"] = representation_set.representation_thumbnail
-		#manifestation_dic["representation_filename"] = representation_set.representation_filename
 		manifestation_dic["id_representation"] = representation_set.id_representation
 
 		sealdescription_set = Sealdescription.objects.filter(fk_seal=facevalue.fk_seal).select_related('fk_collection')
@@ -170,10 +168,10 @@ def sealsearchmanifestationmetadata(manifestation_object):
 		manifestation_dic["id_item"] = itemvalue.id_item
 		manifestation_dic["repository_fulltitle"] = repositoryvalue.repository_fulltitle
 		manifestation_dic["shelfmark"] = itemvalue.shelfmark
-		# manifestation_dic["fk_supportstatus"] = supportvalue.fk_supportstatus
-		# manifestation_dic["fk_attachment"] = supportvalue.fk_attachment		
+		manifestation_dic["fk_supportstatus"] = supportvalue.fk_supportstatus
+		manifestation_dic["fk_attachment"] = supportvalue.fk_attachment		
 		manifestation_dic["number"] = numbervalue.number
-		# manifestation_dic["support_type"] = supportvalue.fk_nature
+		manifestation_dic["support_type"] = supportvalue.fk_nature
 		manifestation_dic["label_manifestation_repository"] = e.label_manifestation_repository
 		manifestation_dic["imagestate_term"] = e.fk_imagestate
 		manifestation_dic["partvalue"] = partvalue.id_part
@@ -199,3 +197,87 @@ def sealsearchmanifestationmetadata(manifestation_object):
 		manifestation_set[e.id_manifestation] = manifestation_dic
 
 	return (manifestation_set)
+
+
+#information for presenting a seal
+def sealmetadata(digisig_entity_number):
+	seal_info = {}
+
+	face_set = Face.objects.filter(fk_seal=digisig_entity_number).select_related(
+		'fk_seal__fk_individual_realizer__fk_group').select_related(
+		'fk_seal__fk_individual_realizer__fk_descriptor_title').select_related(
+		'fk_seal__fk_individual_realizer__fk_descriptor_name').select_related(
+		'fk_seal__fk_individual_realizer__fk_descriptor_prefix1').select_related(
+		'fk_seal__fk_individual_realizer__fk_descriptor_descriptor1').select_related(
+		'fk_seal__fk_individual_realizer__fk_separator_1').select_related(
+		'fk_seal__fk_individual_realizer__fk_descriptor_prefix2').select_related(
+		'fk_seal__fk_individual_realizer__fk_descriptor_descriptor2').select_related(
+		'fk_seal__fk_individual_realizer__fk_descriptor_prefix3').select_related(
+		'fk_seal__fk_individual_realizer__fk_descriptor_descriptor3').select_related(
+		'fk_class')
+
+	face_obverse = face_set.get(fk_faceterm=1)
+
+	seal_info["seal"] = face_obverse.fk_seal
+	seal_info["sealdescription_set"]= Sealdescription.objects.filter(fk_seal=digisig_entity_number).select_related('fk_collection')
+	seal_info["actor"] = face_obverse.fk_seal.fk_individual_realizer
+
+	return (seal_info, face_set, face_obverse)
+
+#information for class value
+def sealinfo_classvalue (face_case):
+	
+	classvalue = {}
+
+	try:
+		classvalue["level1"] = Classification.objects.get(class_number=face_case.fk_class.level1)
+	except: 
+		print("level1 unassigned")
+
+	try:
+		if face_case.fk_class.level2 > 0:
+			faceclass2 = Classification.objects.get(class_number=face_case.fk_class.level2)
+			classvalue["level2"] = faceclass2			
+	except: 
+		print("level2 unassigned")
+
+	try:
+		if face_case.fk_class.level3 > 0:
+			faceclass3 = Classification.objects.get(class_number=face_case.fk_class.level3)
+			classvalue["level3"] = faceclass3 			
+	except: 
+		print("level3 unassigned")
+
+	try:
+		if face_case.fk_class.level4 > 0:
+			faceclass4 = Classification.objects.get(class_number=face_case.fk_class.level4)
+			classvalue["level4"] = faceclass4
+	except: 
+		print("level4 unassigned")
+
+	try:
+		if face_case.fk_class.level5 > 0:
+			faceclass5 = Classification.objects.get(class_number=face_case.fk_class.level5)
+			classvalue["level5"] = faceclass5			
+	except: 
+		print("level5 unassigned")			
+
+	return(classvalue)
+
+def namecompiler(individual):
+	print (individual)
+	individual_object = individual
+
+	namevariable = ''
+	if (individual_object.fk_group != None): namevariable = individual_object.fk_group.group_name
+	if (individual_object.fk_descriptor_title != None): namevariable = namevariable + " " + individual_object.fk_descriptor_title.descriptor_modern
+	if (individual_object.fk_descriptor_name != None): namevariable = namevariable + " " + individual_object.fk_descriptor_name.descriptor_modern
+	if (individual_object.fk_descriptor_prefix1 != None): namevariable = namevariable + " " + individual_object.fk_descriptor_prefix1.prefix_english
+	if (individual_object.fk_descriptor_descriptor1 != None): namevariable = namevariable + " " + individual_object.fk_descriptor_descriptor1.descriptor_modern
+	if (individual_object.fk_descriptor_prefix2 != None): namevariable = namevariable + " " + individual_object.fk_descriptor_prefix2.prefix_english
+	if (individual_object.fk_descriptor_descriptor2 != None): namevariable = namevariable + " " + individual_object.fk_descriptor_descriptor2.descriptor_modern
+	if (individual_object.fk_descriptor_prefix3 != None): namevariable = namevariable + " " + individual_object.fk_descriptor_prefix3.prefix_english
+	if (individual_object.fk_descriptor_descriptor3 != None): namevariable = namevariable + " " + individual_object.fk_descriptor_descriptor3.descriptor_modern
+	nameout = namevariable.strip()
+
+	return(nameout)
