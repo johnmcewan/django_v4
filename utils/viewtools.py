@@ -6,6 +6,25 @@ from django.core.paginator import Paginator
 from time import time
 
 
+def individualsearch(digisig_entity_number):
+
+	individual_object = Individual.objects.select_related(
+	'fk_group').select_related(
+	'fk_descriptor_title').select_related(
+	'fk_descriptor_name').select_related(
+	'fk_descriptor_prefix1').select_related(
+	'fk_descriptor_descriptor1').select_related(
+	'fk_separator_1').select_related(
+	'fk_descriptor_prefix2').select_related(
+	'fk_descriptor_descriptor2').select_related(
+	'fk_descriptor_prefix3').select_related(
+	'fk_descriptor_descriptor3').select_related(
+	'fk_group__fk_group_order').select_related(
+	'fk_group__fk_group_class').get(id_individual=digisig_entity_number)
+
+	return(individual_object)
+
+
 def sealsearch():
 	manifestation_object = Manifestation.objects.all().select_related(
 	'fk_face__fk_seal').select_related(
@@ -124,7 +143,7 @@ def sealsearchpagination(manifestation_object, qpagination):
 
 	return(manifestation_object, totalrows, totaldisplay, qpagination)
 
-# information for presenting a seal manifestation
+# information for presenting a seal manifestation {{should be defunct?}}
 def sealsearchmanifestationmetadata(manifestation_object):
 
 	manifestation_set = {}
@@ -199,6 +218,91 @@ def sealsearchmanifestationmetadata(manifestation_object):
 	return (manifestation_set)
 
 
+def	manifestation_fetchrepresentations(e, manifestation_dic):
+
+	try:
+		representation_set = Representation.objects.select_related('fk_connection').get(fk_manifestation=e.id_manifestation, primacy=1)
+
+	except:
+		print ("no image available for:", e.id_manifestation)
+		representation_set = Representation.objects.select_related('fk_connection').get(id_representation=12204474)
+
+	manifestation_dic["thumb"] = representation_set.fk_connection.thumb
+	manifestation_dic["medium"] = representation_set.fk_connection.medium
+	manifestation_dic["representation_thumbnail_hash"] = representation_set.representation_thumbnail_hash
+	manifestation_dic["representation_filename_hash"] = representation_set.representation_filename_hash 
+	manifestation_dic["id_representation"] = representation_set.id_representation
+
+	return(manifestation_dic)
+
+
+def manifestation_fetchsealdescriptions(e, manifestation_dic):
+	sealdescription_set = Sealdescription.objects.filter(fk_seal=e.fk_face.fk_seal).select_related('fk_collection')
+
+	description_set = {}
+
+	for s in sealdescription_set:
+		description = {}
+		description["sealdescription_id"] = s.id_sealdescription
+		description["collection"] = s.fk_collection
+		description["identifier"] = s.sealdescription_identifier
+
+		description_set[s.id_sealdescription] = description
+
+	manifestation_dic["sealdescriptions"] = description_set
+	
+	return(manifestation_dic)
+
+def manifestation_fetchlocations(e, manifestation_dic):
+	locationreference = Locationreference.objects.select_related(
+		'fk_locationname__fk_location').get(
+		fk_event=e.fk_support.fk_part.fk_event,fk_locationstatus=1)
+	locationname= locationreference.fk_locationname
+	location = locationreference.fk_locationname.fk_location
+	manifestation_dic["repository_location"] = locationreference.fk_locationname.fk_location.location
+	manifestation_dic["id_location"] = locationreference.fk_locationname.fk_location.id_location
+
+	return (manifestation_dic)
+
+def manifestation_fetchstandardvalues (e, manifestation_dic):
+	facevalue = e.fk_face
+	sealvalue = facevalue.fk_seal
+	supportvalue = e.fk_support
+	numbervalue = supportvalue.fk_number_currentposition
+	partvalue = supportvalue.fk_part
+	eventvalue = partvalue.fk_event
+	itemvalue = partvalue.fk_item
+	repositoryvalue = itemvalue.fk_repository
+	manifestation_dic["manifestation"] = e
+	manifestation_dic["id_manifestation"] = e.id_manifestation
+	manifestation_dic["fk_position"] = e.fk_position
+
+	manifestation_dic["id_seal"] = sealvalue.id_seal
+	manifestation_dic["id_item"] = itemvalue.id_item
+	manifestation_dic["repository_fulltitle"] = repositoryvalue.repository_fulltitle
+	manifestation_dic["shelfmark"] = itemvalue.shelfmark
+	manifestation_dic["fk_supportstatus"] = supportvalue.fk_supportstatus
+	manifestation_dic["fk_attachment"] = supportvalue.fk_attachment		
+	manifestation_dic["number"] = numbervalue.number
+	manifestation_dic["support_type"] = supportvalue.fk_nature
+	manifestation_dic["label_manifestation_repository"] = e.label_manifestation_repository
+	manifestation_dic["imagestate_term"] = e.fk_imagestate
+	manifestation_dic["partvalue"] = partvalue.id_part
+
+	#take the repository submitted date in preference to the Digisig date
+	if eventvalue.repository_startdate:
+		manifestation_dic["repository_startdate"] = eventvalue.repository_startdate
+	else:
+		manifestation_dic["repository_startdate"] = eventvalue.startdate 
+
+	if eventvalue.repository_enddate:
+		manifestation_dic["repository_enddate"] = eventvalue.repository_enddate
+	else:
+		manifestation_dic["repository_enddate"] = eventvalue.enddate
+
+	return (manifestation_dic)
+
+
 #information for presenting a seal
 def sealmetadata(digisig_entity_number):
 	seal_info = {}
@@ -264,9 +368,7 @@ def sealinfo_classvalue (face_case):
 
 	return(classvalue)
 
-def namecompiler(individual):
-	print (individual)
-	individual_object = individual
+def namecompiler(individual_object):
 
 	namevariable = ''
 	if (individual_object.fk_group != None): namevariable = individual_object.fk_group.group_name
@@ -281,3 +383,96 @@ def namecompiler(individual):
 	nameout = namevariable.strip()
 
 	return(nameout)
+
+#gets event set
+def eventset_datedata(event_object, event_dic):
+
+	if event_object.repository_startdate is not None: 
+		yeartemp = event_object.repository_startdate
+		event_dic["year1"] = yeartemp.year
+		if event_object.repository_enddate is not None: 
+			yeartemp = event_object.repository_enddate
+			event_dic["year2"] = yeartemp.year
+
+	if event_object.startdate is not None:
+		yeartemp = event_object.startdate
+		event_dic["year3"] = yeartemp.year
+		if event_object.enddate is not None: 
+			yeartemp = event_object.enddate
+			event_dic["year4"] = yeartemp.year
+
+	return (event_dic)
+
+def eventset_locationdata(event_object, event_dic):
+	if event_object is not None:
+		targetlocation = event_object.pk_event
+		
+		location_object = Location.objects.filter(locationname__locationreference__fk_event=targetlocation, locationname__locationreference__location_reference_primary = False).first()
+
+		location_name = location_object.location
+		location_id = location_object.id_location
+		location_longitude = str(location_object.longitude)
+		location_latitude = str(location_object.latitude)
+
+		location= {"type": "Point", "coordinates":[location_longitude, location_latitude]}
+		location_dict = {'location': location_name, 'latitude': location_latitude, 'longitude': location_longitude} 
+
+		event_dic["repository_location"] = event_object.repository_location 
+		event_dic["location"] = location_object
+		event_dic["location_name"] = location_name 
+		event_dic["location_id"] = location_id 
+		event_dic["location_latitude"] = location_longitude 
+		event_dic["location_latitude"] = location_latitude 
+
+	return (event_dic)
+
+def eventset_references(event_object, event_dic):
+	reference_dict = {}
+	referenceset = Referenceindividual.objects.filter(
+		fk_event=event_object).order_by(
+		"fk_referencerole__role_order", "pk_referenceindividual").select_related(
+		'fk_individual').select_related(
+		'fk_referencerole')
+
+	event_dic["referenceset"] = referenceset
+
+	return(event_dic)
+
+def referenceset_references(individual_object, reference_set):
+
+	reference_dic = Referenceindividual.objects.filter(
+		fk_individual=individual_object).select_related(
+		'fk_event').select_related(
+		'fk_referencerole').order_by(
+		"fk_event__startdate", "fk_event__enddate")
+
+	for r in reference_dic:
+
+		reference_row = {}
+
+		#date
+		if r.fk_event.startdate != None:
+			reference_row['date'] = str(r.fk_event.startdate) + "-" + str(r.fk_event.enddate)
+		else:
+			if r.fk_event.repository_startdate != None:
+				reference_row['date'] = str(r.fk_event.repository_startdate) + " - " + str(r.fk_event.repository_enddate)
+		#role
+		reference_row["role"] = r.fk_referencerole.referencerole
+
+		#item
+		part_object = Part.objects.select_related('fk_item').get(fk_event=r.fk_event)
+		reference_row["item_shelfmark"] = part_object.fk_item.shelfmark
+		reference_row["item_id"] = part_object.fk_item.id_item
+
+		#location
+		locationreference_object = Locationreference.objects.filter(
+			location_reference_primary=0).select_related(
+			'fk_locationname__fk_location__fk_region').get(
+			fk_event=r.fk_event)
+		reference_row["region"] = locationreference_object.fk_locationname.fk_location.fk_region
+		reference_row["location_id"] = locationreference_object.fk_locationname.fk_location.id_location
+		reference_row["location"] = locationreference_object.fk_locationname.fk_location.location
+
+		reference_set[r.pk_referenceindividual] = reference_row
+
+	return(reference_set)
