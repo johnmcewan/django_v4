@@ -217,153 +217,6 @@ def representationlist(sealset):
 	return (representationlist)
 
 
-## function to collect all the possible information you would need to present a representation
-def representationmetadata(representation_case, authenticationstatus):
-
-	representation_dic = {}
-	representation_dic["representation_object"] = representation_case
-	representation_dic["id_representation"] = representation_case.id_representation
-
-	#what type of image? (Photograph, RTI....)
-	representation_dic["representation_type"] = representation_case.fk_representation_type
-
-	#what type of entity is depicted? (Manifestation, Document....)
-	digisigentity = str(representation_case.fk_digisig)
-	representation_dic["entity_type"] = int(digisigentity[7:])
-
-	#where is the image stored?
-	connection = representation_case.fk_connection
-	representation_dic["connection_object"] = representation_case.fk_connection
-
-	if representation_case.fk_representation_type.pk_representation_type == 2:
-		print ("found RTI:", representation_case.id_representation)
-		representation_dic["rti"] = connection.rti
-		representation_dic["representation_folder"] = representation_case.representation_folder
-		try:
-			thumbnailRTI_object = get_object_or_404(Representation, fk_digisig=representation_case.fk_digisig, primacy=1)
-			representation_case = thumbnailRTI_object
-		except:
-			print ("An exception occurred in fetching representation case for the thumbnail of the RTI", representation_dic)
-
-	representation_dic["thumb"] = connection.thumb
-	representation_dic["representation_thumbnail"] = representation_case.representation_thumbnail_hash 
-	representation_dic["medium"] = connection.medium
-	representation_dic["representation_filename"] = representation_case.representation_filename_hash 
-
-	if authenticationstatus == "public":
-		print ("public")
-		return (representation_dic)
-
-	print ("authenticated")
-
-
-	##### for loged on users
-
-	#image dimensions
-	representation_dic["width"] = representation_case.width
-	representation_dic["height"] = representation_case.height
-
-
-
-	#who made it?
-	creator_object = representation_case.fk_contributor_creator
-	representation_dic["contributorcreator_object"] = creator_object
-	try:
-		creator_phrase = creator_object.name_first + " " + creator_object.name_middle + " " + creator_object.name_last
-	except:
-		try:
-			creator_phrase = creator_object.name_first + " " + creator_object.name_last
-		except:
-			try:
-				creator_phrase = creator_object.name_last
-			except:
-				creator_phrase = "N/A"
-	representation_dic["contributorcreator_name"] = creator_phrase.strip()
-
-	#when was it made?
-	representation_dic["datecreated"] = representation_case.representation_datecreated
-
-	#where does it come from?
-	representation_dic["collection_object"] = representation_case.fk_collection
-
-	#what rights?
-	representation_dic["rights_object"] = representation_case.fk_rightsholder
-
-	#some defaults to stop forms breaking.... is there a better way to do this?
-	representation_dic["manifestation_object"] = get_object_or_404(Manifestation, id_manifestation=10000002)
-	representation_dic["item"] = get_object_or_404(Item, id_item=10545090)
-	representation_dic["main_title"] = "Title"
-
-	#information about the original object
-	#Manifestation
-	if representation_dic["entity_type"] == 2:
-
-		try:
-			manifestation = representation_case.fk_manifestation
-			representation_dic["manifestation_object"] = manifestation
-
-			support = manifestation.fk_support
-			representation_dic["support_object"] = support
-
-			part = support.fk_part
-
-			face = manifestation.fk_face
-			seal = face.fk_seal
-			representation_dic["seal"] = seal
-
-			individual_object = seal.fk_individual_realizer
-			individualtarget = individual_object.id_individual
-			representation_dic["outname"] = namecompiler(individualtarget)
-			representation_dic["individual_object"] = individual_object
-
-			sealdescription_objectset = Sealdescription.objects.filter(fk_seal = seal.id_seal)
-			representation_dic["sealdescription_objectset"] = sealdescription_objectset
-
-		except:
-			print("An exception occurred in the manifestation record")
-
-	#Part
-	if representation_dic["entity_type"] == 8:
-
-		try:
-			part = get_object_or_404(Part, id_part=representation_case.fk_digisig)
-
-		except:
-			print ("An exception occurred in the part record")
-
-	try:			
-		item = part.fk_item
-		representation_dic["item"] = item
-		representation_dic["event"] = part.fk_event
-		representation_dic["main_title"] = str(item.fk_repository) + " " + str (item.shelfmark)
-		representation_dic["repository"] = str(item.fk_repository)
-		representation_dic["shelfmark"] = str (item.shelfmark)
-
-	except:
-		print ("An exception occurred in item and event")
-
-	try:
-		region_objectset = Region.objects.filter( 
-			location__locationname__locationreference__fk_locationstatus=1, 
-			location__locationname__locationreference__fk_event=part.fk_event)
-		representation_dic["region_objectset"] = region_objectset
-	except:
-		print ("An exception occurred in region information")
-
-	#Seal Description
-	if representation_dic["entity_type"] == 3:
-		representation_dic["main_title"] = "Seal Description"
-
-
-
-
-
-	#what other representations are there of the targetobject?
-	representation_objectset = Representation.objects.filter(fk_digisig=representation_case.fk_digisig).exclude(id_representation=representation_case.id_representation)
-	representation_dic["representation_objectset"] = representation_objectset
-	representation_dic["totalrows"] = len(representation_objectset)
-
-	return (representation_dic)
 
 
 # information for presenting a seal manifestation
@@ -1004,49 +857,7 @@ def classfilter(resultset, classname):
 	return(resultset)
 
 
-def classdistribution(classset, facecount):
 
-	data2 = []
-	labels2 = []
-	resultdic = {}
-
-	allclasses = Classification.objects.all()
-
-	for case in allclasses:
-		casecount = 0
-		if (case.level == 4):
-			limitset = classset.filter(level4=case.class_number)
-			for l in limitset: 
-				casecount = casecount + l.numcases
-		if (case.level == 3):
-			limitset = classset.filter(level3=case.class_number)
-			for l in limitset:
-				casecount = casecount + l.numcases
-				#print ("++", l.class_name, l.level, l.numcases, case.numcases)
-		if (case.level == 2):
-			limitset = classset.filter(level2=case.class_number)
-			for l in limitset:
-				casecount = casecount + l.numcases
-				#print ("++", l.class_name, l.level, l.numcases, case.numcases)
-		if (case.level == 1):
-			limitset = classset.filter(level1=case.class_number)
-			for l in limitset:
-				casecount = casecount + l.numcases
-				# print ("++", l.class_name, l.level, l.numcases, case.numcases)
-
-		percentagedata = (casecount/facecount)*100
-		if percentagedata > 1:
-			resultdic.update({case.class_name: percentagedata})
-
-	allclasses = allclasses.order_by('class_sortorder')
-	for case in allclasses:
-		if case.class_name in resultdic:
-			classpercentage = resultdic.get(case.class_name)
-			if classpercentage > 1:
-				data2.append(classpercentage)
-				labels2.append(case.class_name)
-
-	return(data2, labels2)
 
 
 def classdistributionv2(face_objectset):
@@ -1112,75 +923,68 @@ def collectiondata(collectionid, sealcount):
 
 	return(collectiondatapackage)
 
-#assembles the list of people credited with a work
-def contributorgenerate(collectioncontributors):
-	contributorset = []
-	for c in collectioncontributors:
-		contributorindividual = c.fk_contributor
-		contributorset.append((c.fk_collectioncontribution, contributorindividual.name_first, contributorindividual.name_last, contributorindividual.name_middle, contributorindividual.uricontributor))
-
-	return(contributorset)
 
 
-### generate the collection info data for chart-- 'Percentage of seals by class',
-def datedistribution(sealset):
 
-	# eleventhc = sealset.filter(date_origin__gte=1000, date_origin__lte=1099).count()
-	# twelfthc = sealset.filter(date_origin__gte=1100, date_origin__lte=1199).count()
-	# thirteenthc = sealset.filter(date_origin__gte=1200, date_origin__lte=1299).count()
-	# fourteenthc = sealset.filter(date_origin__gte=1300, date_origin__lte=1399).count()
-	# fifteenthc = sealset.filter(date_origin__gte=1400, date_origin__lte=1499).count()
-	# sixteenthc = sealset.filter(date_origin__gte=1500, date_origin__lte=1599).count()
-	# seventeenthc = sealset.filter(date_origin__gte=1600, date_origin__lte=1699).count()
-	# eighteenthc = sealset.filter(date_origin__gte=1700, date_origin__lte=1799).count()
-	# ninteenthc = sealset.filter(date_origin__gte=1800, date_origin__lte=1899).count()
-	# twentiethc = sealset.filter(date_origin__gte=1900, date_origin__lte=1999).count()
+# ### generate the collection info data for chart-- 'Percentage of seals by class',
+# def datedistribution(sealset):
 
-	# data3 = [eleventhc, twelfthc, thirteenthc, fourteenthc, fifteenthc, sixteenthc, seventeenthc, eighteenthc, ninteenthc, twentiethc]
-	# labels3 = ["11th", "12th", "13th", "14th", "15th", "16th", "17th", "18th", "19th", "20th"]
+# 	# eleventhc = sealset.filter(date_origin__gte=1000, date_origin__lte=1099).count()
+# 	# twelfthc = sealset.filter(date_origin__gte=1100, date_origin__lte=1199).count()
+# 	# thirteenthc = sealset.filter(date_origin__gte=1200, date_origin__lte=1299).count()
+# 	# fourteenthc = sealset.filter(date_origin__gte=1300, date_origin__lte=1399).count()
+# 	# fifteenthc = sealset.filter(date_origin__gte=1400, date_origin__lte=1499).count()
+# 	# sixteenthc = sealset.filter(date_origin__gte=1500, date_origin__lte=1599).count()
+# 	# seventeenthc = sealset.filter(date_origin__gte=1600, date_origin__lte=1699).count()
+# 	# eighteenthc = sealset.filter(date_origin__gte=1700, date_origin__lte=1799).count()
+# 	# ninteenthc = sealset.filter(date_origin__gte=1800, date_origin__lte=1899).count()
+# 	# twentiethc = sealset.filter(date_origin__gte=1900, date_origin__lte=1999).count()
 
-	## rewrite of algorithm 1/3/2024, below 
+# 	# data3 = [eleventhc, twelfthc, thirteenthc, fourteenthc, fifteenthc, sixteenthc, seventeenthc, eighteenthc, ninteenthc, twentiethc]
+# 	# labels3 = ["11th", "12th", "13th", "14th", "15th", "16th", "17th", "18th", "19th", "20th"]
 
-	eleventhc = 0
-	twelfthc = 0
-	thirteenthc = 0
-	fourteenthc = 0
-	fifteenthc = 0
-	sixteenthc = 0
-	seventeenthc = 0
-	eighteenthc = 0
-	nineteenthc = 0
-	twentiethc = 0
+# 	## rewrite of algorithm 1/3/2024, below 
 
-	for s in sealset:
-		if s.date_origin >= 1000 and s.date_origin <= 1099 : 
-			eleventhc = eleventhc + 1
-		elif s.date_origin >= 1100 and s.date_origin <= 1199 : 
-			twelfthc = twelfthc + 1
-		elif s.date_origin >= 1200 and s.date_origin <= 1299 : 
-			thirteenthc = thirteenthc + 1
-		elif s.date_origin >= 1300 and s.date_origin <= 1399 : 
-			fourteenthc = fourteenthc + 1
-		elif s.date_origin >= 1400 and s.date_origin <= 1499 : 
-			fifteenthc = fifteenthc + 1
-		elif s.date_origin >= 1500 and s.date_origin <= 1599 : 
-			sixteenthc = sixteenthc + 1
-		elif s.date_origin >= 1600 and s.date_origin <= 1699 : 
-			seventeenthc = seventeenthc + 1
-		elif s.date_origin >= 1700 and s.date_origin <= 1799 : 
-			eighteenthc = eighteenthc + 1
-		elif s.date_origin >= 1800 and s.date_origin <= 1899 : 
-			nineteenthc = nineteenthc + 1
-		elif s.date_origin >= 1900 and s.date_origin <= 1999 : 
-			twentiethc = twentiethc + 1
+# 	eleventhc = 0
+# 	twelfthc = 0
+# 	thirteenthc = 0
+# 	fourteenthc = 0
+# 	fifteenthc = 0
+# 	sixteenthc = 0
+# 	seventeenthc = 0
+# 	eighteenthc = 0
+# 	nineteenthc = 0
+# 	twentiethc = 0
 
-		else:
-			pass
+# 	for s in sealset:
+# 		if s.date_origin >= 1000 and s.date_origin <= 1099 : 
+# 			eleventhc = eleventhc + 1
+# 		elif s.date_origin >= 1100 and s.date_origin <= 1199 : 
+# 			twelfthc = twelfthc + 1
+# 		elif s.date_origin >= 1200 and s.date_origin <= 1299 : 
+# 			thirteenthc = thirteenthc + 1
+# 		elif s.date_origin >= 1300 and s.date_origin <= 1399 : 
+# 			fourteenthc = fourteenthc + 1
+# 		elif s.date_origin >= 1400 and s.date_origin <= 1499 : 
+# 			fifteenthc = fifteenthc + 1
+# 		elif s.date_origin >= 1500 and s.date_origin <= 1599 : 
+# 			sixteenthc = sixteenthc + 1
+# 		elif s.date_origin >= 1600 and s.date_origin <= 1699 : 
+# 			seventeenthc = seventeenthc + 1
+# 		elif s.date_origin >= 1700 and s.date_origin <= 1799 : 
+# 			eighteenthc = eighteenthc + 1
+# 		elif s.date_origin >= 1800 and s.date_origin <= 1899 : 
+# 			nineteenthc = nineteenthc + 1
+# 		elif s.date_origin >= 1900 and s.date_origin <= 1999 : 
+# 			twentiethc = twentiethc + 1
 
-	data3 = [eleventhc, twelfthc, thirteenthc, fourteenthc, fifteenthc, sixteenthc, seventeenthc, eighteenthc, nineteenthc, twentiethc]
-	labels3 = ["11th", "12th", "13th", "14th", "15th", "16th", "17th", "18th", "19th", "20th"]
+# 		else:
+# 			pass
 
-	return(data3, labels3)
+# 	data3 = [eleventhc, twelfthc, thirteenthc, fourteenthc, fifteenthc, sixteenthc, seventeenthc, eighteenthc, nineteenthc, twentiethc]
+# 	labels3 = ["11th", "12th", "13th", "14th", "15th", "16th", "17th", "18th", "19th", "20th"]
+
+# 	return(data3, labels3)
 
 
 #gets example for classification display
@@ -1202,12 +1006,6 @@ def examplefinder(idterm):
 
 	return (examplesetout)
 
-#gets externallinks for object
-def externallinkgenerator(digisig_entity_number):
-	externallinkset = []
-	externallinkset = Externallink.objects.filter(internal_entity=digisig_entity_number)
-
-	return (externallinkset)	
 
 # def eventset_data(itemnumber):
 # 	part_object = Part.objects.filter(fk_item = itemnumber)

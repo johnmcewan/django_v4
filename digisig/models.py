@@ -244,6 +244,19 @@ class Classification(models.Model):
         managed = False
         db_table = 'class'
 
+class Classificationparentchild(models.Model):
+    id_classificationparentchild = models.AutoField(primary_key=True)
+    fk_term = models.ForeignKey('Terminology', models.DO_NOTHING, db_column='fk_term', related_name='fk_term_interchange', blank=True, null=True)
+    class_numberparent = models.IntegerField(blank=True, null=True)
+    fk_class = models.ForeignKey('Classification', models.DO_NOTHING, db_column='fk_class', related_name='fk_class_interchange',blank=True, null=True)
+    class_numberchild = models.IntegerField(blank=True, null=True)
+
+    class Meta:
+        managed = False
+        db_table = 'classification_parentchild'
+
+
+
 class Collection(models.Model):
     pk_collection = models.IntegerField(blank=True, null=True)
     collection_shorttitle = models.TextField(blank=True, null=True)
@@ -473,7 +486,8 @@ class Face(models.Model):
     fk_legend_specific = models.IntegerField(blank=True, null=True)
     print_sealmanifestation = models.TextField(blank=True, null=True)
     print_sealsizeandshape = models.TextField(blank=True, null=True)
-    fk_class = models.ForeignKey('Classification', models.DO_NOTHING, db_column='fk_class', blank=True, null=True)
+    #fk_class = models.ForeignKey('Classification_parent', models.DO_NOTHING, db_column='fk_classchild', blank=True, null=True)
+    fk_class = models.ForeignKey('Classification', models.DO_NOTHING, db_column='fk_class', related_name='fk_class_face',blank=True, null=True)
     datasetparticipation = models.IntegerField(blank=True, null=True)
     dataset_durham = models.DecimalField(max_digits=65535, decimal_places=65535, blank=True, null=True)
     id_face = models.AutoField(primary_key=True)
@@ -762,7 +776,7 @@ class Locationname(models.Model):
 
 class Locationreference(models.Model):
     pk_location_reference = models.AutoField(primary_key=True)
-    fk_event = models.ForeignKey('Event', models.DO_NOTHING, db_column='fk_event', blank=True, null=True)
+    fk_event = models.ForeignKey('Event', models.DO_NOTHING, db_column='fk_event', related_name="fk_event_locationreference", blank=True, null=True)
     fk_locationname = models.ForeignKey('Locationname', models.DO_NOTHING, db_column='fk_locationname', blank=True, null=True)
     location_reference = models.TextField(blank=True, null=True)
     location_reference_primary = models.BooleanField(blank=True, null=True)
@@ -1315,7 +1329,7 @@ class Sealdescription(models.Model):
     fk_collection = models.ForeignKey('Collection', models.DO_NOTHING, db_column='fk_collection', blank=True, null=True)
     sealdescription = models.TextField(blank=True, null=True)
     sealdescription_identifier = models.TextField(blank=True, null=True)
-    fk_seal = models.ForeignKey('Seal', models.DO_NOTHING, db_column='fk_seal', blank=True, null=True)
+    fk_seal = models.ForeignKey('Seal', models.DO_NOTHING, db_column='fk_seal', related_name= 'fk_sealsealdescription', blank=True, null=True)
     bifaceseal = models.BooleanField(blank=True, null=True)
     motif_obverse = models.TextField(blank=True, null=True)
     motif_reverse = models.TextField(blank=True, null=True)

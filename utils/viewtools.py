@@ -6,6 +6,136 @@ from django.core.paginator import Paginator
 from time import time
 
 
+
+
+### generate the collection info data for chart-- 'Percentage of seals by class',
+def datedistribution(qcollection):
+	sealset = Seal.objects.values('date_origin')
+
+	if (qcollection == 30000287):
+		print ("whole collection")
+
+	else:
+		sealset = sealset.filter(fk_sealsealdescription__fk_collection=qcollection)
+
+	eleventhc = 0
+	twelfthc = 0
+	thirteenthc = 0
+	fourteenthc = 0
+	fifteenthc = 0
+	sixteenthc = 0
+	seventeenthc = 0
+	eighteenthc = 0
+	nineteenthc = 0
+	twentiethc = 0
+
+	for s in sealset:
+		for date_origin in s.values():
+			if date_origin >= 1000 and date_origin <= 1099 : 
+				eleventhc = eleventhc + 1
+			elif date_origin >= 1100 and date_origin <= 1199 : 
+				twelfthc = twelfthc + 1
+			elif date_origin >= 1200 and date_origin <= 1299 : 
+				thirteenthc = thirteenthc + 1
+			elif date_origin >= 1300 and date_origin <= 1399 : 
+				fourteenthc = fourteenthc + 1
+			elif date_origin >= 1400 and date_origin <= 1499 : 
+				fifteenthc = fifteenthc + 1
+			elif date_origin >= 1500 and date_origin <= 1599 : 
+				sixteenthc = sixteenthc + 1
+			elif date_origin >= 1600 and date_origin <= 1699 : 
+				seventeenthc = seventeenthc + 1
+			elif date_origin >= 1700 and date_origin <= 1799 : 
+				eighteenthc = eighteenthc + 1
+			elif date_origin >= 1800 and date_origin <= 1899 : 
+				nineteenthc = nineteenthc + 1
+			elif date_origin >= 1900 and date_origin <= 1999 : 
+				twentiethc = twentiethc + 1
+
+
+	# for s in sealset:
+	# 	print (s)
+	# 	if s.date_origin >= 1000 and s.date_origin <= 1099 : 
+	# 		eleventhc = eleventhc + 1
+	# 	elif s.date_origin >= 1100 and s.date_origin <= 1199 : 
+	# 		twelfthc = twelfthc + 1
+	# 	elif s.date_origin >= 1200 and s.date_origin <= 1299 : 
+	# 		thirteenthc = thirteenthc + 1
+	# 	elif s.date_origin >= 1300 and s.date_origin <= 1399 : 
+	# 		fourteenthc = fourteenthc + 1
+	# 	elif s.date_origin >= 1400 and s.date_origin <= 1499 : 
+	# 		fifteenthc = fifteenthc + 1
+	# 	elif s.date_origin >= 1500 and s.date_origin <= 1599 : 
+	# 		sixteenthc = sixteenthc + 1
+	# 	elif s.date_origin >= 1600 and s.date_origin <= 1699 : 
+	# 		seventeenthc = seventeenthc + 1
+	# 	elif s.date_origin >= 1700 and s.date_origin <= 1799 : 
+	# 		eighteenthc = eighteenthc + 1
+	# 	elif s.date_origin >= 1800 and s.date_origin <= 1899 : 
+	# 		nineteenthc = nineteenthc + 1
+	# 	elif s.date_origin >= 1900 and s.date_origin <= 1999 : 
+	# 		twentiethc = twentiethc + 1
+
+		else:
+			pass
+
+	data3 = [eleventhc, twelfthc, thirteenthc, fourteenthc, fifteenthc, sixteenthc, seventeenthc, eighteenthc, nineteenthc, twentiethc]
+	labels3 = ["11th", "12th", "13th", "14th", "15th", "16th", "17th", "18th", "19th", "20th"]
+
+	return(data3, labels3)
+
+
+
+
+def collection_basemetricsqueries():
+
+
+	#total number cases that have NOT been assigned to a location (yet) --- 7042 = not assigned --- location status =2 is a secondary location
+	casecount = Locationname.objects.exclude(
+		pk_locationname=7042).exclude(
+		locationreference__fk_locationstatus=2).filter(
+		locationreference__fk_event__part__fk_part__fk_support__gt=1)
+
+	# casecount = Locationname.objects.exclude(
+	# 	pk_locationname=7042).exclude(
+	# 	locationreference__fk_locationstatus__isnull=True).filter(
+	# 	locationreference__fk_event__part__fk_part__fk_support__fk_face__fk_seal__fk_sealsealdescription__fk_collection=qcollection).count()
+
+	#total portion of entries with place info
+	# placecount = Locationname.objects.exclude(
+	# 	locationreference__fk_locationstatus=2).filter(
+	# 	locationreference__fk_event__part__fk_part__fk_support__gt=1)
+
+	place_set = sealdescription_set.exclude(fk_seal__fk_seal_face__manifestation__fk_support__fk_part__fk_event__fk_event_locationreference__fk_locationstatus__isnull=True).exclude(
+			fk_seal__fk_seal_face__manifestation__fk_support__fk_part__fk_event__fk_event_locationreference__fk_locationname__fk_location=7042)
+
+	#data for map counties
+	placeset = Region.objects.filter(fk_locationtype=4, 
+		location__locationname__locationreference__fk_locationstatus=1)
+
+	#data for map regions
+	regiondisplayset = Regiondisplay.objects.filter(region__location__locationname__locationreference__fk_locationstatus=1) 
+
+	#faceset = Face.objects.filter(fk_faceterm=1)
+	face_set = sealdescription_set.filter(fk_seal__fk_seal_face__fk_faceterm=1).distinct('fk_seal__fk_seal_face') 
+
+	return(sealdescription_set, casecount, place_set, placeset, regiondisplayset, face_set)
+
+
+def collectiondata(collectionid, sealcount):
+	collectiondatapackage = []
+	if collectionid == 30000287:
+		totalsealdescriptions = Sealdescription.objects.all().count()
+	else:
+		totalsealdescriptions = Sealdescription.objects.filter(fk_collection=collectionid).values().distinct('sealdescription_identifier').count()
+
+	collectiondatapackage.extend([totalsealdescriptions, sealcount])
+
+	return(collectiondatapackage)
+
+
+
+
 def individualsearch(digisig_entity_number):
 
 	individual_object = Individual.objects.select_related(
@@ -24,6 +154,133 @@ def individualsearch(digisig_entity_number):
 
 	return(individual_object)
 
+## function to collect all the possible information you would need to present a representation
+def representationmetadata(representation_case, representation_dic):
+
+	representation_dic["representation_object"] = representation_case
+	representation_dic["id_representation"] = representation_case.id_representation
+
+	#what type of image? (Photograph, RTI....)
+	representation_dic["representation_type"] = representation_case.fk_representation_type
+
+	#where is the image stored?
+	connection = representation_case.fk_connection
+	representation_dic["connection_object"] = representation_case.fk_connection
+
+	if representation_case.fk_representation_type.pk_representation_type == 2:
+		print ("found RTI:", representation_case.id_representation)
+		representation_dic["rti"] = connection.rti
+		representation_dic["representation_folder"] = representation_case.representation_folder
+		try:
+			thumbnailRTI_object = get_object_or_404(Representation, fk_digisig=representation_case.fk_digisig, primacy=1)
+			representation_case = thumbnailRTI_object
+		except:
+			print ("An exception occurred in fetching representation case for the thumbnail of the RTI", representation_dic)
+
+	representation_dic["thumb"] = connection.thumb
+	representation_dic["representation_thumbnail"] = representation_case.representation_thumbnail_hash 
+	representation_dic["medium"] = connection.medium
+	representation_dic["representation_filename"] = representation_case.representation_filename_hash 
+
+	#image dimensions
+	representation_dic["width"] = representation_case.width
+	representation_dic["height"] = representation_case.height
+
+	#who made it?
+	creator_object = representation_case.fk_contributor_creator
+	representation_dic["contributorcreator_object"] = creator_object
+	try:
+		creator_phrase = creator_object.name_first + " " + creator_object.name_middle + " " + creator_object.name_last
+	except:
+		try:
+			creator_phrase = creator_object.name_first + " " + creator_object.name_last
+		except:
+			try:
+				creator_phrase = creator_object.name_last
+			except:
+				creator_phrase = "N/A"
+	representation_dic["contributorcreator_name"] = creator_phrase.strip()
+
+	#when was it made?
+	representation_dic["datecreated"] = representation_case.representation_datecreated
+
+	#where does it come from?
+	representation_dic["collection_object"] = representation_case.fk_collection
+
+	#what rights?
+	representation_dic["rights_object"] = representation_case.fk_rightsholder
+
+	#what other representations are there of the targetobject?
+	representation_objectset = Representation.objects.filter(fk_digisig=representation_case.fk_digisig).exclude(id_representation=representation_case.id_representation)
+	representation_dic["representation_objectset"] = representation_objectset
+	representation_dic["totalrows"] = representation_objectset.count
+
+	return (representation_dic)
+
+
+def representationmetadata_manifestation(representation_case, representation_dic):
+
+	manifestation = representation_case.fk_manifestation
+	representation_dic["manifestation_object"] = manifestation
+
+	support = manifestation.fk_support
+	representation_dic["support_object"] = support
+
+	part = support.fk_part
+	item = part.fk_item
+	representation_dic["item"] = item
+	event = part.fk_event
+	representation_dic["event"] = event
+
+	face = manifestation.fk_face
+	seal = face.fk_seal
+	representation_dic["seal"] = seal
+
+	individual_object = seal.fk_individual_realizer
+	representation_dic["outname"] = namecompiler(individual_object)
+	representation_dic["individual_object"] = individual_object
+
+	sealdescription_objectset = Sealdescription.objects.select_related('fk_collection').filter(fk_seal = seal.id_seal)
+	representation_dic["sealdescription_objectset"] = sealdescription_objectset
+
+	return(representation_dic)
+
+def representationmetadata_part(representation_case, representation_dic):
+
+	try:
+		part = get_object_or_404(Part, id_part=representation_case.fk_digisig)
+
+	except:
+		print ("An exception occurred in the part record")
+
+	try:			
+		item = part.fk_item
+		representation_dic["item"] = item
+		representation_dic["event"] = part.fk_event
+		representation_dic["main_title"] = str(item.fk_repository) + " " + str (item.shelfmark)
+		representation_dic["repository"] = str(item.fk_repository)
+		representation_dic["shelfmark"] = str (item.shelfmark)
+
+	except:
+		print ("An exception occurred in item and event")
+
+	try:
+		region_objectset = Region.objects.filter( 
+			location__locationname__locationreference__fk_locationstatus=1, 
+			location__locationname__locationreference__fk_event=part.fk_event)
+		representation_dic["region_objectset"] = region_objectset
+	except:
+		print ("An exception occurred in region information")
+
+	return(representation_dic)
+
+def representationmetadata_sealdescription(representation_case, representation_dic):
+
+	#Seal Description
+	if representation_dic["entity_type"] == 3:
+		representation_dic["main_title"] = "Seal Description"
+
+	return(representation_dic)
 
 def sealsearch():
 	manifestation_object = Manifestation.objects.all().select_related(
@@ -216,6 +473,58 @@ def sealsearchmanifestationmetadata(manifestation_object):
 		manifestation_set[e.id_manifestation] = manifestation_dic
 
 	return (manifestation_set)
+
+
+#assembles the list of people credited with a work
+def sealdescription_contributorgenerate(collection, contributor_dic):
+
+	collectioncontributions = Collectioncontributor.objects.filter(
+		fk_collection=collection).select_related(
+		'fk_contributor').select_related(
+		'fk_collectioncontribution')
+
+	contribution_set = {}
+
+	for c in collectioncontributions:
+		contribution = {}
+		contribution['contribution'] = c.fk_collectioncontribution.collectioncontribution 
+		
+		namevalue = ""
+		if c.fk_contributor.name_first:
+			namevalue = namevalue + c.fk_contributor.name_first
+		if c.fk_contributor.name_first:
+			namevalue = namevalue + " " + c.fk_contributor.name_middle
+		if c.fk_contributor.name_first:
+			namevalue = namevalue + " " + c.fk_contributor.name_last
+
+		contribution['name'] = namevalue
+		contribution['uricontributor'] = c.fk_contributor.uricontributor
+		
+		contribution_set[c.fk_contributor] = contribution
+
+	contributor_dic["contributors"] = contribution_set
+
+	return(contributor_dic)
+
+
+def	sealdescription_fetchrepresentation(sealdescription_object, sealdescription_dic):
+
+	try:
+		representation_set = Representation.objects.select_related(
+			'fk_connection').get(
+			fk_digisig=sealdescription_object.id_sealdescription, primacy=1)
+
+	except:
+		print ("no image available for:", sealdescription_object)
+		representation_set = Representation.objects.select_related('fk_connection').get(id_representation=12204474)
+
+	sealdescription_dic["thumb"] = representation_set.fk_connection.thumb
+	sealdescription_dic["medium"] = representation_set.fk_connection.medium
+	sealdescription_dic["representation_thumbnail_hash"] = representation_set.representation_thumbnail_hash
+	sealdescription_dic["representation_filename_hash"] = representation_set.representation_filename_hash 
+	sealdescription_dic["id_representation"] = representation_set.id_representation
+
+	return(sealdescription_dic)
 
 
 def	manifestation_fetchrepresentations(e, manifestation_dic):
@@ -476,3 +785,57 @@ def referenceset_references(individual_object, reference_set):
 		reference_set[r.pk_referenceindividual] = reference_row
 
 	return(reference_set)
+
+
+#externallinks for object
+def externallinkgenerator(digisig_entity_number):
+	externallinkset = []
+	externallinkset = Externallink.objects.filter(internal_entity=digisig_entity_number)
+
+	return (externallinkset)	
+
+
+#info for collections page
+def classdistribution(classset, facecount):
+
+	data2 = []
+	labels2 = []
+	resultdic = {}
+
+	allclasses = Classification.objects.all()
+
+	for case in allclasses:
+		casecount = 0
+		if (case.level == 4):
+			limitset = classset.filter(level4=case.class_number)
+			for l in limitset: 
+				casecount = casecount + l.numcases
+		if (case.level == 3):
+			limitset = classset.filter(level3=case.class_number)
+			for l in limitset:
+				casecount = casecount + l.numcases
+				#print ("++", l.class_name, l.level, l.numcases, case.numcases)
+		if (case.level == 2):
+			limitset = classset.filter(level2=case.class_number)
+			for l in limitset:
+				casecount = casecount + l.numcases
+				#print ("++", l.class_name, l.level, l.numcases, case.numcases)
+		if (case.level == 1):
+			limitset = classset.filter(level1=case.class_number)
+			for l in limitset:
+				casecount = casecount + l.numcases
+				# print ("++", l.class_name, l.level, l.numcases, case.numcases)
+
+		percentagedata = (casecount/facecount)*100
+		if percentagedata > 1:
+			resultdic.update({case.class_name: percentagedata})
+
+	allclasses = allclasses.order_by('class_sortorder')
+	for case in allclasses:
+		if case.class_name in resultdic:
+			classpercentage = resultdic.get(case.class_name)
+			if classpercentage > 1:
+				data2.append(classpercentage)
+				labels2.append(case.class_name)
+
+	return(data2, labels2)
