@@ -9,6 +9,9 @@ from django.db.models import Prefetch
 from django.db.models import Q
 from django.db.models import Count
 from django.db.models import Sum
+# from django.db.models.functions import Concat
+# from django.db.models import CharField
+from django.core import serializers
 
 from .models import *
 from .forms import * 
@@ -56,7 +59,8 @@ def search(request, searchtype):
 	if searchtype == "actors":
 		pagetitle = 'title'
 
-		individual_object = Individual.objects.all().order_by('fk_group__group_name', 'fk_descriptor_name')
+		individual_object = individualsearch()
+		individual_object = individual_object.order_by('fk_group__group_name', 'fk_descriptor_name')
 
 		if request.method == "POST":
 			form = PeopleForm(request.POST)
@@ -100,21 +104,39 @@ def search(request, searchtype):
 		pagecounternext = qpagination + 1
 		pagecounternextnext = qpagination +2		
 
-	# this code prepares the list of links to associated seals for each individual
-		sealindividual = []
-		for e in individual_object:
-			testvalue = e.id_individual
-			testseal = Seal.objects.filter(
-				fk_individual_realizer=testvalue)
 
-			for f in testseal:
-				current_id_seal = f.id_seal
-				sealindividual.append((testvalue, current_id_seal))
+		individual_set = {}
+
+		for i in individual_object:
+			individual_info = {}
+			individual_info['actor_name'] = namecompiler(i)
+			individual_info['id_individual'] = i.id_individual
+
+			individual_set[i.id_individual] = individual_info
+
+		# individual_object = individual_object.annotate(fullname=Concat('fk_group','fk_descriptor_title','fk_descriptor_name','fk_descriptor_prefix1','fk_descriptor_descriptor1',
+		# 	,'fk_separator_1','fk_descriptor_prefix2','fk_descriptor_descriptor2','fk_descriptor_prefix3','fk_descriptor_descriptor3'))
+
+		# print (individual_set)
+
+	# this code prepares the list of links to associated seals for each individual
+		# individualtestlist = individual_object.values_list("id_individual", flat=True)
+		# Seal
+
+		# sealindividual = []
+		# for e in individual_object:
+		# 	testvalue = e.id_individual
+		# 	testseal = Seal.objects.filter(
+		# 		fk_individual_realizer=testvalue)
+
+		# 	for f in testseal:
+		# 		current_id_seal = f.id_seal
+		# 		sealindividual.append((testvalue, current_id_seal))
 
 		context = {
 			'pagetitle': pagetitle,
-			'individual_object': individual_object,
-			'sealindividual': sealindividual,
+			'individual_set': individual_set,
+			#'sealindividual': sealindividual,
 			'totalrows': totalrows,
 			'totaldisplay': totaldisplay,
 			'form': form,
@@ -138,18 +160,18 @@ def search(request, searchtype):
 		series = 0
 		shelfmark = ""
 		searchphrase = ""
-		pagination = 1
+		qpagination = 1
 
 		if request.method == "POST":
 			form = ItemForm(request.POST)
 
 			if form.is_valid():
-				challengeurl(request, searchtype, form)
+				# challengeurl(request, searchtype, form)
 				if form.cleaned_data['repository'].isdigit(): repository = int(form.cleaned_data['repository']) 
 				if form.cleaned_data['series'].isdigit(): series = int(form.cleaned_data['series'])
 				if len(form.cleaned_data['shelfmark']) > 0: shelfmark = form.cleaned_data['shelfmark']
 				if len(form.cleaned_data['searchphrase']) > 0: searchphrase = form.cleaned_data['searchphrase']
-				pagination = int(form.cleaned_data['pagination'])
+				qpagination = int(form.cleaned_data['pagination'])
 
 		else:
 			form = ItemForm()
@@ -161,8 +183,60 @@ def search(request, searchtype):
 		# code prepares the array of series and repositories to pass to the frontend
 		series_object= seriesset()
 
-		itemset, Repositorycases, Seriescases, Shelfmarkcases, Phrasecases, pagecountercurrent, pagecounternext, pagecounternextnext, totaldisplay, totalrows \
-		= itemsearch(repository, series, shelfmark, searchphrase, pagination)
+		# itemset, Repositorycases, Seriescases, Shelfmarkcases, Phrasecases, pagecountercurrent, pagecounternext, pagecounternextnext, totaldisplay, totalrows \
+		# = itemsearch(repository, series, shelfmark, searchphrase, pagination)
+
+		itemset = {}
+		Repositorycases = 0
+		Seriescases = 0
+		Shelfmarkcases = 0
+		Phrasecases = 0
+
+		part_object = Part.objects.all().order_by(
+			"fk_item__fk_repository", "fk_item__fk_series", "fk_item__classmark_number3", "fk_item__classmark_number2", "fk_item__classmark_number1").select_related(
+			'fk_item__fk_repository')
+
+		# take the series in preference to the repository
+
+		if series > 0:
+			part_object = part_object.filter(fk_item__fk_series=series)
+
+		elif repository > 0:
+			part_object = part_object.filter(fk_item__fk_repository=repository)
+
+		else:
+			print ("No repository or series specified")
+
+		if len(shelfmark) > 0:
+			part_object = part_object.filter(fk_item__shelfmark__icontains=shelfmark)
+
+		if len(searchphrase) > 0:
+			part_object = part_object.filter(part_description__icontains=searchphrase)
+
+		part_object, totalrows, totaldisplay, qpagination = defaultpagination(part_object, qpagination)
+		pagecountercurrent = qpagination 
+		pagecounternext = qpagination + 1
+		pagecounternextnext = qpagination +2
+
+		partset = []
+		for p in part_object.object_list:
+			partset.append(p.id_part)
+
+		representation_part = Representation.objects.filter(fk_digisig__in=partset).select_related('fk_connection')
+
+		for i in part_object:
+			part_dic = {}
+			part_dic["id_item"] = i.fk_item.id_item
+			part_dic["shelfmark"] = i.fk_item.shelfmark
+			part_dic["repository"] = i.fk_item.fk_repository.repository_fulltitle
+			itemset[i.id_part] = part_dic
+
+		for r in representation_part:
+			connection = r.fk_connection
+			itemset[r.fk_digisig]["connection"] = connection.thumb
+			itemset[r.fk_digisig]["medium"] = r.representation_filename
+			itemset[r.fk_digisig]["thumb"] = r.representation_thumbnail_hash
+			itemset[r.fk_digisig]["id_representation"] = r.id_representation 
 
 		context = {
 			'pagetitle': pagetitle,
@@ -170,11 +244,11 @@ def search(request, searchtype):
 			'totalrows': totalrows,
 			'totaldisplay': totaldisplay,
 			'form': form,
-			'Repositorycases': Repositorycases,
-			'Seriescases': Seriescases,
-			'Shelfmarkcases': Shelfmarkcases,
+			# 'Repositorycases': Repositorycases,
+			# 'Seriescases': Seriescases,
+			# 'Shelfmarkcases': Shelfmarkcases,
 			'series_object': series_object,
-			'Phrasecases': Phrasecases,
+			# 'Phrasecases': Phrasecases,
 			'pagecountercurrent': pagecountercurrent,
 			'pagecounternext': pagecounternext,
 			'pagecounternextnext': pagecounternextnext,
@@ -249,7 +323,7 @@ def search(request, searchtype):
 
 	if searchtype == "sealdescriptions":
 
-		sealdescription_object = Sealdescription.objects.all().select_related('fk_collection').select_related('fk_seal')
+		sealdescription_object = Sealdescription.objects.all().select_related('fk_collection').select_related('fk_seal').order_by('id_sealdescription')
 		pagetitle = 'Seal Descriptions'
 
 		if request.method == 'POST':
@@ -290,15 +364,9 @@ def search(request, searchtype):
 			qpagination = 1
 
 		sealdescription_object, totalrows, totaldisplay, qpagination = defaultpagination(sealdescription_object, qpagination) 
-
-		# Paginator(sealdescription_object, 10).page(qpagination)
-		# totalrows = sealdescription_object.paginator.count
-		# totaldisplay = str(sealdescription_object.start_index()) + "-" + str(sealdescription_object.end_index())
 		pagecountercurrent = qpagination
 		pagecounternext = qpagination + 1
 		pagecounternextnext = qpagination +2		
-
-		# pagecountercurrent, pagecounternext, pagecounternextnext, totaldisplay, totalrows, sealdescription_object = paginatorJM(qpagination, sealdescription_object)
 
 		context = {
 			'pagetitle': pagetitle,
@@ -333,7 +401,6 @@ def search(request, searchtype):
 
 			form = PlaceForm(request.POST)
 			if form.is_valid():
-				challengeurl(request, searchtype, form)
 				qregion = form.cleaned_data['region']
 				qcounty = form.cleaned_data['county']   
 				qpagination = form.cleaned_data['pagination']
@@ -359,7 +426,11 @@ def search(request, searchtype):
 			qpagination = 1
 
 		placeset = placeset.annotate(count=Count('locationname__locationreference'))
-		pagecountercurrent, pagecounternext, pagecounternextnext, totaldisplay, totalrows, placeset = paginatorJM(qpagination, placeset)
+
+		placeset, totalrows, totaldisplay, qpagination = defaultpagination(placeset, qpagination) 
+		pagecountercurrent = qpagination
+		pagecounternext = qpagination + 1
+		pagecounternextnext = qpagination +2		
 
 		if len(placeset) > 0:
 			place_dict, center_long, center_lat = mapgenerator2(placeset)
@@ -572,7 +643,8 @@ def actor_page(request, digisig_entity_number):
 
 	starttime = time()
 
-	individual_object = individualsearch(digisig_entity_number)
+	individual_object = individualsearch()
+	individual_object = individual_object.get(id_individual=digisig_entity_number)
 
 	pagetitle= namecompiler(individual_object)
 
@@ -584,7 +656,7 @@ def actor_page(request, digisig_entity_number):
 
 	#hack to deal with cases where there are too many seals for the form to handle
 	qpagination = 1
-	manifestation_object, totalrows, totaldisplay, qpagination = sealsearchpagination(manifestation_object, qpagination)
+	manifestation_object, totalrows, totaldisplay, qpagination = defaultpagination(manifestation_object, qpagination)
 
 	manifestation_set={}
 

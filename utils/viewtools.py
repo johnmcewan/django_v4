@@ -2,8 +2,60 @@ from digisig.models import *
 from django.shortcuts import get_object_or_404
 from django.db.models import Prefetch
 from django.core.paginator import Paginator
+from django.core import serializers
 
+import statistics
 from time import time
+
+
+
+def mapgenerator2(location_object):
+	center_lat = []
+	center_long = []
+
+	mapdic = {"type": "FeatureCollection"}
+	properties = {}
+	geometry = {}
+	location = {}
+	placelist = []
+	lat_values = []
+	long_values = []
+
+	for loc in location_object:
+		value1 = loc.id_location
+		value2 = loc.location
+		value3 = loc.count
+		value4 = loc.longitude
+		value5 = loc.latitude
+
+		if type(loc.longitude) == int or type(loc.longitude) == float:
+			lat_values.append(loc.latitude)
+		if type(loc.latitude) == int or type(loc.latitude) == float:
+			long_values.append(loc.longitude)
+
+		popupcontent = '<a href="entity/' + str(value1) + '">' + str(value2) + '</a>'
+
+		if value3 > 0:
+			popupcontent = popupcontent + ' ' + str(value3)
+
+		properties = {"id_location": value1, "location": value2, "count": value3, "popupContent": popupcontent}
+		geometry = {"type": "Point", "coordinates": [value4, value5]}
+		location = {"type": "Feature", "properties": properties, "geometry": geometry}
+		placelist.append(location)
+
+	mapdic["features"] = placelist
+
+	center_long = statistics.median(long_values)
+	center_lat = statistics.median(lat_values)
+
+	return(mapdic, center_long, center_lat)
+
+
+
+def seriesset():
+	series_object = serializers.serialize('json', Series.objects.all(), fields=('pk_series','fk_repository'))
+
+	return (series_object)
 
 
 def mapgenerator3(regiondisplayset):
@@ -141,10 +193,8 @@ def collectiondata(collectionid, sealcount):
 
 	return(collectiondatapackage)
 
-
-
-
-def individualsearch(digisig_entity_number):
+## a function to apply this complex filter to actor searches
+def individualsearch():
 
 	individual_object = Individual.objects.select_related(
 	'fk_group').select_related(
@@ -158,7 +208,7 @@ def individualsearch(digisig_entity_number):
 	'fk_descriptor_prefix3').select_related(
 	'fk_descriptor_descriptor3').select_related(
 	'fk_group__fk_group_order').select_related(
-	'fk_group__fk_group_class').get(id_individual=digisig_entity_number)
+	'fk_group__fk_group_class')
 
 	return(individual_object)
 
@@ -688,15 +738,20 @@ def sealinfo_classvalue (face_case):
 def namecompiler(individual_object):
 
 	namevariable = ''
-	if (individual_object.fk_group != None): namevariable = individual_object.fk_group.group_name
-	if (individual_object.fk_descriptor_title != None): namevariable = namevariable + " " + individual_object.fk_descriptor_title.descriptor_modern
-	if (individual_object.fk_descriptor_name != None): namevariable = namevariable + " " + individual_object.fk_descriptor_name.descriptor_modern
-	if (individual_object.fk_descriptor_prefix1 != None): namevariable = namevariable + " " + individual_object.fk_descriptor_prefix1.prefix_english
-	if (individual_object.fk_descriptor_descriptor1 != None): namevariable = namevariable + " " + individual_object.fk_descriptor_descriptor1.descriptor_modern
-	if (individual_object.fk_descriptor_prefix2 != None): namevariable = namevariable + " " + individual_object.fk_descriptor_prefix2.prefix_english
-	if (individual_object.fk_descriptor_descriptor2 != None): namevariable = namevariable + " " + individual_object.fk_descriptor_descriptor2.descriptor_modern
-	if (individual_object.fk_descriptor_prefix3 != None): namevariable = namevariable + " " + individual_object.fk_descriptor_prefix3.prefix_english
-	if (individual_object.fk_descriptor_descriptor3 != None): namevariable = namevariable + " " + individual_object.fk_descriptor_descriptor3.descriptor_modern
+	try:
+		if (individual_object.fk_group != None): namevariable = individual_object.fk_group.group_name
+		if (individual_object.fk_descriptor_title != None): namevariable = namevariable + " " + individual_object.fk_descriptor_title.descriptor_modern
+		if (individual_object.fk_descriptor_name != None): namevariable = namevariable + " " + individual_object.fk_descriptor_name.descriptor_modern
+		if (individual_object.fk_descriptor_prefix1 != None): namevariable = namevariable + " " + individual_object.fk_descriptor_prefix1.prefix_english
+		if (individual_object.fk_descriptor_descriptor1 != None): namevariable = namevariable + " " + individual_object.fk_descriptor_descriptor1.descriptor_modern
+		if (individual_object.fk_descriptor_prefix2 != None): namevariable = namevariable + " " + individual_object.fk_descriptor_prefix2.prefix_english
+		if (individual_object.fk_descriptor_descriptor2 != None): namevariable = namevariable + " " + individual_object.fk_descriptor_descriptor2.descriptor_modern
+		if (individual_object.fk_descriptor_prefix3 != None): namevariable = namevariable + " " + individual_object.fk_descriptor_prefix3.prefix_english
+		if (individual_object.fk_descriptor_descriptor3 != None): namevariable = namevariable + " " + individual_object.fk_descriptor_descriptor3.descriptor_modern
+
+	except:
+		print ("problem with name")
+
 	nameout = namevariable.strip()
 
 	return(nameout)
