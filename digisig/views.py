@@ -50,6 +50,454 @@ def index(request):
 	return HttpResponse(template.render(context, request))
 
 
+#### ABOUT
+def about(request):
+
+	pagetitle = 'title'
+	context = {
+		'pagetitle': pagetitle,
+	}
+	template = loader.get_template('digisig/about.html')					
+	return HttpResponse(template.render(context, request))
+
+
+
+
+
+########################### Discover ############################
+
+def discover(request, discovertype):
+
+	if discovertype == "map":
+
+		pagetitle = 'Map'
+
+		#default
+		qcollection= 30000287
+		qmapchoice = 1
+		mapdic = []
+		regiondisplayset = []
+		region_dict = []
+		mapcounties = []
+		location_dict = []
+
+		#adjust values if form submitted
+		if request.method == 'POST':
+			form = CollectionForm(request.POST)
+			
+			if form.is_valid():
+				collectionstr = form.cleaned_data['collection']
+				#make sure values are not empty then try and convert to ints
+				if len(collectionstr) > 0:
+					qcollection = int(collectionstr)
+
+				mapchoicestr = form.cleaned_data['mapchoice']
+				if len(mapchoicestr) > 0:
+					qmapchoice = int(mapchoicestr)
+
+		#map points
+		if (qmapchoice == 1):
+			if (qcollection == 30000287):
+				locationset = Location.objects.filter(
+					Q(locationname__locationreference__fk_locationstatus=1)).annotate(count=Count('locationname__locationreference__fk_event__part__fk_part__fk_support'))
+
+			else:
+				#data for location map
+				locationset = Location.objects.filter(
+					Q(locationname__locationreference__fk_event__part__fk_part__fk_support__fk_face__fk_seal__sealdescription__fk_collection=qcollection)).annotate(count=Count('locationname__locationreference__fk_event__part__fk_part__fk_support'))
+
+			location_dict, center_long, center_lat = mapgenerator2(locationset)
+
+		#map counties
+		elif (qmapchoice == 2):
+			#if collection is set then limit the scope of the dataset
+			if (qcollection == 30000287):
+				#data for map counties
+				placeset = Region.objects.filter(fk_locationtype=4, 
+					location__locationname__locationreference__fk_locationstatus=1
+					).annotate(numplaces=Count('location__locationname__locationreference__fk_event__part__fk_part__fk_support')) 
+
+			else:
+				#data for map counties
+				placeset = Region.objects.filter(fk_locationtype=4, 
+					location__locationname__locationreference__fk_locationstatus=1, 
+					location__locationname__locationreference__fk_event__part__fk_part__fk_support__fk_face__fk_seal__sealdescription__fk_collection=qcollection
+					).annotate(numplaces=Count('location__locationname__locationreference'))
+
+			## data for colorpeth map
+			mapcounties1 = get_object_or_404(Jsonstorage, id_jsonfile=1)
+			mapcounties = json.loads(mapcounties1.jsonfiletxt)
+
+			for i in mapcounties:
+				if i == "features":
+					for b in mapcounties[i]:
+						j = b["properties"]
+						countyvalue = j["HCS_NUMBER"]
+						countyname = j["NAME"]
+						numberofcases = placeset.filter(fk_his_countylist=countyvalue)
+						for i in numberofcases:
+							j["cases"] = i.numplaces
+
+		#map regions
+		else:
+			if (qcollection == 30000287):
+				regiondisplayset = Regiondisplay.objects.filter(region__location__locationname__locationreference__fk_locationstatus=1
+					).annotate(numregions=Count('region__location__locationname__locationreference__fk_event__part__fk_part__fk_support')) 
+
+			else:
+				#data for region map 
+				regiondisplayset = Regiondisplay.objects.filter( 
+					region__location__locationname__locationreference__fk_locationstatus=1, 
+					region__location__locationname__locationreference__fk_event__part__fk_part__fk_support__fk_face__fk_seal__sealdescription__fk_collection=qcollection
+					).annotate(numregions=Count('region__location__locationname__locationreference'))
+
+			region_dict = mapgenerator3(regiondisplayset)
+
+		form = CollectionForm(initial={'collection': qcollection, 'mapchoice': qmapchoice})		
+
+		template = loader.get_template('digisig/map.html')
+		context = {
+			'pagetitle': pagetitle,
+			'location_dict': location_dict,
+			'counties_dict': mapcounties,
+			'region_dict': region_dict,
+			'form': form,
+			}
+
+		return HttpResponse(template.render(context, request))
+
+
+
+
+########################### Exhibit #########################
+
+def exhibit(request):
+	starttime = time()
+	pagetitle = 'title'
+
+	# create the set of RTIs
+	representation_set = {}
+
+	# select all representations that are RTIs....
+	representation_object = Representation.objects.filter(fk_representation_type=2)
+
+###### this is new code August 8th
+	for r in representation_object:
+		representation_dic = {}
+
+		try:
+			thumbnailRTI_object = get_object_or_404(Representation, fk_digisig=r.fk_digisig, primacy=1)
+
+		except:
+			thumbnailRTI_object = r
+
+		representation_dic["thumb"] = thumbnailRTI_object.fk_connection.thumb
+		representation_dic["representation_thumbnail"] = thumbnailRTI_object.representation_thumbnail_hash 
+		representation_dic["medium"] = thumbnailRTI_object.fk_connection.medium
+		representation_dic["representation_filename"] = thumbnailRTI_object.representation_filename_hash
+		representation_dic["id_num"] = str(r.id_representation)
+		representation_set[r.id_representation] = representation_dic
+
+	context = {
+	'pagetitle': pagetitle,
+	'representation_set': representation_set,
+	}
+
+	template = loader.get_template('digisig/exhibit.html')
+
+	print("Compute Time:", time()-starttime)					
+	return HttpResponse(template.render(context, request))
+
+
+
+############################ Analyze #############################
+
+def analyze(request, analysistype):
+
+	print (analysistype)
+
+	if analysistype == "time":
+
+		pagetitle = 'Time'
+
+		#default
+		qcollection= 30000287
+		qmapchoice = 1
+		qtimechoice = 7
+		qclasschoice = 1
+		qsealtypechoice = 4
+		mapdic = []
+		regiondisplayset = []
+		region_dict = []
+		mapcounties = []
+		location_dict = []
+
+		#adjust values if form submitted
+		if request.method == 'POST':
+			form = CollectionForm(request.POST)
+			
+			if form.is_valid():
+				collectionstr = form.cleaned_data['collection']
+				#make sure values are not empty then try and convert to ints
+				if len(collectionstr) > 0:
+					qcollection = int(collectionstr)
+
+				mapchoicestr = form.cleaned_data['mapchoice']
+				if len(mapchoicestr) > 0:
+					qmapchoice = int(mapchoicestr)
+
+				timechoicestr = form.cleaned_data['timechoice']
+				if len(timechoicestr) > 0:
+					qtimechoice = int(timechoicestr)
+
+				sealtypechoicestr = form.cleaned_data['sealtypechoice']
+				if len(sealtypechoicestr) > 0:
+					qsealtypechoice = int(sealtypechoicestr)
+
+		#map points
+		totalcases = 0
+
+		#the queries deal with variations in the data differently -- undetermined locations, or ones to regions, won't show on all maps
+		#to post correct totals, need to run query separately (which is inefficient)
+
+		if (qcollection == 30000287):
+			manifestationset = Manifestation.objects.all()
+
+		else:
+			manifestationset = Manifestation.objects.filter(fk_face__fk_seal__sealdescription__fk_collection=qcollection)
+
+		if (qtimechoice > 0):
+			manifestationset = manifestationset.filter(fk_face__fk_seal__fk_timegroupc=qtimechoice)
+
+		totalcasesfromperiod = len(manifestationset)
+
+		if (qsealtypechoice > 0):
+			manifestationset = manifestationset.filter(fk_face__fk_seal__fk_sealtype=qsealtypechoice)
+
+		totalcases = len(manifestationset)
+
+			# for m in manifestationset:
+			# 	locationvalue = Location.objects.filter(
+			# 		Q(locationname__locationreference__fk_locationstatus=1),
+			# 		Q(locationname__locationreference__fk_event__part__fk_part__fk_support=m.id_manifestation))
+			# 	print (locationvalue)
+
+		if (qmapchoice == 1):
+
+			if (qcollection == 30000287):
+				locationset = Location.objects.filter(
+					Q(locationname__locationreference__fk_locationstatus=1),
+					Q(locationname__locationreference__fk_event__part__fk_part__fk_support__fk_face__fk_seal__fk_timegroupc=qtimechoice),
+					Q(locationname__locationreference__fk_event__part__fk_part__fk_support__fk_face__fk_seal__fk_sealtype=qsealtypechoice)
+					).annotate(count=Count('locationname__locationreference__fk_event__part__fk_part__fk_support'))
+
+			else:
+				locationset = Location.objects.filter(
+					Q(locationname__locationreference__fk_event__part__fk_part__fk_support__fk_face__fk_seal__sealdescription__fk_collection=qcollection),
+					Q(locationname__locationreference__fk_locationstatus=1),
+					Q(locationname__locationreference__fk_event__part__fk_part__fk_support__fk_face__fk_seal__fk_timegroupc=qtimechoice),
+					Q(locationname__locationreference__fk_event__part__fk_part__fk_support__fk_face__fk_seal__fk_sealtype=qsealtypechoice)
+					).annotate(count=Count('locationname__locationreference__fk_event__part__fk_part__fk_support'))
+
+			if (totalcases > 0):	
+				location_dict, center_long, center_lat = mapgenerator2(locationset)
+
+			representedcases = totalcases
+
+		#map counties
+		elif (qmapchoice == 2):
+			#if collection is set then limit the scope of the dataset
+			if (qcollection == 30000287):
+				#data for map counties
+				placeset = Region.objects.filter(fk_locationtype=4, 
+					location__locationname__locationreference__fk_locationstatus=1,
+					location__locationname__locationreference__fk_event__part__fk_part__fk_support__fk_face__fk_seal__fk_timegroupc=qtimechoice,
+					location__locationname__locationreference__fk_event__part__fk_part__fk_support__fk_face__fk_seal__fk_sealtype=qsealtypechoice
+					).annotate(numplaces=Count('location__locationname__locationreference__fk_event__part__fk_part__fk_support')) 
+
+			else:
+				#data for map counties
+				placeset = Region.objects.filter(fk_locationtype=4, 
+					location__locationname__locationreference__fk_locationstatus=1,
+					location__locationname__locationreference__fk_event__part__fk_part__fk_support__fk_face__fk_seal__fk_timegroupc=qtimechoice,
+					location__locationname__locationreference__fk_event__part__fk_part__fk_support__fk_face__fk_seal__fk_sealtype=qsealtypechoice, 
+					location__locationname__locationreference__fk_event__part__fk_part__fk_support__fk_face__fk_seal__sealdescription__fk_collection=qcollection
+					).annotate(numplaces=Count('location__locationname__locationreference'))
+
+			placecases = 0
+			for p in placeset:
+				placecases = placecases + p.numplaces
+
+			representedcases = placecases
+
+
+			## data for colorpeth map
+			mapcounties1 = get_object_or_404(Jsonstorage, id_jsonfile=1)
+			mapcounties = json.loads(mapcounties1.jsonfiletxt)
+
+			for i in mapcounties:
+				if i == "features":
+					for b in mapcounties[i]:
+						j = b["properties"]
+						countyvalue = j["HCS_NUMBER"]
+						countyname = j["NAME"]
+						numberofcases = placeset.filter(fk_his_countylist=countyvalue)
+						for i in numberofcases:
+							j["cases"] = i.numplaces
+
+		#map regions
+		else:
+			if (qcollection == 30000287):
+				regiondisplayset = Regiondisplay.objects.filter(region__location__locationname__locationreference__fk_locationstatus=1,
+					region__location__locationname__locationreference__fk_event__part__fk_part__fk_support__fk_face__fk_seal__fk_timegroupc=qtimechoice,
+					region__location__locationname__locationreference__fk_event__part__fk_part__fk_support__fk_face__fk_seal__fk_sealtype=qsealtypechoice
+					).annotate(numregions=Count('region__location__locationname__locationreference__fk_event__part__fk_part__fk_support')) 
+
+			else:
+				#data for region map 
+				regiondisplayset = Regiondisplay.objects.filter( 
+					region__location__locationname__locationreference__fk_locationstatus=1,
+					region__location__locationname__locationreference__fk_event__part__fk_part__fk_support__fk_face__fk_seal__fk_timegroupc=qtimechoice,
+					region__location__locationname__locationreference__fk_event__part__fk_part__fk_support__fk_face__fk_seal__fk_sealtype=qsealtypechoice, 
+					region__location__locationname__locationreference__fk_event__part__fk_part__fk_support__fk_face__fk_seal__sealdescription__fk_collection=qcollection
+					).annotate(numregions=Count('region__location__locationname__locationreference'))
+
+			region_dict = mapgenerator3(regiondisplayset)
+
+			regioncases = 0
+			for r in regiondisplayset:
+				regioncases = regioncases + r.numregions
+
+			representedcases = regioncases
+
+
+		if totalcases > 0:
+			percenttotal = (representedcases/totalcases)
+		else:
+			percenttotal = "n/a" 
+
+		form = CollectionForm(initial={'collection': qcollection, 'mapchoice': qmapchoice, 'timechoice': qtimechoice, 'sealtypechoice': qsealtypechoice})
+
+		context = {
+			'pagetitle': pagetitle,
+			'location_dict': location_dict,
+			'counties_dict': mapcounties,
+			'region_dict': region_dict,
+			'totalcases': totalcases,
+			'totalcasesfromperiod': totalcasesfromperiod,
+			'representedcases': representedcases,
+			'percenttotal': percenttotal,
+			'form': form,
+			}
+
+		template = loader.get_template('digisig/analysis_time.html')
+		return HttpResponse(template.render(context, request))
+
+###### Dates ##########
+	if analysistype == "dates":
+
+		#default values
+		pagetitle = 'dates'
+		resulttext = ''
+		resultrange= ''
+		decisiontreetext = ''
+		decisiontreedic = ''
+		finalnodevalue = ''
+		labels = []
+		data1 = []
+		representationset = []
+		manifestation_set = []
+
+		if request.method == "POST":
+			form = DateForm(request.POST)
+			if form.is_valid():
+				qclass = form.cleaned_data['classname']
+				qshape = form.cleaned_data['shape']	
+				qvertical = form.cleaned_data['face_vertical']
+				qhorizontal = form.cleaned_data['face_horizontal']
+				# qpagination = form.cleaned_data['pagination']
+
+				if qclass.isdigit():
+					if int(qclass) > 0:
+						qclass = int(qclass)
+						class_object = get_object_or_404(Classification, id_class=qclass)
+						print (class_object)
+
+				if qshape.isdigit():
+					qshape = int(qshape)
+					if int(qshape) > 0:
+						qshape = int(qshape)
+						shape_object = get_object_or_404(Shape, pk_shape=qshape)
+						print (shape_object)
+
+				if qvertical > 0:
+					if qhorizontal > 0:
+						resultarea = faceupdater(qshape, qvertical, qhorizontal)
+
+				# fetch the current model
+				mlmodel = mlmodelget()
+				# pass model and features of seal to function that predicts the date
+				result, result1, resulttext, finalnodevalue, df = mlpredictcase(class_object, shape_object, resultarea, mlmodel)
+
+				# get information about decision path
+				decisionpathout, decisiontreedic = mlshowpath(mlmodel, df)
+
+				# print ("result", result)
+				# print ("result1", result1)
+				# print ("resulttext", resulttext)
+				# print ("finalnodevalue", finalnodevalue)
+				# print ("decisionpathout", decisionpathout)
+				# print ("decisiontreedic", decisiontreedic)
+
+				#find other seals assigned to this decision tree group
+				timegroupcases = Seal.objects.filter(date_prediction_node=finalnodevalue).order_by("date_origin")
+
+				resultrange = getquantiles(timegroupcases)
+
+				### experimental method of generating period bands 2023/11/11
+				# timelist = []
+				# for t in timegroupcases:
+				# 	timelist.append(int(t.date_origin))
+				# quantileset = statistics.quantiles(timelist, n=6)
+				# resultrange = "c." + str(int(quantileset[0])) + "-" + str(int(quantileset[4]))
+
+				labels, data1 = temporaldistribution(timegroupcases)
+
+				#identify a subset of seal to display as suggestions
+				seal_set = timegroupcases.filter(face__fk_shape=shape_object).filter(face__fk_class=class_object)[:10].values("id_seal")
+				manifestation_possibilities = Manifestation.objects.filter(fk_face__fk_seal__in=seal_set)[:10]				
+				manifestation_set = manifestationmetadata(manifestation_possibilities)
+
+				#representationset = mlsealselectinfo(subset)
+
+				form = DateForm(request.POST)
+
+		else:
+			form = DateForm()
+
+		# print (decisiontreetext)
+		# print (type(decisiontreetext))
+		# print (decisiontreetext[1])
+
+		context = {
+			'pagetitle': pagetitle,
+			'form': form,
+			'resulttext': resulttext,
+			'resultrange': resultrange,
+			'labels': labels,
+			'data1': data1,
+			'representationset': representationset,
+			'manifestation_set': manifestation_set,
+			'decisiontreedic': decisiontreedic,
+			'finalnodevalue': finalnodevalue,
+			}
+
+		template = loader.get_template('digisig/analysis_date.html')
+		return HttpResponse(template.render(context, request))
+
+
+
+
 #################### Search #########################
 def search(request, searchtype):
 	starttime = time()
@@ -463,6 +911,55 @@ def information(request, infotype):
 
 	print (infotype)
 
+	if infotype == "changelog":
+		pagetitle = 'title'
+
+		change_object = Changes.objects.all().order_by('-change_date')
+		context = {
+			'pagetitle': pagetitle,
+			'change_object': change_object,
+		}
+
+		template = loader.get_template('digisig/change.html')					
+		return HttpResponse(template.render(context, request))
+
+
+############## Help ###############
+	if infotype == "help":
+		pagetitle = 'title'
+
+		template = loader.get_template('digisig/help.html')
+		class_object = Terminology.objects.filter(
+			term_deprecated=0).order_by('term_name')
+		shape_object = Terminology.objects.filter(digisig_column='shape').order_by('term_name')
+		nature_object = Terminology.objects.filter(digisig_column='nature').order_by('term_name')
+
+
+		print (class_object, shape_object)
+		context = {
+			'pagetitle': pagetitle,
+			'class_object': class_object,
+			'shape_object': shape_object,
+			'nature_object': nature_object,
+			}
+		return HttpResponse(template.render(context, request))
+
+
+
+
+########################### Contributors #########################
+	if infotype == "contributors":
+
+		pagetitle = 'title'
+		context = {
+			'pagetitle': pagetitle,
+		}
+
+		template = loader.get_template('digisig/contributors.html')					
+		return HttpResponse(template.render(context, request))
+
+
+
 ########################### Collections #########################
 	if infotype == "collections":
 
@@ -611,6 +1108,209 @@ def information(request, infotype):
 			}
 		template = loader.get_template('digisig/terminology.html')                    
 		return HttpResponse(template.render(context, request))
+
+
+################################ ML ######################################
+
+	if infotype == "machinelearning_info":
+
+		start_time = datetime.now()
+
+		pagetitle = 'ML'
+
+		time1 = gettime(start_time)
+
+		url = os.path.join(settings.STATIC_ROOT, 'ml/ml_faceobjectset')
+		with open(url, 'rb') as file:	
+			face_objectset = pickle.load(file)
+
+		#face_objectset = mltrainset()
+
+		time1b = gettime(start_time)
+
+		facecount= face_objectset.count()
+
+		time1c = gettime(start_time)
+
+		## data for class distribution
+		data2, labels2 = classdistributionv2(face_objectset)
+
+		time2 = gettime(start_time)
+
+		## data for temporal distribution
+		seallist = face_objectset.values_list("fk_seal", flat=True)
+		time2a = gettime(start_time)
+		sealset = Seal.objects.filter(id_seal__in=seallist)
+		time2b = gettime(start_time)
+		data3, labels3 = datedistribution(sealset)
+
+		data3 = data3[:6]
+		labels3 = labels3[:6]
+
+		time3 = gettime(start_time)
+
+		## data for spatial distribution
+		regiondisplayset = Regiondisplay.objects.filter(
+			region__location__locationname__locationreference__fk_locationstatus=1,
+			region__location__locationname__locationreference__fk_event__part__fk_part__fk_support__fk_face__in=face_objectset
+			).annotate(numregions=Count('region__location__locationname__locationreference'))
+
+		region_dict = mapgenerator3(regiondisplayset)
+
+		time4 = gettime(start_time)
+
+		## data for actor distribution
+		printgroupset = Printgroup.objects.annotate(numcases=Count('fk_printgroup', filter=Q(fk_printgroup__face__in=face_objectset))).order_by('printgroup_order')
+		data5 = []
+		labels5 = []
+
+
+		for g in printgroupset:
+			if (g.numcases > 0):
+				percentagedata = (g.numcases/facecount)*100 
+				# if percentagedata > 1:
+				data5.append(percentagedata)
+				labels5.append(g.printgroup)
+
+
+		time5 = gettime(start_time)
+
+		print (time1, time1b, time1c, time2, time2a, time2b, time3, time4, time5)
+
+		template = loader.get_template('digisig/machinelearning_info.html')
+
+		loadtime = gettime(start_time)
+
+		context = {
+			'pagetitle': pagetitle,
+			'face_objectset': face_objectset,
+			'facenumbercount': facecount,
+			'labels2': labels2,
+			'data2': data2,
+			'data3': data3,
+			'labels3': labels3,
+			'region_dict': region_dict,
+			'data5': data5,
+			'labels5': labels5,
+			'loadtime': loadtime,
+			}
+
+		return HttpResponse(template.render(context, request))
+
+
+	if infotype == "machinelearning":
+
+		pagetitle = 'ML'
+
+		form = MLpredictionForm(initial={'classification': 10000487})
+		qcollection = 30000047
+		qclassification = 10000487
+
+		#adjust values if form submitted
+		if request.method == 'POST':
+			form = MLpredictionForm(request.POST)
+
+			if form.is_valid():
+				qclassification = int(form.cleaned_data['classification'])
+				qcollection = int(form.cleaned_data['collection2'])
+
+		seal_set = Seal.objects.filter(fk_sealsealdescription__fk_collection=qcollection).filter(fk_seal_face__fk_class=qclassification)
+
+		data1 = []
+		data2 = []
+		labels = []
+		event_seal = []
+
+		if len(seal_set) > 0:
+			for s in seal_set:
+
+				### 1/7/2024 -- attempting to put human readable labels -- not working yet -- javascript fails on string with quotes
+				sealdescription_entry = Sealdescription.objects.get(Q(fk_collection=qcollection) & Q(fk_seal=s.id_seal))
+
+				event_seal = Event.objects.get(part__fk_part__fk_support__fk_face__fk_seal=s.id_seal)
+
+				try:
+					start = event_seal.repository_startdate
+					end = event_seal.repository_enddate
+					starty = start.year
+					endy = end.year
+
+					try:
+						start2 = event_seal.startdate
+						end2 = event_seal.enddate
+
+						if start2.year > 0 :
+							data1.append([starty, endy])
+							# data2.append(liney)
+							data2.append([start2.year, end2.year])
+							#labels.append(event_seal.pk_event)
+							labels.append(s.id_seal)
+
+					except:
+
+						print ("fail2", event_seal)
+
+					if starty > 1500:
+						print ("fail", event_seal, start, end, starty, endy, start2, end2)
+
+				except:
+
+					print ("fail1", event_seal)
+
+						# try:
+						# 	labels.append(sealdescription_entry.sealdescription_identifier)
+						# except:
+						# 	labels.append(s.id_seal)
+
+				# try:
+				# 	event_seal = Event.objects.get(part__fk_part__fk_support__fk_face__fk_seal=s.id_seal)
+				# 	start = event_seal.repository_startdate
+				# 	end = event_seal.repository_enddate
+				# 	# line = event_seal.startdate
+				# 	start2 = event_seal.startdate
+				# 	end2 = event_seal.enddate
+
+				# 	try:
+				# 		starty = start.year
+				# 		endy = end.year
+				# 		# liney = line.year
+
+				# 		data1.append([starty, endy])
+				# 		# data2.append(liney)
+				# 		data2.append([start2.year, end2.year])
+				# 		#labels.append(event_seal.pk_event)
+				# 		labels.append(s.id_seal)
+
+				# 		# try:
+				# 		# 	labels.append(sealdescription_entry.sealdescription_identifier)
+				# 		# except:
+				# 		# 	labels.append(s.id_seal)
+				# 	except:
+				# 		print ("fault")
+
+
+				# 	if (s.id.seal == 10413111):
+				# 		print ("case found") 
+				# 		print (start, end, start2, end2, starty, endy)
+
+				# except:
+				# 	print ("no event", s.id_seal)
+
+		template = loader.get_template('digisig/machinelearning.html')
+
+		context = {
+			'pagetitle': pagetitle,
+			'event_object': event_seal,
+			'labels': labels,
+			'data1': data1,
+			'data2': data2,
+			'form': form,
+			}
+
+		return HttpResponse(template.render(context, request))
+
+
+
 
 
 ############################## ENTITY #########################
@@ -1076,7 +1776,7 @@ def place_page(request, digisig_entity_number):
 
 	#note that is should pick up cases where manifestations are associated with secondary places?
 	manifestation_object = manifestation_object.filter(
-			fk_support__fk_part__fk_event__locationreference__fk_locationname__fk_location__id_location=digisig_entity_number).distinct()
+			fk_support__fk_part__fk_event__fk_event_locationreference__fk_locationname__fk_location__id_location=digisig_entity_number).distinct()
 
 	qpagination = 1
 
@@ -1092,7 +1792,7 @@ def place_page(request, digisig_entity_number):
 		form = PageCycleForm()
 
 	## these pagecounters are going to break on pages that are small lists
-	manifestation_object, totalrows, totaldisplay, qpagination = sealsearchpagination(manifestation_object, qpagination)
+	manifestation_object, totalrows, totaldisplay, qpagination = defaultpagination(manifestation_object, qpagination)
 	pagecountercurrent = qpagination 
 	pagecounternext = qpagination + 1
 	pagecounternextnext = qpagination +2

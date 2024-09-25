@@ -163,3 +163,31 @@ class PlaceForm(forms.Form):
 	region = forms.ChoiceField(choices=regionoptions, required=False)
 	location_name = forms.CharField(label='location_name', max_length=100, required=False, widget=forms.TextInput(attrs={'placeholder': 'Example: Bruges'}))	
 	pagination = forms.IntegerField(initial=1, widget=forms.HiddenInput)
+
+
+# Form for Date search
+
+class DateForm(forms.Form):
+	classname = forms.ChoiceField(label='Digisig Class', choices=classname_options, required=True)
+	shape = forms.ChoiceField(choices=shape_options, required=True, initial={'': 'None'})
+	face_vertical = forms.IntegerField(label='vertical',required=True)
+	face_horizontal = forms.IntegerField(label='horizontal',required=True)	
+
+
+#Form for ML date prediction analysis
+
+classification_options = []
+collection2_options = []
+
+## this is a very bad way of selecting the classifications in use -- 2023_9_23
+for e in Classification.objects.exclude(class_name__startswith="z").exclude(class_name__startswith="Z").order_by('class_sortorder'):
+	classification_options.append((e.id_class, e.class_name))
+
+for e in Collection.objects.filter(id_collection=30000047).order_by('id_collection'):
+	collection2_options.append((e.id_collection, e.collection_title))
+	#### forcing addition of Linenthal --- 2023_9_26
+	collection2_options.append((30000337, 'Linenthal, Schoyen Collection'))
+
+class MLpredictionForm(forms.Form):
+	classification = forms.ChoiceField(choices=classification_options, required=False)
+	collection2 = forms.ChoiceField(choices=collection2_options, required=False)
