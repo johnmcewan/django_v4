@@ -20,6 +20,8 @@ from utils.generaltools import *
 from utils.viewtools import *
 
 import json
+import os
+import pickle
 
 # Table of Contents
 	# index
@@ -449,7 +451,15 @@ def analyze(request, analysistype):
 						resultarea = faceupdater(qshape, qvertical, qhorizontal)
 
 				# fetch the current model
-				mlmodel = mlmodelget()
+				# mlmodel = mlmodelget()
+
+				#url = os.path.join(settings.STATIC_ROOT, 'ml/ml_faceobjectset')
+
+				url = os.path.join(settings.BASE_DIR, 'digisig\\static\\ml\\ml_tree')
+
+				with open(url, 'rb') as file:	
+					mlmodel = pickle.load(file)
+
 				# pass model and features of seal to function that predicts the date
 				result, result1, resulttext, finalnodevalue, df = mlpredictcase(class_object, shape_object, resultarea, mlmodel)
 
@@ -478,7 +488,7 @@ def analyze(request, analysistype):
 				labels, data1 = temporaldistribution(timegroupcases)
 
 				#identify a subset of seal to display as suggestions
-				seal_set = timegroupcases.filter(face__fk_shape=shape_object).filter(face__fk_class=class_object)[:10].values("id_seal")
+				seal_set = timegroupcases.filter(fk_seal_face__fk_shape=shape_object).filter(fk_seal_face__fk_class=class_object)[:10].values("id_seal")
 				manifestation_possibilities = Manifestation.objects.filter(fk_face__fk_seal__in=seal_set)[:10]				
 				manifestation_set = manifestationmetadata(manifestation_possibilities)
 
@@ -1134,8 +1144,6 @@ def information(request, infotype):
 		url = os.path.join(settings.STATIC_ROOT, 'ml/ml_faceobjectset')
 		with open(url, 'rb') as file:	
 			face_objectset = pickle.load(file)
-
-		#face_objectset = mltrainset()
 
 		time1b = gettime(start_time)
 

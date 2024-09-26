@@ -5,7 +5,359 @@ from django.core.paginator import Paginator
 from django.core import serializers
 
 import statistics
+import math
+import os
+import pandas as pd 
+
+from django.conf import settings
+
 from time import time
+
+
+def getquantiles(timegroupcases):
+
+	timelist = []
+	for t in timegroupcases:
+
+		try:
+			timelist.append(int(t.date_origin))
+
+		except:
+			print ("exception", t)
+
+	quantileset = statistics.quantiles(timelist, n=6)
+
+	print ("timelist", timelist)
+	print ("quantileset", quantileset)
+
+	resultrange = "c." + str(int(quantileset[0])) + "-" + str(int(quantileset[4]))
+
+	return (resultrange)
+
+
+
+def mlpredictcase (class_object, shape_object, case_area, mlmodel):
+
+	data = mldatacase(class_object, shape_object, case_area)
+	df = pd.DataFrame(data)
+
+	result = mlmodel.predict(df)
+	leaf_id = mlmodel.apply(df)
+	finalnode = (list(leaf_id))
+	finalnodevalue = finalnode[0]
+	result1 = result.item(0)
+	resulttext = int(result.item(0))
+
+	return (result, result1, resulttext, finalnodevalue, df)
+
+
+def mldatacase(class_object, shape_object, resultarea):
+
+	data = { 
+		'Round': [shape_object.round],
+		'pointedoval': [shape_object.pointedoval],
+		'roundedoval': [shape_object.roundedoval],
+		'scutiform': [shape_object.scutiform],
+		'trianglepointingup': [shape_object.trianglepointingup],
+		'unknown': [shape_object.unknown],
+		'square': [shape_object.square],
+		'lozenge': [shape_object.lozenge],
+		'drop': [shape_object.drop],
+		'trianglepointingdown': [shape_object.trianglepointingdown],
+		'rectangular': [shape_object.rectangular],
+		'hexagonal': [shape_object.hexagonal],
+		'octagonal': [shape_object.octagonal],
+		'abnormal': [shape_object.abnormal],
+		'kite': [shape_object.kite],
+		'quatrefoil': [shape_object.quatrefoil],
+		'size_area': [resultarea],
+		'animal': [class_object.animal],
+		'human': [class_object.human],
+		'objects': [class_object.object_class],
+		'device': [class_object.device],
+		'beast': [class_object.beast],
+		'bird': [class_object.bird],
+		'fish': [class_object.fish],
+		'insect': [class_object.insect],
+		'bust': [class_object.bust],
+		'hand': [class_object.hand],
+		'boat': [class_object.boat],
+		'building': [class_object.building],
+		'container': [class_object.container],
+		'equipment': [class_object.equipment],
+		'naturalproduct': [class_object.naturalproduct],
+		'irregular': [class_object.irregular],
+		'radial': [class_object.radial],
+		'lattice': [class_object.lattice],
+		'fulllength': [class_object.fulllength],
+		'symbol': [class_object.symbol],
+		'hawkhunting': [class_object.hawkhunting],
+		'pelicaninpiety': [class_object.pelicaninpiety],
+		'headondish': [class_object.headondish],
+		'twoheads': [class_object.twoheads],
+		'crossedhands': [class_object.crossedhands],
+		'handholdingitem': [class_object.handholdingitem],
+		'seated': [class_object.seated],
+		'standing': [class_object.standing],
+		'riding': [class_object.riding],
+		'crucified': [class_object.crucified],
+		'apparel': [class_object.apparel],
+		'crenellation': [class_object.crenellation],
+		'tool': [class_object.tool],
+		'weapon': [class_object.weapon],
+		'Shell': [class_object.shell],
+		'wheatsheaf': [class_object.wheatsheaf],
+		'stylizedlily': [class_object.stylizedlily],
+		'crosses': [class_object.crosses],
+		'heart': [class_object.heart],
+		'merchantmark': [class_object.merchantmark],
+		'texts': [class_object.texts],
+		'handholdingbird': [class_object.handholdingbird],
+		'halflength': [class_object.halflength],
+		'crescent': [class_object.crescent],
+		'beastbody': [class_object.beastbody],
+		'beasthead': [class_object.beasthead],
+		'doubleheadedeagle': [class_object.doubleheadedeagle],
+		'horseshoe': [class_object.horseshoe],
+		'twobirdsdrinking': [class_object.twobirdsdrinking],
+		'animalequipment': [class_object.animalequipment],
+		'transport': [class_object.transport],
+		'halflengthwomanholdingchild': [class_object.halflengthwomanholdingchild],
+		'halflengthwoman': [class_object.halflengthwoman],
+		'halflengthman': [class_object.halflengthman],
+		'swine': [class_object.swine],
+		'boarhead': [class_object.boarhead],
+		'centaur': [class_object.centaur],
+		'dragon': [class_object.dragon],
+		'hare': [class_object.hare],
+		'lion': [class_object.lion],
+		'lionhead': [class_object.lionhead],
+		'mermaid': [class_object.mermaid],
+		'squirrel': [class_object.squirrel],
+		'stag': [class_object.stag],
+		'staghead': [class_object.staghead],
+		'unicorn': [class_object.unicorn],
+		'unicornhead': [class_object.unicornhead],
+		'wolf': [class_object.wolf],
+		'wolfhead': [class_object.wolfhead],
+		'standingwoman': [class_object.standingwoman],
+		'standingman': [class_object.standingman],
+		'armouredmanequestrian': [class_object.armouredmanequestrian],
+		'seatedwomanholdingchild': [class_object.seatedwomanholdingchild],
+		'axe': [class_object.axe],
+		'shears': [class_object.shears],
+		'arrow': [class_object.arrow],
+		'spear': [class_object.spear],
+		'sword': [class_object.sword],
+		'banner': [class_object.banner],
+		'shield': [class_object.shield],
+		'christogram': [class_object.christogram],
+		'lionfighting': [class_object.lionfighting],
+		'sheep': [class_object.sheep],
+		'griffin': [class_object.griffin],
+		'hammer': [class_object.hammer],
+		'standingwomanholdingchild': [class_object.standingwomanholdingchild],
+		'hareonhound': [class_object.hareonhound],
+		'lambandstaff': [class_object.lambandstaff],
+		'lionsleeping': [class_object.lionsleeping],
+		'standingliturgicalapparel': [class_object.standingliturgicalapparel],
+		'manfightinganimal': [class_object.manfightinganimal],
+		'bowandarrow': [class_object.bowandarrow],
+		'spearandpennon': [class_object.spearandpennon],
+		'seatedman': [class_object.seatedman],
+		}
+
+	return (data)
+
+
+# def mlmodelget():
+# 	#url = os.path.join(settings.STATIC_ROOT, 'ml/2023_feb20_ml_tree')
+# 	#url = os.path.join(settings.STATIC_ROOT, 'ml/ml_tree')
+
+
+# 	url = os.path.join(settings.STATIC_ROOT, 'ml/ml_faceobjectset')
+# 	url = os.path.join(settings.STATIC_URL, 'ml/ml_tree')
+
+# 	print (url)
+# 	print (os.listdir(settings.STATIC_URL))
+
+# 	with open(url, 'rb') as file:	
+# 		mlmodel = pickle.load(file)
+
+# 	return(mlmodel)
+
+
+def mlshowpath (mlmodel, df):
+	node_indicator = mlmodel.decision_path(df)
+	leaf_id = mlmodel.apply(df)
+	feature = mlmodel.tree_.feature
+	threshold = mlmodel.tree_.threshold
+	n_nodes = mlmodel.tree_.node_count
+
+	sample_id = 0
+	# obtain ids of the nodes `sample_id` goes through, i.e., row `sample_id`
+	node_index = node_indicator.indices[
+	    node_indicator.indptr[sample_id] : node_indicator.indptr[sample_id + 1]
+	]
+
+	#print ("node_index", node_index)
+
+	# feature names
+	i = -1
+	featurenames = []
+	for col in df.columns:
+	    i = i + 1
+	    #print (i, col)
+
+	    if col == "size_area":
+	    	col = "size"
+	    featurenames.append(col)
+
+	decisiontreetext= []
+	decisiontreedic= {}
+	for node_id in node_index:
+	    
+	    # continue to the next node if it is a leaf node
+	    if leaf_id[sample_id] == node_id:
+	        continue 
+
+	    value = df.iat[0,feature[node_id]]
+	    
+	    if value <= threshold[node_id]:
+	        threshold_sign = "<="
+	    else:
+	        threshold_sign = ">"
+
+	    decisiontreetext.append(
+	        "decision node {node} : {featurename}({value}) "
+	        "{inequality} {threshold}".format(
+	            node=node_id,
+	            sample=sample_id,
+	            feature=feature[node_id],
+	            featurename=featurenames[feature[node_id]],
+	            value = df.iat[0,feature[node_id]],
+	            #value=X2[sample_id, feature[node_id]],
+	            inequality=threshold_sign,
+	            threshold=threshold[node_id],
+	        )
+	    )
+
+	    decisiontreedic[node_id] = {
+	    	"node": node_id,
+	    	"inequality": threshold_sign,
+	    	"feature": feature[node_id],
+	    	"featurename": featurenames[feature[node_id]],
+	    	"value": df.iat[0,feature[node_id]],
+	    	"inequality":threshold_sign,
+	    	"threshold": round(threshold[node_id], 2)
+	    }
+
+	return (node_index, decisiontreedic)
+
+
+
+
+def faceupdater(shapecode, height, width):
+
+	print (shapecode, height, width)
+	returnarea = 0
+
+	if height == None:
+		return(returnarea)
+
+	if width == None:
+		return(returnarea)
+
+	if height > 0:
+		if width > 0:
+			#round
+			if shapecode == 1:
+				radius1 = height/2
+				returnarea = math.pi * (radius1 **2)
+
+			# Pointed Oval
+			if shapecode == 2:
+				radius1 = ((height * 1.06)/ 2)
+				width1 = width/2
+				returnarea = (((radius1**2) * (math.acos((radius1-width1) / radius1)))-((radius1-width1) * (math.sqrt((2*radius1*width1)-(width1**2))))) *2
+
+			# Rounded Oval
+			if shapecode == 3:
+				returnarea = roundedoval(height, width)
+
+			# Scutiform
+			if shapecode == 4:
+				returnarea = ((height/2) * width) + ((height/2) * (width/2))
+
+			# Unknown
+			if shapecode == 5:
+				returnarea = roundedoval(height, width)
+
+			# Triangle pointing up
+			if shapecode == 6:
+				returnarea = (height * (width/2))
+
+			# Square
+			if shapecode == 7:
+				returnarea = (height * width)
+
+			# Lozenge-shaped
+			if shapecode == 8:
+				returnarea = (height * width)/2
+
+			# Quatrofoil
+			if shapecode == 9:
+				heightvalue = height/2
+				returnarea = ((heightvalue**2) + 2 * ((math.pi * (heightvalue**2) /4)))
+
+			# Drop-shaped
+			if shapecode == 10:
+				returnarea = roundedoval(height, width)
+
+			# Undetermined
+			if shapecode == 11:
+				returnarea = 0
+
+			# Triangle pointing down
+			if shapecode == 12:
+				returnarea = (height * (width/2))
+
+			# Rectangular
+			if shapecode == 13:
+				returnarea = (height * width)
+
+			# Hexagonal
+			if shapecode == 14:
+				## note that hexagons might measured from either the angle or a flat side
+				## run calculation with the smallest dimension -- not the angles. https://www.math.net/area-of-a-hexagon
+				testdimension = width
+				if height < width:
+					testdimension = height
+				returnarea = (math.sqrt(3)/2) * (testdimension**2)
+
+			# Octagonal
+			if shapecode == 15:
+				returnarea = 2*((height/(1+math.sqrt(2)))**2)*(1+math.sqrt(2))
+
+			# Abnormal shape
+			if shapecode == 16:
+				returnarea = roundedoval(height, width)
+
+			# Kite-shaped
+			if shapecode == 17:
+				returnarea = roundedoval(height, width)
+
+	returnarea = round(returnarea,2)
+	
+	return(returnarea)
+
+def roundedoval(height, width):
+	radius1 = height/2
+	width1 = width/2
+	returnarea = math.pi * radius1 * width1	
+
+	return(returnarea)
+
 
 
 

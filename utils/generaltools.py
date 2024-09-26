@@ -155,25 +155,25 @@ def geteventitem(event1):
 
 	return (eventset)
 
-def getquantiles(timegroupcases):
+# def getquantiles(timegroupcases):
 
-	timelist = []
-	for t in timegroupcases:
+# 	timelist = []
+# 	for t in timegroupcases:
 
-		try:
-			timelist.append(int(t.date_origin))
+# 		try:
+# 			timelist.append(int(t.date_origin))
 
-		except:
-			print ("exception", t)
+# 		except:
+# 			print ("exception", t)
 
-	quantileset = statistics.quantiles(timelist, n=6)
+# 	quantileset = statistics.quantiles(timelist, n=6)
 
-	print ("timelist", timelist)
-	print ("quantileset", quantileset)
+# 	print ("timelist", timelist)
+# 	print ("quantileset", quantileset)
 
-	resultrange = "c." + str(int(quantileset[0])) + "-" + str(int(quantileset[4]))
+# 	resultrange = "c." + str(int(quantileset[0])) + "-" + str(int(quantileset[4]))
 
-	return (resultrange)
+# 	return (resultrange)
 
 # handle range dates -- if range, then determine midpoint and precision
 def datetester(date1, date2):
@@ -1182,81 +1182,81 @@ def faceeditor(fID, form):
 	return (fID)
 
 
-def mapgenerator(location_object, count_in):
-	#Establishing the Map data
-	longitude=""
-	latitude=""
-	location=""
-	location_dict = ""
-	additionalformat = ""
+# def mapgenerator(location_object, count_in):
+# 	#Establishing the Map data
+# 	longitude=""
+# 	latitude=""
+# 	location=""
+# 	location_dict = ""
+# 	additionalformat = ""
 
-	mapdic = {"type": "FeatureCollection"}
-	properties = {}
-	geometry = {}
-	location = {}
-	placelist = []
+# 	mapdic = {"type": "FeatureCollection"}
+# 	properties = {}
+# 	geometry = {}
+# 	location = {}
+# 	placelist = []
 
-	value1 = location_object.id_location
-	value2 = location_object.location
-	value3 = count_in
-	value4 = location_object.longitude
-	value5 = location_object.latitude
+# 	value1 = location_object.id_location
+# 	value2 = location_object.location
+# 	value3 = count_in
+# 	value4 = location_object.longitude
+# 	value5 = location_object.latitude
 
-	popupcontent = '<a href="entity/' + str(value1) + '">' + str(value2) + '</a>'
+# 	popupcontent = '<a href="entity/' + str(value1) + '">' + str(value2) + '</a>'
 
-	if count_in > 0:
-		popupcontent = popupcontent + ' ' + str(value3)
+# 	if count_in > 0:
+# 		popupcontent = popupcontent + ' ' + str(value3)
 
-	properties = {"id_location": value1, "location": value2, "count": value3, "popupContent": popupcontent}
-	geometry = {"type": "Point", "coordinates": [value4, value5]}
-	location = {"type": "Feature", "properties": properties, "geometry": geometry}
-	placelist.append(location)
+# 	properties = {"id_location": value1, "location": value2, "count": value3, "popupContent": popupcontent}
+# 	geometry = {"type": "Point", "coordinates": [value4, value5]}
+# 	location = {"type": "Feature", "properties": properties, "geometry": geometry}
+# 	placelist.append(location)
 
-	mapdic["features"] = placelist
+# 	mapdic["features"] = placelist
 
-	return(mapdic)
+# 	return(mapdic)
 
 
-def mapgenerator2(location_object):
-	center_lat = []
-	center_long = []
+# def mapgenerator2(location_object):
+# 	center_lat = []
+# 	center_long = []
 
-	mapdic = {"type": "FeatureCollection"}
-	properties = {}
-	geometry = {}
-	location = {}
-	placelist = []
-	lat_values = []
-	long_values = []
+# 	mapdic = {"type": "FeatureCollection"}
+# 	properties = {}
+# 	geometry = {}
+# 	location = {}
+# 	placelist = []
+# 	lat_values = []
+# 	long_values = []
 
-	for loc in location_object:
-		value1 = loc.id_location
-		value2 = loc.location
-		value3 = loc.count
-		value4 = loc.longitude
-		value5 = loc.latitude
+# 	for loc in location_object:
+# 		value1 = loc.id_location
+# 		value2 = loc.location
+# 		value3 = loc.count
+# 		value4 = loc.longitude
+# 		value5 = loc.latitude
 
-		if type(loc.longitude) == int or type(loc.longitude) == float:
-			lat_values.append(loc.latitude)
-		if type(loc.latitude) == int or type(loc.latitude) == float:
-			long_values.append(loc.longitude)
+# 		if type(loc.longitude) == int or type(loc.longitude) == float:
+# 			lat_values.append(loc.latitude)
+# 		if type(loc.latitude) == int or type(loc.latitude) == float:
+# 			long_values.append(loc.longitude)
 
-		popupcontent = '<a href="entity/' + str(value1) + '">' + str(value2) + '</a>'
+# 		popupcontent = '<a href="entity/' + str(value1) + '">' + str(value2) + '</a>'
 
-		if value3 > 0:
-			popupcontent = popupcontent + ' ' + str(value3)
+# 		if value3 > 0:
+# 			popupcontent = popupcontent + ' ' + str(value3)
 
-		properties = {"id_location": value1, "location": value2, "count": value3, "popupContent": popupcontent}
-		geometry = {"type": "Point", "coordinates": [value4, value5]}
-		location = {"type": "Feature", "properties": properties, "geometry": geometry}
-		placelist.append(location)
+# 		properties = {"id_location": value1, "location": value2, "count": value3, "popupContent": popupcontent}
+# 		geometry = {"type": "Point", "coordinates": [value4, value5]}
+# 		location = {"type": "Feature", "properties": properties, "geometry": geometry}
+# 		placelist.append(location)
 
-	mapdic["features"] = placelist
+# 	mapdic["features"] = placelist
 
-	center_long = statistics.median(long_values)
-	center_lat = statistics.median(lat_values)
+# 	center_long = statistics.median(long_values)
+# 	center_lat = statistics.median(lat_values)
 
-	return(mapdic, center_long, center_lat)
+# 	return(mapdic, center_long, center_lat)
 
 def mapgenerator3(regiondisplayset):
 	## data for region map
