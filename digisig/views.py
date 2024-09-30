@@ -98,19 +98,6 @@ def exhibit(request):
 				representation_set[l.id_representation] = representation_dic
 				break
 
-		# targetobject = representation_objects.get(fk_digisig=r['fk_digisig'])
-		# representation_dic["thumb"] = targetobject['fk_connection__thumb']
-		# representation_dic["representation_thumbnail"] = targetobject['representation_thumbnail_hash'] 
-		# representation_dic["medium"] = targetobject['fk_connection__medium']
-		# representation_dic["representation_filename"] = targetobject['representation_filename_hash']
-
-		# targetvalue = rti_set.get(fk_digisig=r.fk_digisig)
-		# representation_dic["id_num"] = str(targetvalue.id_representation)
-
-	print (representation_set)
-
-
-
 	context = {
 	'pagetitle': pagetitle,
 	'representation_set': representation_set,
@@ -437,14 +424,12 @@ def analyze(request, analysistype):
 					if int(qclass) > 0:
 						qclass = int(qclass)
 						class_object = get_object_or_404(Classification, id_class=qclass)
-						print (class_object)
 
 				if qshape.isdigit():
 					qshape = int(qshape)
 					if int(qshape) > 0:
 						qshape = int(qshape)
 						shape_object = get_object_or_404(Shape, pk_shape=qshape)
-						print (shape_object)
 
 				if qvertical > 0:
 					if qhorizontal > 0:
@@ -462,54 +447,49 @@ def analyze(request, analysistype):
 				# get information about decision path
 				decisionpathout, decisiontreedic = mlshowpath(mlmodel, df)
 
-				# print ("result", result)
-				# print ("result1", result1)
-				# print ("resulttext", resulttext)
-				# print ("finalnodevalue", finalnodevalue)
-				# print ("decisionpathout", decisionpathout)
-				# print ("decisiontreedic", decisiontreedic)
-
 				#find other seals assigned to this decision tree group
-				timegroupcases = Seal.objects.filter(date_prediction_node=finalnodevalue).order_by("date_origin").select_related('fk_timegroupc')
+				timegroupcases = Seal.objects.filter(
+					date_prediction_node=finalnodevalue).order_by(
+					"date_origin").select_related(
+					'fk_timegroupc').values(
+					'date_origin', 'id_seal', 'fk_timegroupc', 'fk_timegroupc__timegroup_c_range', 'fk_seal_face__fk_shape', 'fk_seal_face__fk_class')
 
-				resultrange = getquantiles(timegroupcases)
-
-				### experimental method of generating period bands 2023/11/11
-				# timelist = []
-				# for t in timegroupcases:
-				# 	timelist.append(int(t.date_origin))
-				# quantileset = statistics.quantiles(timelist, n=6)
-				# resultrange = "c." + str(int(quantileset[0])) + "-" + str(int(quantileset[4]))
+				resultrange, resultset = getquantiles(timegroupcases)
 
 				labels, data1 = temporaldistribution(timegroupcases)
 
-				#identify a subset of seal to display as suggestions
-				seal_set = timegroupcases.filter(fk_seal_face__fk_shape=shape_object).filter(fk_seal_face__fk_class=class_object)[:10].values("id_seal")
-				manifestation_possibilities = Manifestation.objects.filter(
-					fk_face__fk_seal__in=seal_set)[:10].select_related(
-					'fk_face__fk_seal').select_related(
-					'fk_face__fk_class').select_related(
-					'fk_support__fk_part__fk_item__fk_repository').select_related(
-					'fk_support__fk_number_currentposition').select_related(
-					'fk_support__fk_part__fk_event').select_related(
-					'fk_support__fk_supportstatus').select_related(
-					'fk_position').select_related(
-					'fk_support__fk_attachment').select_related(
-					'fk_support__fk_nature').select_related(
-					'fk_imagestate')		
+				sealtargets = timegroupcases.values_list('id_seal')
 
-				## prepare the data for each displayed seal manifestation
+				# #identify a subset of seal to display as suggestions
+				seal_set = Representation.objects.filter(fk_manifestation__fk_face__fk_seal__in=sealtargets)
 
-				manifestation_set = {}
 
-				for e in manifestation_possibilities:
-					manifestation_dic = {}
-					manifestation_dic = manifestation_fetchrepresentations(e, manifestation_dic)
-					manifestation_dic = manifestation_fetchsealdescriptions(e, manifestation_dic)
-					manifestation_dic = manifestation_fetchlocations(e, manifestation_dic)
-					manifestation_dic = manifestation_fetchstandardvalues(e, manifestation_dic)
+		# partset = []
+		# for p in part_object.object_list:
+		# 	partset.append(p.id_part)
 
-					manifestation_set[e.id_manifestation] = manifestation_dic
+		# representation_part = Representation.objects.filter(fk_digisig__in=partset).select_related('fk_connection')
+
+				# #identify a subset of seal to display as suggestions
+				# seal_set = timegroupcases.filter(fk_seal_face__fk_shape=shape_object).filter(fk_seal_face__fk_class=class_object)[:10].values("id_seal")
+
+				# manifestation_possibilities = sealsearch()
+				# manifestation_possibilities = manifestation_possibilities.filter(
+				# 	fk_face__fk_seal__in=seal_set)
+				# manifestation_possibilities, totalrows, totaldisplay, qpagination = defaultpagination(manifestation_possibilities, 1)
+
+				# ## prepare the data for each displayed seal manifestation
+
+				# manifestation_set = {}
+
+				# for e in manifestation_possibilities:
+				# 	manifestation_dic = {}
+				# 	manifestation_dic = manifestation_fetchrepresentations(e, manifestation_dic)
+				# 	manifestation_dic = manifestation_fetchsealdescriptions(e, manifestation_dic)
+				# 	manifestation_dic = manifestation_fetchlocations(e, manifestation_dic)
+				# 	manifestation_dic = manifestation_fetchstandardvalues(e, manifestation_dic)
+
+				# 	manifestation_set[e.id_manifestation] = manifestation_dic
 
 				#representationset = mlsealselectinfo(subset)
 
@@ -539,8 +519,6 @@ def analyze(request, analysistype):
 
 		template = loader.get_template('digisig/analysis_date.html')
 		return HttpResponse(template.render(context, request))
-
-
 
 
 #################### Search #########################
