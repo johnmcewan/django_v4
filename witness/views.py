@@ -90,6 +90,7 @@ def search(request, searchtype):
 
     if searchtype == "parish":
 
+        print ("Hello")
         #default
         qlondonparish= 50013947
 
@@ -102,8 +103,6 @@ def search(request, searchtype):
                 #make sure values are not empty then try and convert to ints
                 if len(londonparish) > 0:
                     qlondonparish = int(londonparish)
-
-                    print (request)
                     targetphrase = "parish_page"
                     return redirect(targetphrase, qlondonparish)
 
@@ -125,11 +124,23 @@ def search(request, searchtype):
 
         londonevents = Location.objects.filter(fk_region=87).values('locationname__locationreference__fk_event')
 
+        # print (len(londonevents))
+
         individual_object = individualsearch()
+
+        # print (len(individual_object))
+
+        individual_set1 = individual_object.exclude(
+            id_individual=10000019).filter(
+            fk_individual_event__in=londonevents)
+
+        # print (len(individual_set1))        
 
         individual_object = individual_object.exclude(
             id_individual=10000019).filter(
             fk_individual_event__in=londonevents).distinct('id_individual')
+
+        # print (len(individual_object))
 
         if request.method == "POST":
             form = PeopleForm(request.POST)
@@ -178,6 +189,13 @@ def search(request, searchtype):
 
 def person_page(request, witness_entity_number):
 
+    print (request)
+    targetphrase = "personnetwork_page"
+
+    return redirect(targetphrase, witness_entity_number)
+
+
+
     individual_object = individualsearch()
     individual_object = individual_object.get(id_individual=witness_entity_number)
 
@@ -211,6 +229,37 @@ def person_page(request, witness_entity_number):
     reference_set = {}
     reference_set = referenceset_references(individual_object, reference_set)
 
+    # parish where active
+    parishstats = {}
+
+    for r in reference_set.values():
+        # r['location'] = r['location_id']        
+
+        parishvalue = r['location_id']
+        if parishvalue in parishstats:
+            parishstats[parishvalue] += 1
+        else:
+            parishstats[parishvalue] = 1
+
+    print (parishstats)
+
+
+    # #adjust values if form submitted
+    # if request.method == 'POST':
+    #     form = LondonparishForm(request.POST)
+        
+    #     if form.is_valid():
+    #         londonparish = form.cleaned_data['londonparish']
+    #         #make sure values are not empty then try and convert to ints
+    #         if len(londonparish) > 0:
+    #             qlondonparish = int(londonparish)
+    #             targetphrase = "parish_page"
+    #             return redirect(targetphrase, qlondonparish)
+
+    # else:
+    #     form = LondonparishForm(initial=parishstats, instance=reference_set)
+
+
     context = {
         'pagetitle': pagetitle,
         'individual_object': individual_object,
@@ -220,6 +269,7 @@ def person_page(request, witness_entity_number):
         'totalrows': totalrows,
         'totaldisplay': totaldisplay,
         'reference_set': reference_set,
+        # 'form': form,
         }
 
     template = loader.get_template('witness/person.html')
@@ -245,57 +295,55 @@ def parish_page(request, witness_entity_number):
 
     qlondonparish = witness_entity_number
  
-    linkslist = []
-    nodelist = []
-
     parishevents = Location.objects.filter(id_location=qlondonparish).values('locationname__locationreference__fk_event')
 
     reference_set = Referenceindividual.objects.filter(
         fk_referencerole=1).exclude(fk_individual=10000019).filter(
         fk_event__in=parishevents).values('fk_individual', 'fk_event', 'fk_individual__fullname_original').order_by('pk_referenceindividual')
 
-    reference_dic = {}
-    person_dic = {}
-    personlist = []  
-
-    for r in reference_set:
-
-        if r['fk_event'] in reference_dic:
-            eventid = r['fk_event']
-            reference_dic[eventid].append(r['fk_individual'])
-        else:
-            eventid = r['fk_event']
-            reference_dic[eventid] = [r['fk_individual']]
-
-        person = r['fk_individual']
-
-        nameoriginal = r['fk_individual__fullname_original']
-        valuetarget = 1
-
-        if person in personlist:
-            x=personlist.index(person)
-            case = nodelist[x]
-            currentvalue = case['val']
-            nodelist.pop(x)
-            nodelist.insert(x, {'id':person, 'name': nameoriginal, 'val': currentvalue+1})
-            # nodelist.insert(x, {'id':person})
-
-        else:
-            personlist.append(person)
-            nodelist.append({'id':person, 'name': nameoriginal, 'val': valuetarget})
-            # nodelist.append({'id':person})
-
-    for r in reference_dic:
-        targetset = reference_dic[r]
-        numberofpeople = len(reference_dic[r])
-
-        for x in range(numberofpeople):
-            for y in range(x+1, numberofpeople):
-                person1 = targetset[x]
-                person2 = targetset[y]
-                linkslist.append({'source': person1, 'target': person2})
+    linkslist, nodelist = networkgenerator(reference_set)
 
     template = loader.get_template('witness/parish.html')
+    context = {
+        'nodelist': nodelist,
+        'linkslist': linkslist,
+        }
+
+    return HttpResponse(template.render(context, request))
+
+def item_page(request, witness_entity_number):
+
+    print (request)
+    targetphrase = "parish_page"
+
+    return redirect(targetphrase, 50013947)
+
+def seal_page(request, witness_entity_number):
+
+    print (request)
+    targetphrase = "parish_page"
+
+    return redirect(targetphrase, 50013947)
+
+
+def personnetwork_page(request, witness_entity_number):
+
+    #default
+    qpersonnetwork = witness_entity_number
+ 
+    reference_set1 = Referenceindividual.objects.filter(fk_individual=qpersonnetwork).distinct('fk_event')
+
+    witnessevents = Referenceindividual.objects.filter(
+        fk_referencerole=1).filter(
+        fk_individual=qpersonnetwork).values('fk_event')
+
+    reference_set = Referenceindividual.objects.filter(
+        fk_referencerole=1).exclude(fk_individual=10000019).filter(
+        fk_event__in=witnessevents).values('fk_individual', 'fk_event', 'fk_individual__fullname_original').order_by('pk_referenceindividual')
+
+    linkslist, nodelist = networkgenerator(reference_set)
+
+    template = loader.get_template('witness/person_graph.html')
     context = {
         'nodelist': nodelist,
         'linkslist': linkslist,
