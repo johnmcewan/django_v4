@@ -90,7 +90,6 @@ def search(request, searchtype):
 
     if searchtype == "parish":
 
-        print ("Hello")
         #default
         qlondonparish= 50013947
 
@@ -189,13 +188,6 @@ def search(request, searchtype):
 
 def person_page(request, witness_entity_number):
 
-    print (request)
-    targetphrase = "personnetwork_page"
-
-    return redirect(targetphrase, witness_entity_number)
-
-
-
     individual_object = individualsearch()
     individual_object = individual_object.get(id_individual=witness_entity_number)
 
@@ -203,22 +195,22 @@ def person_page(request, witness_entity_number):
 
     template = loader.get_template('witness/person.html')
 
-    manifestation_object = sealsearch().filter(
-        Q(fk_face__fk_seal__fk_individual_realizer=witness_entity_number) | Q(fk_face__fk_seal__fk_actor_group=witness_entity_number)
-    ). order_by('fk_face__fk_seal__fk_individual_realizer')
+    # manifestation_object = sealsearch().filter(
+    #     Q(fk_face__fk_seal__fk_individual_realizer=witness_entity_number) | Q(fk_face__fk_seal__fk_actor_group=witness_entity_number)
+    # ). order_by('fk_face__fk_seal__fk_individual_realizer')
 
-    #hack to deal with cases where there are too many seals for the form to handle
-    qpagination = 1
-    manifestation_object, totalrows, totaldisplay, qpagination = defaultpagination(manifestation_object, qpagination)
+    # #hack to deal with cases where there are too many seals for the form to handle
+    # qpagination = 1
+    # manifestation_object, totalrows, totaldisplay, qpagination = defaultpagination(manifestation_object, qpagination)
 
-    manifestation_set={}
+    # manifestation_set={}
 
-    for e in manifestation_object:
-        manifestation_dic = {}
-        manifestation_dic = manifestation_fetchrepresentations(e, manifestation_dic)
-        manifestation_dic = manifestation_fetchsealdescriptions(e, manifestation_dic)
-        manifestation_dic = manifestation_fetchstandardvalues (e, manifestation_dic)
-        manifestation_set[e.id_manifestation] = manifestation_dic
+    # for e in manifestation_object:
+    #     manifestation_dic = {}
+    #     manifestation_dic = manifestation_fetchrepresentations(e, manifestation_dic)
+    #     manifestation_dic = manifestation_fetchsealdescriptions(e, manifestation_dic)
+    #     manifestation_dic = manifestation_fetchstandardvalues (e, manifestation_dic)
+    #     manifestation_set[e.id_manifestation] = manifestation_dic
 
     # list of relationships for each actor
     relationship_object = []            
@@ -233,17 +225,34 @@ def person_page(request, witness_entity_number):
     parishstats = {}
 
     for r in reference_set.values():
-        # r['location'] = r['location_id']        
-
         parishvalue = r['location_id']
-        if parishvalue in parishstats:
-            parishstats[parishvalue] += 1
+        parisholdid = r['location_pk']
+        if parisholdid in parishstats:
+            print ("hi")
+            parishstats[parisholdid] += 1
         else:
-            parishstats[parishvalue] = 1
+            parishstats[parisholdid] = 1
 
     print (parishstats)
 
+    mapparishes = []
 
+    ## data for colorpeth map
+    mapparishes1 = get_object_or_404(Jsonstorage, id_jsonfile=2)
+    mapparishes = json.loads(mapparishes1.jsonfiletxt)
+
+    for i in mapparishes:
+        if i == "features":
+            for b in mapparishes[i]:
+                j = b["properties"]
+                parishvalue = j["fk_locatio"]
+                try:
+                    j["cases"] = parishstats[parishvalue]
+                    #print ("found", parishvalue)
+                except:
+                    pass
+                    #print ("can't find", parishvalue)
+    
     # #adjust values if form submitted
     # if request.method == 'POST':
     #     form = LondonparishForm(request.POST)
@@ -265,9 +274,10 @@ def person_page(request, witness_entity_number):
         'individual_object': individual_object,
         'relationship_object': relationship_object,
         'relationshipnumber' : relationshipnumber,
-        'manifestation_set': manifestation_set,
-        'totalrows': totalrows,
-        'totaldisplay': totaldisplay,
+        # 'manifestation_set': manifestation_set,
+        # 'totalrows': totalrows,
+        # 'totaldisplay': totaldisplay,
+        'parishes_dict': mapparishes,
         'reference_set': reference_set,
         # 'form': form,
         }
@@ -286,6 +296,8 @@ def entity(request, witness_entity_number):
     #item = 0, seal=1, manifestation=2, sealdescription=3, etc...
     targetphrase = redirectgenerator(witness_entity_number, operation, application)
 
+    print ("targetphrase", targetphrase)
+
     return redirect(targetphrase)
 
 def parish_page(request, witness_entity_number):
@@ -303,13 +315,37 @@ def parish_page(request, witness_entity_number):
 
     linkslist, nodelist = networkgenerator(reference_set)
 
-    template = loader.get_template('witness/parish.html')
+    template = loader.get_template('witness/parish_graph.html')
     context = {
         'nodelist': nodelist,
         'linkslist': linkslist,
         }
 
     return HttpResponse(template.render(context, request))
+
+def parish_graph(request, witness_entity_number):
+
+    #default
+    qlondonparish= 50013947
+
+    qlondonparish = witness_entity_number
+ 
+    parishevents = Location.objects.filter(id_location=qlondonparish).values('locationname__locationreference__fk_event')
+
+    reference_set = Referenceindividual.objects.filter(
+        fk_referencerole=1).exclude(fk_individual=10000019).filter(
+        fk_event__in=parishevents).values('fk_individual', 'fk_event', 'fk_individual__fullname_original').order_by('pk_referenceindividual')
+
+    linkslist, nodelist = networkgenerator(reference_set)
+
+    template = loader.get_template('witness/parish_graph.html')
+    context = {
+        'nodelist': nodelist,
+        'linkslist': linkslist,
+        }
+
+    return HttpResponse(template.render(context, request))
+
 
 def item_page(request, witness_entity_number):
 
