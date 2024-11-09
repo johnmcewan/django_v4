@@ -71,10 +71,10 @@
           <th>Name</th>
           <th>Occurrences</th>
         </tr>
-      {% for person in individual_set %}
+      {% for key, person in individual_set.items %}
         {% if forloop.counter|divisibleby:2 %}<tr class="even">{% else %}<tr class="odd">{% endif %}
           <td> 
-            <a href="{% url 'person_page' witness_entity_number=person.id_individual %}">{{person}}</a>
+            <a href="{% url 'person_page' witness_entity_number=person.id_individual %}">{{person.actor_name}}</a>
           </td>
           <td>
             {{person.occurences}}
@@ -117,7 +117,7 @@ var layer2 = new L.tileLayer('https://{s}.basemaps.cartocdn.com/light_nolabels/{
 
   info2.update = function (props) {
     this._div.innerHTML = '<h4>Cases per Parish</h4>' +  (props ?
-      '<b>' + props.NAME + '</b><br />' + props.cases + ' cases' : 'Hover over a Parish');
+      '<b>' + props.location + '</b><br />' + props.cases + ' cases' : 'Hover over a Parish');
   };
 
   info2.addTo(map1);
@@ -131,7 +131,7 @@ var layer2 = new L.tileLayer('https://{s}.basemaps.cartocdn.com/light_nolabels/{
       d > 80  ? '#f768a1' :
       d > 40   ? '#fa9fb5' :
       d > 20   ? '#fcc5c0' :  
-      d > 10   ? '#fde0dd' : '#fff7f3';
+      d > 10   ? '#fde0dd' : '#d9d9d9';
   }
 
   function style(feature) {

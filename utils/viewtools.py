@@ -35,7 +35,21 @@ def networkgenerator(reference_set):
 
 		person = r['fk_individual']
 
-		nameoriginal = r['fk_individual__fullname_original']
+		nameoriginal = ""
+
+		if r['fk_individual__fk_descriptor_name__descriptor_modern'] != None:
+			nameoriginal =  r['fk_individual__fk_descriptor_name__descriptor_modern']
+		if r['fk_individual__fk_descriptor_prefix1__prefix_english'] != None:
+			nameoriginal = nameoriginal + " " + r['fk_individual__fk_descriptor_prefix1__prefix_english']
+		if r['fk_individual__fk_descriptor_descriptor1__descriptor_modern'] != None:
+			nameoriginal = nameoriginal + " " + r['fk_individual__fk_descriptor_descriptor1__descriptor_modern']
+		if r['fk_individual__fk_descriptor_prefix2__prefix_english'] != None:
+			nameoriginal = nameoriginal + " " + r['fk_individual__fk_descriptor_prefix2__prefix_english']
+		if r['fk_individual__fk_descriptor_descriptor2__descriptor_modern'] != None:
+			nameoriginal = nameoriginal + " " + r['fk_individual__fk_descriptor_descriptor2__descriptor_modern']
+		if r['fk_individual__fk_descriptor_prefix3__prefix_english'] != None:
+			nameoriginal = nameoriginal + " " + r['fk_individual__fk_descriptor_prefix3__prefix_english']
+
 		valuetarget = 1
 
 		if person in personlist:
@@ -165,7 +179,6 @@ def getquantiles(timegroupcases):
 	resultrange = "c." + str(int(quantileset[0])) + "-" + str(int(quantileset[4]))
 
 	return (resultrange, timelist)
-
 
 
 def mlpredictcase (class_object, shape_object, case_area, mlmodel):
@@ -731,6 +744,28 @@ def individualsearch():
 	'fk_group__fk_group_class')
 
 	return(individual_object)
+
+def referencecollectindividual(reference_set):
+	reference_set = reference_set.select_related(
+		'fk_individual__fk_descriptor_title').select_related(
+		'fk_individual__fk_descriptor_name').select_related(
+		'fk_individual__fk_descriptor_prefix1').select_related(
+		'fk_individual__fk_descriptor_descriptor1').select_related(
+		'fk_individual__fk_descriptor_prefix2').select_related(
+		'fk_individual__fk_descriptor_descriptor2').select_related(
+		'fk_individual__fk_descriptor_prefix3').select_related(
+		'fk_individual__fk_descriptor_descriptor3').values(
+		'fk_individual', 
+		'fk_event', 
+		'fk_individual__fullname_original',
+		'fk_individual__fk_descriptor_name__descriptor_modern',
+		'fk_individual__fk_descriptor_prefix1__prefix_english',
+		'fk_individual__fk_descriptor_descriptor1__descriptor_modern',
+		'fk_individual__fk_descriptor_prefix2__prefix_english',
+		'fk_individual__fk_descriptor_descriptor2__descriptor_modern',
+		'fk_individual__fk_descriptor_prefix3__prefix_english').order_by('pk_referenceindividual')
+
+	return(reference_set)
 
 ## function to collect all the possible information you would need to present a representation
 def representationmetadata(representation_case, representation_dic):
@@ -1400,7 +1435,10 @@ def referenceset_references(individual_object):
 			reference_row['date'] = str(r['fk_event__startdate']) + "-" + str(r['fk_event__enddate'])
 		else:
 			if r['fk_event__repository_startdate'] != None:
-				reference_row['date'] = str['fk_event__repository_startdate'] + " - " + str(['fk_event__repository_enddate'])
+				try:
+					reference_row['date'] = str['fk_event__repository_startdate'] + " - " + str(['fk_event__repository_enddate'])
+				except:
+					reference_row['date'] = ""
 		#role
 		reference_row["role"] = r['fk_referencerole__referencerole']
 
