@@ -13,6 +13,62 @@ from django.conf import settings
 
 from time import time
 
+def relationship_dataset(witness_entity_number):
+		 
+	relationship_object = Digisigrelationshipview.objects.filter(
+		fk_individual = witness_entity_number).select_related(
+		'person2__fk_group').select_related(
+		'person2__fk_descriptor_title').select_related(
+		'person2__fk_descriptor_name').select_related(
+		'person2__fk_descriptor_prefix1').select_related(
+		'person2__fk_descriptor_descriptor1').select_related(
+		'person2__fk_descriptor_prefix2').select_related(
+		'person2__fk_descriptor_descriptor2').select_related(
+		'person2__fk_descriptor_prefix3').select_related(
+		'person2__fk_descriptor_descriptor3').values(
+		'relationship_role',
+		'person2__id_individual',
+		'person2__fk_group__group_name',
+		'person2__fk_descriptor_name__descriptor_modern',
+		'person2__fk_descriptor_prefix1__prefix_english',
+		'person2__fk_descriptor_descriptor1__descriptor_modern',
+		'person2__fk_descriptor_prefix2__prefix_english',
+		'person2__fk_descriptor_descriptor2__descriptor_modern',
+		'person2__fk_descriptor_prefix3__prefix_english').order_by('person2')
+
+	relationship_dic = {}
+	relationshipnumber = 0
+
+	for r in relationship_object:
+
+		relationshipnumber += 1
+
+		relationshipvalues = {}
+
+		nameoriginal = ""
+		if r['person2__fk_group__group_name'] != None:
+			nameoriginal =  r['person2__fk_group__group_name']
+		if r['person2__fk_descriptor_name__descriptor_modern'] != None:
+			nameoriginal =  r['person2__fk_descriptor_name__descriptor_modern']
+		if r['person2__fk_descriptor_prefix1__prefix_english'] != None:
+			nameoriginal = nameoriginal + " " + r['person2__fk_descriptor_prefix1__prefix_english']
+		if r['person2__fk_descriptor_descriptor1__descriptor_modern'] != None:
+			nameoriginal = nameoriginal + " " + r['person2__fk_descriptor_descriptor1__descriptor_modern']
+		if r['person2__fk_descriptor_prefix2__prefix_english'] != None:
+			nameoriginal = nameoriginal + " " + r['person2__fk_descriptor_prefix2__prefix_english']
+		if r['person2__fk_descriptor_descriptor2__descriptor_modern'] != None:
+			nameoriginal = nameoriginal + " " + r['person2__fk_descriptor_descriptor2__descriptor_modern']
+		if r['person2__fk_descriptor_prefix3__prefix_english'] != None:
+			nameoriginal = nameoriginal + " " + r['person2__fk_descriptor_prefix3__prefix_english']
+
+		relationshipvalues['name'] = nameoriginal
+		relationshipvalues['role'] = r['relationship_role']
+		relationshipvalues['id_individual'] = r['person2__id_individual']
+
+		relationship_dic[r['person2__id_individual']] = relationshipvalues
+
+	return(relationship_dic, relationshipnumber)	
+
 
 ### network diagrams
 def networkgenerator(reference_set):
@@ -118,8 +174,9 @@ def redirectgenerator(digisig_entity_number, operation, application):
 	#temp workaround -- parts to redirect to item page
 	if finalcharacter == '8': 
 		stem = "part/"
-		part_object = get_object_or_404(Part, id_part=digisig_entity_number)
-		digisig_entity_number = part_object.fk_item.id_item
+		if application == 1: 
+			part_object = get_object_or_404(Part, id_part=digisig_entity_number)
+			digisig_entity_number = part_object.fk_item.id_item
 
 	if finalcharacter == '9':
 		stem = "actor/" 
@@ -1404,61 +1461,148 @@ def eventset_references(event_object, event_dic):
 
 # 	return(reference_set)
 
-def referenceset_references(individual_object):
+
+def referenceset_references(witness_entity_number):
 
 	reference_set = {}
 
 	reference_dic = Referenceindividual.objects.filter(
-		fk_individual=individual_object).select_related(
-		'fk_event').select_related(
-		'fk_referencerole').order_by(
-		"fk_event__startdate", "fk_event__enddate").values(
-		'pk_referenceindividual',
-		'fk_event__startdate',
-		'fk_event__enddate',
-		'fk_event__repository_startdate',
-		'fk_event__repository_enddate',
-		'fk_referencerole__referencerole',
-		'fk_event__part__fk_item__shelfmark',
-		'fk_event__part__fk_item__id_item',
-		'fk_event__fk_event_locationreference__fk_locationname__fk_location__fk_region',
-		'fk_event__fk_event_locationreference__fk_locationname__fk_location__id_location',
-		'fk_event__fk_event_locationreference__fk_locationname__fk_location__pk_location',
-		'fk_event__fk_event_locationreference__fk_locationname__fk_location__location')
+		fk_event__in=(Event.objects.filter(
+			fk_event_event__fk_individual=witness_entity_number).values('pk_event'))).select_related(
+	'fk_referencerole').select_related(
+	'fk_event').select_related(
+	'fk_individual').order_by(
+	'pk_referenceindividual').values(
+	'fk_event',
+	'fk_individual',
+	'pk_referenceindividual',
+	'fk_event__startdate',
+	'fk_event__enddate',
+	'fk_event__repository_startdate',
+	'fk_event__repository_enddate',
+	'fk_referencerole__referencerole',
+	'fk_event__part__fk_item__shelfmark',
+	'fk_event__part__fk_item__id_item',
+	'fk_event__part__id_part',
+	'fk_event__fk_event_locationreference__fk_locationname__fk_location__fk_region',
+	'fk_event__fk_event_locationreference__fk_locationname__fk_location__id_location',
+	'fk_event__fk_event_locationreference__fk_locationname__fk_location__pk_location',
+	'fk_event__fk_event_locationreference__fk_locationname__fk_location__location')
 
+	position_dic = {}
+
+	# determines where a person is located in the witness list
 	for r in reference_dic:
 
-		reference_row = {}
+		if r['fk_referencerole__referencerole'] == 'Witness':
 
-		#date
-		if r['fk_event__startdate'] != None:
-			reference_row['date'] = str(r['fk_event__startdate']) + "-" + str(r['fk_event__enddate'])
-		else:
-			if r['fk_event__repository_startdate'] != None:
-				try:
-					reference_row['date'] = str['fk_event__repository_startdate'] + " - " + str(['fk_event__repository_enddate'])
-				except:
-					reference_row['date'] = ""
-		#role
-		reference_row["role"] = r['fk_referencerole__referencerole']
+			eventvalue = r['fk_event']
+			position_dic.setdefault(eventvalue, {'total':0, 'position': 0, 'startdate':r['fk_event__startdate'], 'dateend':r['fk_event__enddate']})
 
-		#item
-		# part_object = Part.objects.select_related('fk_item').get(fk_event=r.fk_event)
-		reference_row["item_shelfmark"] = r['fk_event__part__fk_item__shelfmark']
-		reference_row["item_id"] = r['fk_event__part__fk_item__id_item']
+			position_dic[eventvalue]['total'] += 1
 
-		#location
-		# locationreference_object = Locationreference.objects.filter(
-		# 	location_reference_primary=0).select_related(
-		# 	'fk_locationname__fk_location__fk_region').get(
-		# 	fk_event=r.fk_event)
-		reference_row["region"] = r['fk_event__fk_event_locationreference__fk_locationname__fk_location__fk_region']
-		reference_row["location_id"] = r['fk_event__fk_event_locationreference__fk_locationname__fk_location__id_location']
-		reference_row["location"] = r['fk_event__fk_event_locationreference__fk_locationname__fk_location__location']
-		reference_row["location_pk"] = r['fk_event__fk_event_locationreference__fk_locationname__fk_location__pk_location']
-		reference_set[r['pk_referenceindividual']] = reference_row
+			if str(r['fk_individual']) == witness_entity_number:
+				position_dic[eventvalue]['position'] += position_dic[eventvalue]['total']
+
+	# assembles the references to the person
+	for r in reference_dic:
+
+		if str(r['fk_individual']) == witness_entity_number:
+
+			reference_row = {}
+
+			#date
+			if r['fk_event__startdate'] != None:
+				reference_row['date'] = str(r['fk_event__startdate']) + "-" + str(r['fk_event__enddate'])
+			else:
+				if r['fk_event__repository_startdate'] != None:
+					try:
+						reference_row['date'] = str['fk_event__repository_startdate'] + " - " + str(['fk_event__repository_enddate'])
+					except:
+						reference_row['date'] = ""
+			#role
+			reference_row["role"] = r['fk_referencerole__referencerole']
+
+			if r['fk_referencerole__referencerole'] == "Witness":
+				eventvalue = r['fk_event']
+				reference_row["position"] = position_dic[eventvalue]['position']
+				reference_row["total"] = position_dic[eventvalue]['total']
+
+			#item
+			# part_object = Part.objects.select_related('fk_item').get(fk_event=r.fk_event)
+			reference_row["item_shelfmark"] = r['fk_event__part__fk_item__shelfmark']
+			reference_row["item_id"] = r['fk_event__part__fk_item__id_item']
+			reference_row["part_id"] = r['fk_event__part__id_part']
+
+			#location
+			# locationreference_object = Locationreference.objects.filter(
+			# 	location_reference_primary=0).select_related(
+			# 	'fk_locationname__fk_location__fk_region').get(
+			# 	fk_event=r.fk_event)
+			reference_row["region"] = r['fk_event__fk_event_locationreference__fk_locationname__fk_location__fk_region']
+			reference_row["location_id"] = r['fk_event__fk_event_locationreference__fk_locationname__fk_location__id_location']
+			reference_row["location"] = r['fk_event__fk_event_locationreference__fk_locationname__fk_location__location']
+			reference_row["location_pk"] = r['fk_event__fk_event_locationreference__fk_locationname__fk_location__pk_location']
+			reference_set[r['pk_referenceindividual']] = reference_row
 
 	return(reference_set)
+
+# def referenceset_references_old(witness_entity_number):
+
+# 	reference_set = {}
+
+# 	reference_dic = Referenceindividual.objects.filter(
+# 		fk_individual=witness_entity_number).select_related(
+# 		'fk_event').select_related(
+# 		'fk_referencerole').order_by(
+# 		"fk_event__startdate", "fk_event__enddate").values(
+# 		'fk_event',
+# 		'pk_referenceindividual',
+# 		'fk_event__startdate',
+# 		'fk_event__enddate',
+# 		'fk_event__repository_startdate',
+# 		'fk_event__repository_enddate',
+# 		'fk_referencerole__referencerole',
+# 		'fk_event__part__fk_item__shelfmark',
+# 		'fk_event__part__fk_item__id_item',
+# 		'fk_event__fk_event_locationreference__fk_locationname__fk_location__fk_region',
+# 		'fk_event__fk_event_locationreference__fk_locationname__fk_location__id_location',
+# 		'fk_event__fk_event_locationreference__fk_locationname__fk_location__pk_location',
+# 		'fk_event__fk_event_locationreference__fk_locationname__fk_location__location')
+
+# 	for r in reference_dic:
+
+# 		reference_row = {}
+
+# 		#date
+# 		if r['fk_event__startdate'] != None:
+# 			reference_row['date'] = str(r['fk_event__startdate']) + "-" + str(r['fk_event__enddate'])
+# 		else:
+# 			if r['fk_event__repository_startdate'] != None:
+# 				try:
+# 					reference_row['date'] = str['fk_event__repository_startdate'] + " - " + str(['fk_event__repository_enddate'])
+# 				except:
+# 					reference_row['date'] = ""
+# 		#role
+# 		reference_row["role"] = r['fk_referencerole__referencerole']
+
+# 		#item
+# 		# part_object = Part.objects.select_related('fk_item').get(fk_event=r.fk_event)
+# 		reference_row["item_shelfmark"] = r['fk_event__part__fk_item__shelfmark']
+# 		reference_row["item_id"] = r['fk_event__part__fk_item__id_item']
+
+# 		#location
+# 		# locationreference_object = Locationreference.objects.filter(
+# 		# 	location_reference_primary=0).select_related(
+# 		# 	'fk_locationname__fk_location__fk_region').get(
+# 		# 	fk_event=r.fk_event)
+# 		reference_row["region"] = r['fk_event__fk_event_locationreference__fk_locationname__fk_location__fk_region']
+# 		reference_row["location_id"] = r['fk_event__fk_event_locationreference__fk_locationname__fk_location__id_location']
+# 		reference_row["location"] = r['fk_event__fk_event_locationreference__fk_locationname__fk_location__location']
+# 		reference_row["location_pk"] = r['fk_event__fk_event_locationreference__fk_locationname__fk_location__pk_location']
+# 		reference_set[r['pk_referenceindividual']] = reference_row
+
+# 	return(reference_set)
 
 
 #externallinks for object
