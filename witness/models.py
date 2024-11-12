@@ -13,6 +13,8 @@ from django.contrib.auth.models import User
 
 from .models import *
 
+#### project seems to reference the version of this file in digisig -- 2024 nov
+
 
 ### specials
 class Digisigrelationshipview(models.Model):
