@@ -34,8 +34,6 @@ import pickle
 def index(request):
 	# return render(request, 'digisig/index.html', {})
 
-	starttime = time()
-
 	pagetitle = 'title'
 	template = loader.get_template('digisig/index.html')
 
@@ -55,7 +53,6 @@ def index(request):
 		'catalogue_total': catalogue_total,
 		}
 
-	print("Compute Time:", time()-starttime)
 	return HttpResponse(template.render(context, request))
 
 
@@ -72,32 +69,11 @@ def about(request):
 
 #### Exhibit 
 
-def exhibit(request):
-	starttime = time()
+ 
+async def exhibit(request):
 	pagetitle = 'title'
 
-	# create the set of RTIs
-	representation_set = {}
-
-	# select all representations that are RTIs....
-	rti_set = Representation.objects.filter(fk_representation_type=2).values('fk_digisig', 'id_representation')
-
-	rti_set_filter =rti_set.values('fk_digisig')
-
-	rti_set_targets = rti_set.values_list('fk_digisig', 'id_representation', named=True)
-
-	representation_objects = Representation.objects.filter(
-		fk_digisig__in=rti_set_filter, primacy=1).select_related(
-		'fk_connection').values('fk_connection__thumb', 'representation_thumbnail_hash', 'fk_connection__medium', 'representation_filename_hash', 'fk_digisig')
-
-	for r in representation_objects:
-		representation_dic = r
-
-		for l in rti_set_targets:
-			if l.fk_digisig == r['fk_digisig']:
-				r['id_num'] = l.id_representation
-				representation_set[l.id_representation] = representation_dic
-				break
+	representation_set = await exhibitgenerate()
 
 	context = {
 	'pagetitle': pagetitle,
@@ -106,17 +82,31 @@ def exhibit(request):
 
 	template = loader.get_template('digisig/exhibit.html')
 
-	print("Compute Time:", time()-starttime)					
 	return HttpResponse(template.render(context, request))
 
 
 ########################### Discover ############################
 
-def discover(request, discovertype):
+async def discover(request, discovertype):
 
 	if discovertype == "map":
 
 		pagetitle = 'Map'
+
+		form = CollectionForm(request.POST or None)
+		form = await collectionform_options(form)
+
+
+		if request.method == 'POST':
+
+			if form.is_valid(): 
+				manifestation_object, qpagination = await sealsearchfilter(manifestation_object, form)
+
+
+
+
+
+
 
 		#default
 		qcollection= 30000287
@@ -126,6 +116,8 @@ def discover(request, discovertype):
 		region_dict = []
 		mapcounties = []
 		location_dict = []
+
+
 
 		#adjust values if form submitted
 		if request.method == 'POST':
@@ -216,7 +208,7 @@ def discover(request, discovertype):
 
 ############################ Analyze #############################
 
-def analyze(request, analysistype):
+async def analyze(request, analysistype):
 
 	print (analysistype)
 
@@ -541,73 +533,108 @@ def analyze(request, analysistype):
 
 
 #################### Search #########################
-def search(request, searchtype):
-	starttime = time()
+async def search(request, searchtype):
 
-	if searchtype == "parish":
-		print ("what are you doing here?")
-		targetphrase = "parish"
-		return redirect(targetphrase)
+	# if searchtype == "parish":
+	# 	targetphrase = "parish"
+	# 	return redirect(targetphrase)
 
 ### Actor Search
 
 	if searchtype == "actors":
-		pagetitle = 'title'
+		
+		pagetitle = 'Search Actors'
 
-		individual_object = individualsearch()
-		individual_object = individual_object.order_by('fk_group__group_name', 'fk_descriptor_name')
+		form = PeopleForm(request.POST or None)
+		form = await peopleform_options(form) 
 
-		if request.method == "POST":
-			form = PeopleForm(request.POST)
-			if form.is_valid():
-				# challengeurl(request, searchtype, form)
-				qname = form.cleaned_data['name']   
-				qpagination = form.cleaned_data['pagination']
-				qgroup = form.cleaned_data['group']
-				qclass = form.cleaned_data['personclass']
-				qorder = form.cleaned_data['personorder']
+		qpagination = 1
 
-				if qgroup.isdigit():
-					qgroup = int(qgroup)
-					if int(qgroup) == 2: individual_object = individual_object.filter(corporateentity=True)
-					if int(qgroup) == 1: individual_object = individual_object.filter(corporateentity=False)
+		individual_object = await individualsearch()
 
-				if len(qname) > 0:
-					individual_object = individual_object.filter(
-						Q(group_name__icontains=qname) | Q(descriptor_name__icontains=qname) | Q(descriptor1__icontains=qname) | Q(descriptor2__icontains=qname) | Q(descriptor3__icontains=qname)
-						)
+		if request.method == 'POST':
 
-				if qclass.isdigit():
-					if int(qclass) > 0:
-						qclass = int(qclass)
-						individual_object = individual_object.filter(fk_group_class=qclass)
+			if form.is_valid(): 
+				individual_object, qpagination = await peoplesearchfilter(individual_object, form)
 
-				if qorder.isdigit():
-					if int(qorder) > 0:
-						qorder = int(qorder)
-						individual_object = individual_object.filter(fk_group_order=qorder)
-
-				form = PeopleForm(request.POST)
-
-		else:
-			form = PeopleForm()
-			qpagination = 1
-
-		individual_object, totalrows, totaldisplay, qpagination = defaultpagination(individual_object, qpagination) 
+		individual_object, totalrows, totaldisplay, qpagination = await defaultpagination(individual_object, qpagination)
 
 		pagecountercurrent = qpagination
 		pagecounternext = qpagination + 1
-		pagecounternextnext = qpagination +2		
+		pagecounternextnext = qpagination +2
+
+		individual_set = await actornamegenerator(individual_object)
+
+		context = {
+			'pagetitle': pagetitle,
+			'individual_set': individual_set,
+			#'sealindividual': sealindividual,
+			'totalrows': totalrows,
+			'totaldisplay': totaldisplay,
+			'form': form,
+			'pagecountercurrent': pagecountercurrent,
+			'pagecounternext': pagecounternext,
+			'pagecounternextnext': pagecounternextnext,
+			}
+
+		template = loader.get_template('digisig/search_actor.html')
+		return HttpResponse(template.render(context, request))
 
 
-		individual_set = {}
 
-		for i in individual_object:
-			individual_info = {}
-			individual_info['actor_name'] = namecompiler(i)
-			individual_info['id_individual'] = i.id_individual
+		# if request.method == "POST":
+		# 	form = PeopleForm(request.POST)
+		# 	if form.is_valid():
+		# 		# challengeurl(request, searchtype, form)
+		# 		qname = form.cleaned_data['name']   
+		# 		qpagination = form.cleaned_data['pagination']
+		# 		qgroup = form.cleaned_data['group']
+		# 		qclass = form.cleaned_data['personclass']
+		# 		qorder = form.cleaned_data['personorder']
 
-			individual_set[i.id_individual] = individual_info
+		# 		if qgroup.isdigit():
+		# 			qgroup = int(qgroup)
+		# 			if int(qgroup) == 2: individual_object = individual_object.filter(corporateentity=True)
+		# 			if int(qgroup) == 1: individual_object = individual_object.filter(corporateentity=False)
+
+		# 		if len(qname) > 0:
+		# 			individual_object = individual_object.filter(
+		# 				Q(group_name__icontains=qname) | Q(descriptor_name__icontains=qname) | Q(descriptor1__icontains=qname) | Q(descriptor2__icontains=qname) | Q(descriptor3__icontains=qname)
+		# 				)
+
+		# 		if qclass.isdigit():
+		# 			if int(qclass) > 0:
+		# 				qclass = int(qclass)
+		# 				individual_object = individual_object.filter(fk_group_class=qclass)
+
+		# 		if qorder.isdigit():
+		# 			if int(qorder) > 0:
+		# 				qorder = int(qorder)
+		# 				individual_object = individual_object.filter(fk_group_order=qorder)
+
+		# 		form = PeopleForm(request.POST)
+
+		# else:
+		# 	form = PeopleForm()
+		# 	qpagination = 1
+
+		# individual_object, totalrows, totaldisplay, qpagination = defaultpagination(individual_object, qpagination) 
+
+		# pagecountercurrent = qpagination
+		# pagecounternext = qpagination + 1
+		# pagecounternextnext = qpagination +2		
+
+
+		# individual_set = {}
+
+		# for i in individual_object:
+		# 	individual_info = {}
+		# 	individual_info['actor_name'] = namecompiler(i)
+		# 	individual_info['id_individual'] = i.id_individual
+
+		# 	individual_set[i.id_individual] = individual_info
+
+
 
 		# individual_object = individual_object.annotate(fullname=Concat('fk_group','fk_descriptor_title','fk_descriptor_name','fk_descriptor_prefix1','fk_descriptor_descriptor1',
 		# 	,'fk_separator_1','fk_descriptor_prefix2','fk_descriptor_descriptor2','fk_descriptor_prefix3','fk_descriptor_descriptor3'))
@@ -628,114 +655,40 @@ def search(request, searchtype):
 		# 		current_id_seal = f.id_seal
 		# 		sealindividual.append((testvalue, current_id_seal))
 
-		context = {
-			'pagetitle': pagetitle,
-			'individual_set': individual_set,
-			#'sealindividual': sealindividual,
-			'totalrows': totalrows,
-			'totaldisplay': totaldisplay,
-			'form': form,
-			'pagecountercurrent': pagecountercurrent,
-			'pagecounternext': pagecounternext,
-			'pagecounternextnext': pagecounternextnext,
-			}
 
-		template = loader.get_template('digisig/search_actor.html')
-		print("Compute Time:", time()-starttime)
-		return HttpResponse(template.render(context, request))
 
 ### Search Item
 
 	if searchtype == "items":
 
-		pagetitle = 'title'
+		pagetitle = 'Search Items'
 
-		#default values in case there is nothing specific in form or in else clause
-		repository = 0
-		series = 0
-		shelfmark = ""
-		searchphrase = ""
-		qpagination = 1
-
-		if request.method == "POST":
-			form = ItemForm(request.POST)
-
-			if form.is_valid():
-				# challengeurl(request, searchtype, form)
-				if form.cleaned_data['repository'].isdigit(): repository = int(form.cleaned_data['repository']) 
-				if form.cleaned_data['series'].isdigit(): series = int(form.cleaned_data['series'])
-				if len(form.cleaned_data['shelfmark']) > 0: shelfmark = form.cleaned_data['shelfmark']
-				if len(form.cleaned_data['searchphrase']) > 0: searchphrase = form.cleaned_data['searchphrase']
-				qpagination = int(form.cleaned_data['pagination'])
-
-		else:
-			form = ItemForm()
-			repository = 26
-			series = 347
-			form.initial["repository"] = 26
-			form.initial["series"] = 347
+		form = ItemForm(request.POST or None)
+		form = await itemform_options(form)
 
 		# code prepares the array of series and repositories to pass to the frontend
-		series_object= seriesset()
+		series_object= await seriesset()
 
-		# itemset, Repositorycases, Seriescases, Shelfmarkcases, Phrasecases, pagecountercurrent, pagecounternext, pagecounternextnext, totaldisplay, totalrows \
-		# = itemsearch(repository, series, shelfmark, searchphrase, pagination)
+		qpagination = 1
 
-		itemset = {}
-		Repositorycases = 0
-		Seriescases = 0
-		Shelfmarkcases = 0
-		Phrasecases = 0
+		item_object = await itemsearch()
 
-		part_object = Part.objects.all().order_by(
-			"fk_item__fk_repository", "fk_item__fk_series", "fk_item__classmark_number3", "fk_item__classmark_number2", "fk_item__classmark_number1").select_related(
-			'fk_item__fk_repository')
+		if request.method == 'POST':
 
-		# take the series in preference to the repository
+			if form.is_valid(): 
+				item_object, qpagination = await itemsearchfilter(item_object, form)
 
-		if series > 0:
-			part_object = part_object.filter(fk_item__fk_series=series)
+		item_pageobject, totalrows, totaldisplay, qpagination = await defaultpagination(item_object, qpagination)
 
-		elif repository > 0:
-			part_object = part_object.filter(fk_item__fk_repository=repository)
-
-		else:
-			print ("No repository or series specified")
-
-		if len(shelfmark) > 0:
-			part_object = part_object.filter(fk_item__shelfmark__icontains=shelfmark)
-
-		if len(searchphrase) > 0:
-			part_object = part_object.filter(part_description__icontains=searchphrase)
-
-		part_object, totalrows, totaldisplay, qpagination = defaultpagination(part_object, qpagination)
 		pagecountercurrent = qpagination 
 		pagecounternext = qpagination + 1
 		pagecounternextnext = qpagination +2
 
-		partset = []
-		for p in part_object.object_list:
-			partset.append(p.id_part)
-
-		representation_part = Representation.objects.filter(fk_digisig__in=partset).select_related('fk_connection')
-
-		for i in part_object:
-			part_dic = {}
-			part_dic["id_item"] = i.fk_item.id_item
-			part_dic["shelfmark"] = i.fk_item.shelfmark
-			part_dic["repository"] = i.fk_item.fk_repository.repository_fulltitle
-			itemset[i.id_part] = part_dic
-
-		for r in representation_part:
-			connection = r.fk_connection
-			itemset[r.fk_digisig]["connection"] = connection.thumb
-			itemset[r.fk_digisig]["medium"] = r.representation_filename
-			itemset[r.fk_digisig]["thumb"] = r.representation_thumbnail_hash
-			itemset[r.fk_digisig]["id_representation"] = r.id_representation 
-
+		item_displayset = await item_displaysetgenerate(item_pageobject)
+ 
 		context = {
 			'pagetitle': pagetitle,
-			'itemset': itemset,
+			'itemset': item_displayset,
 			'totalrows': totalrows,
 			'totaldisplay': totaldisplay,
 			'form': form,
@@ -750,56 +703,155 @@ def search(request, searchtype):
 			}
 
 		template = loader.get_template('digisig/search_item.html')
-		print("Compute Time:", time()-starttime)
 		return HttpResponse(template.render(context, request))
+
+
+
+
+
+
+		# #default values in case there is nothing specific in form or in else clause
+		# repository = 0
+		# series = 0
+		# shelfmark = ""
+		# searchphrase = ""
+		# qpagination = 1
+
+		# if request.method == "POST":
+		# 	form = ItemForm(request.POST)
+
+		# 	if form.is_valid():
+		# 		# challengeurl(request, searchtype, form)
+		# 		if form.cleaned_data['repository'].isdigit(): repository = int(form.cleaned_data['repository']) 
+		# 		if form.cleaned_data['series'].isdigit(): series = int(form.cleaned_data['series'])
+		# 		if len(form.cleaned_data['shelfmark']) > 0: shelfmark = form.cleaned_data['shelfmark']
+		# 		if len(form.cleaned_data['searchphrase']) > 0: searchphrase = form.cleaned_data['searchphrase']
+		# 		qpagination = int(form.cleaned_data['pagination'])
+
+		# else:
+		# 	form = ItemForm()
+		# 	repository = 26
+		# 	series = 347
+		# 	form.initial["repository"] = 26
+		# 	form.initial["series"] = 347
+
+		# # code prepares the array of series and repositories to pass to the frontend
+		# series_object= seriesset()
+
+		# # itemset, Repositorycases, Seriescases, Shelfmarkcases, Phrasecases, pagecountercurrent, pagecounternext, pagecounternextnext, totaldisplay, totalrows \
+		# # = itemsearch(repository, series, shelfmark, searchphrase, pagination)
+
+		# itemset = {}
+		# Repositorycases = 0
+		# Seriescases = 0
+		# Shelfmarkcases = 0
+		# Phrasecases = 0
+
+		# part_object = Part.objects.all().order_by(
+		# 	"fk_item__fk_repository", "fk_item__fk_series", "fk_item__classmark_number3", "fk_item__classmark_number2", "fk_item__classmark_number1").select_related(
+		# 	'fk_item__fk_repository')
+
+		# # take the series in preference to the repository
+
+		# if series > 0:
+		# 	part_object = part_object.filter(fk_item__fk_series=series)
+
+		# elif repository > 0:
+		# 	part_object = part_object.filter(fk_item__fk_repository=repository)
+
+		# else:
+		# 	print ("No repository or series specified")
+
+		# if len(shelfmark) > 0:
+		# 	part_object = part_object.filter(fk_item__shelfmark__icontains=shelfmark)
+
+		# if len(searchphrase) > 0:
+		# 	part_object = part_object.filter(part_description__icontains=searchphrase)
+
+		# part_object, totalrows, totaldisplay, qpagination = defaultpagination(part_object, qpagination)
+		# pagecountercurrent = qpagination 
+		# pagecounternext = qpagination + 1
+		# pagecounternextnext = qpagination +2
+
+		# partset = []
+		# for p in part_object.object_list:
+		# 	partset.append(p.id_part)
+
+		# representation_part = Representation.objects.filter(fk_digisig__in=partset).select_related('fk_connection')
+
+		# for i in part_object:
+		# 	part_dic = {}
+		# 	part_dic["id_item"] = i.fk_item.id_item
+		# 	part_dic["shelfmark"] = i.fk_item.shelfmark
+		# 	part_dic["repository"] = i.fk_item.fk_repository.repository_fulltitle
+		# 	itemset[i.id_part] = part_dic
+
+		# for r in representation_part:
+		# 	connection = r.fk_connection
+		# 	itemset[r.fk_digisig]["connection"] = connection.thumb
+		# 	itemset[r.fk_digisig]["medium"] = r.representation_filename
+		# 	itemset[r.fk_digisig]["thumb"] = r.representation_thumbnail_hash
+		# 	itemset[r.fk_digisig]["id_representation"] = r.id_representation 
+
+		# context = {
+		# 	'pagetitle': pagetitle,
+		# 	'itemset': itemset,
+		# 	'totalrows': totalrows,
+		# 	'totaldisplay': totaldisplay,
+		# 	'form': form,
+		# 	# 'Repositorycases': Repositorycases,
+		# 	# 'Seriescases': Seriescases,
+		# 	# 'Shelfmarkcases': Shelfmarkcases,
+		# 	'series_object': series_object,
+		# 	# 'Phrasecases': Phrasecases,
+		# 	'pagecountercurrent': pagecountercurrent,
+		# 	'pagecounternext': pagecounternext,
+		# 	'pagecounternextnext': pagecounternextnext,
+		# 	}
+
+		# template = loader.get_template('digisig/search_item.html')
+		# return HttpResponse(template.render(context, request))
 
 ### Search Seals
 
 	if searchtype == "seals":
 
 		pagetitle = 'Impressions, Matrices and Casts'
-		manifestation_object = sealsearch()
+
+		form = ManifestationForm(request.POST or None)
+		form = await manifestationsform_options(form)
+
+		# code prepares the array of series and repositories to pass to the frontend
+		series_object= await seriesset()
 
 		qpagination = 1
 
+		manifestation_object = await sealsearch2()
+
 		if request.method == 'POST':
-			form = ManifestationForm(request.POST)
 
 			if form.is_valid(): 
-				manifestation_object, qpagination = sealsearchfilter(manifestation_object, form)
-				manifestation_object, totalrows, totaldisplay, qpagination = defaultpagination(manifestation_object, qpagination)
+				manifestation_object, qpagination = await sealsearchfilter(manifestation_object, form)
 
-			else:
-				manifestation_object, totalrows, totaldisplay, qpagination = defaultpagination(manifestation_object, qpagination)			
-
-		else:
-			form = ManifestationForm()
-			manifestation_object, totalrows, totaldisplay, qpagination = defaultpagination(manifestation_object, qpagination)			
+		manifestation_pageobject, totalrows, totaldisplay, qpagination = await defaultpagination(manifestation_object, qpagination)
 
 		pagecountercurrent = qpagination 
 		pagecounternext = qpagination + 1
 		pagecounternextnext = qpagination +2
 
-		## prepare the data for each displayed seal manifestation
+		representation_set = await representationsetgenerate(manifestation_pageobject)
+		manifestation_set = await manifestation_searchsetgenerate(manifestation_pageobject)
 
-		manifestation_set = {}
-
-		for e in manifestation_object:
-			manifestation_dic = {}
-			manifestation_dic = manifestation_fetchrepresentations(e, manifestation_dic)
-			manifestation_dic = manifestation_fetchsealdescriptions(e, manifestation_dic)
-			manifestation_dic = manifestation_fetchlocations(e, manifestation_dic)
-			manifestation_dic = manifestation_fetchstandardvalues(e, manifestation_dic)
-
-			manifestation_set[e.id_manifestation] = manifestation_dic
+		manifestation_display_dic, description_set, listofseals, listofevents = await manifestation_displaysetgenerate(manifestation_set, representation_set)
+		description_set = await sealdescription_displaysetgenerate2(listofseals, description_set)
+		location_set = await location_displaysetgenerate(listofevents)
+		manifestation_displayset = await finalassembly_displaysetgenerate(manifestation_display_dic, location_set, description_set)
 
 
-	# code prepares the array of series and repositories to pass to the frontend
-		series_object= seriesset()
 
 		context = {
 			'pagetitle': pagetitle, 
-			'manifestation_set': manifestation_set,
+			'manifestation_set': manifestation_displayset,
 			'totalrows': totalrows,
 			'totaldisplay': totaldisplay,
 			'form': form,
@@ -811,61 +863,37 @@ def search(request, searchtype):
 
 		template = loader.get_template('digisig/search_seal.html')                    
 
-		print("Compute Time:", time()-starttime)
 		return HttpResponse(template.render(context, request))
 
 ###### Search Seal Descriptions ##########
 
 	if searchtype == "sealdescriptions":
 
-		sealdescription_object = Sealdescription.objects.all().select_related('fk_collection').select_related('fk_seal').order_by('id_sealdescription')
 		pagetitle = 'Seal Descriptions'
 
+		form = SealdescriptionForm(request.POST or None)
+		form = await sealdescriptionform_options(form)
+
+		qpagination = 1
+
+		sealdescription_object = await sealdescription_search()
+
 		if request.method == 'POST':
-			form = SealdescriptionForm(request.POST)
-			if form.is_valid():
-				# challengeurl(request, searchtype, form)
-				qcollection = form.cleaned_data['collection']   
-				qcataloguecode = form.cleaned_data['cataloguecode']
-				qcataloguemotif = form.cleaned_data['cataloguemotif']
-				qcataloguename = form.cleaned_data['cataloguename']
-				qpagination = form.cleaned_data['pagination']
 
-				if qcollection.isdigit():
-					if int(qcollection) > 0:
-						if int(qcollection) == 30000287:
-							print("all collections")
-						else: sealdescription_object = sealdescription_object.filter(fk_collection=qcollection)
-						
-						print (len(sealdescription_object))
-				if len(qcataloguecode) > 0:
-					sealdescription_object = sealdescription_object.filter(sealdescription_identifier__icontains=qcataloguecode)
-					print (len(sealdescription_object))
+			if form.is_valid(): 
+				sealdescription_object, qpagination = await sealdescriptionsearchfilter(sealdescription_object, form)
 
-				if len(qcataloguemotif) > 0:
-					sealdescription_object = sealdescription_object.filter(
-						Q(motif_obverse__contains=qcataloguemotif) | Q(motif_reverse__icontains=qcataloguemotif)
-						)
-					print (len(sealdescription_object))
+		sealdescription_object, totalrows, totaldisplay, qpagination = await defaultpagination(sealdescription_object, qpagination) 
 
-				if len(qcataloguename) > 0:
-					sealdescription_object = sealdescription_object.filter(sealdescription_title__icontains=qcataloguename)
-					print (len(sealdescription_object))
-
-				form = SealdescriptionForm(request.POST)
-
-		else:
-			form = SealdescriptionForm()
-			qpagination = 1
-
-		sealdescription_object, totalrows, totaldisplay, qpagination = defaultpagination(sealdescription_object, qpagination) 
 		pagecountercurrent = qpagination
 		pagecounternext = qpagination + 1
 		pagecounternextnext = qpagination +2		
 
+		sealdescription_displayset = await sealdescription_displaysetgenerate(sealdescription_object)
+
 		context = {
 			'pagetitle': pagetitle,
-			'sealdescription_object': sealdescription_object,
+			'sealdescription_object': sealdescription_displayset,
 			'totalrows': totalrows,
 			'totaldisplay': totaldisplay,
 			'form': form,
@@ -875,7 +903,6 @@ def search(request, searchtype):
 			}
 
 		template = loader.get_template('digisig/search_sealdescription.html')
-		print("Compute Time:", time()-starttime)
 		return HttpResponse(template.render(context, request))
 
 
@@ -883,56 +910,37 @@ def search(request, searchtype):
 	
 	if searchtype == "places":
 
-		placeset = Location.objects.filter(locationname__locationreference__fk_locationstatus=1, longitude__isnull=False, latitude__isnull=False).order_by('location')
+		pagetitle = 'Search Places'
 
-		pagetitle = 'Places'
-		regionselect = False
+		form = PlaceForm(request.POST or None)
+		form = await placeform_options(form)
+
 		qpagination = 1
-		place_dict = []
-		center_long = 0
-		center_lat = 55
+
+		place_object = await place_search()
 
 		if request.method == 'POST':
 
-			form = PlaceForm(request.POST)
-			if form.is_valid():
-				qregion = form.cleaned_data['region']
-				qcounty = form.cleaned_data['county']   
-				qpagination = form.cleaned_data['pagination']
-				qlocation_name = form.cleaned_data['location_name']
+			if form.is_valid(): 
+				place_object, qpagination = await placesearchfilter(place_object, form)
 
-				if qregion.isdigit():
-					if int(qregion) > 0:
-						placeset = placeset.filter(fk_region__fk_regiondisplay=qregion)
-						regionselect = True
+		place_object = await placeobjectannotate(place_object)
 
-				if regionselect == False:
-					if qcounty.isdigit():
-						if int(qcounty) > 0:
-							placeset = placeset.filter(fk_region=qcounty)
+		placepage_object, totalrows, totaldisplay, qpagination = await defaultpagination(place_object, qpagination) 
 
-				if len(qlocation_name) > 0:
-					placeset = placeset.filter(location__icontains=qlocation_name)                  
-
-				form = PlaceForm(request.POST)
-
-		else:
-			form = PlaceForm()
-			qpagination = 1
-
-		placeset = placeset.annotate(count=Count('locationname__locationreference'))
-
-		placeset, totalrows, totaldisplay, qpagination = defaultpagination(placeset, qpagination) 
 		pagecountercurrent = qpagination
 		pagecounternext = qpagination + 1
 		pagecounternextnext = qpagination +2		
 
-		if len(placeset) > 0:
-			place_dict, center_long, center_lat = mapgenerator2(placeset)
+		# place_dict = []
+		# center_long = 0
+		# center_lat = 55
+
+		place_dict, center_long, center_lat = await mapgenerator2(placepage_object)
 
 		context = {
 			'pagetitle': pagetitle,
-			'placeset': placeset,
+			'placeset': placepage_object,
 			'place_dict': place_dict,
 			'center_long': center_long,
 			'center_lat': center_lat,
@@ -945,15 +953,78 @@ def search(request, searchtype):
 			}
 
 		template = loader.get_template('digisig/search_place.html')
-		print("Compute Time:", time()-starttime)
 		return HttpResponse(template.render(context, request))
+
+
+
+		# placeset = Location.objects.filter(locationname__locationreference__fk_locationstatus=1, longitude__isnull=False, latitude__isnull=False).order_by('location')
+
+		# pagetitle = 'Places'
+		# regionselect = False
+		# qpagination = 1
+		# place_dict = []
+		# center_long = 0
+		# center_lat = 55
+
+		# if request.method == 'POST':
+
+		# 	form = PlaceForm(request.POST)
+		# 	if form.is_valid():
+		# 		qregion = form.cleaned_data['region']
+		# 		qcounty = form.cleaned_data['county']   
+		# 		qpagination = form.cleaned_data['pagination']
+		# 		qlocation_name = form.cleaned_data['location_name']
+
+		# 		if qregion.isdigit():
+		# 			if int(qregion) > 0:
+		# 				placeset = placeset.filter(fk_region__fk_regiondisplay=qregion)
+		# 				regionselect = True
+
+		# 		if regionselect == False:
+		# 			if qcounty.isdigit():
+		# 				if int(qcounty) > 0:
+		# 					placeset = placeset.filter(fk_region=qcounty)
+
+		# 		if len(qlocation_name) > 0:
+		# 			placeset = placeset.filter(location__icontains=qlocation_name)                  
+
+		# 		form = PlaceForm(request.POST)
+
+		# else:
+		# 	form = PlaceForm()
+		# 	qpagination = 1
+
+		# placeset = placeset.annotate(count=Count('locationname__locationreference'))
+
+		# placeset, totalrows, totaldisplay, qpagination = defaultpagination(placeset, qpagination) 
+		# pagecountercurrent = qpagination
+		# pagecounternext = qpagination + 1
+		# pagecounternextnext = qpagination +2		
+
+		# if len(placeset) > 0:
+		# 	place_dict, center_long, center_lat = mapgenerator2(placeset)
+
+		# context = {
+		# 	'pagetitle': pagetitle,
+		# 	'placeset': placeset,
+		# 	'place_dict': place_dict,
+		# 	'center_long': center_long,
+		# 	'center_lat': center_lat,
+		# 	'totalrows': totalrows,
+		# 	'totaldisplay': totaldisplay,
+		# 	'form': form,
+		# 	'pagecountercurrent': pagecountercurrent,
+		# 	'pagecounternext': pagecounternext,
+		# 	'pagecounternextnext': pagecounternextnext,
+		# 	}
+
+		# template = loader.get_template('digisig/search_place.html')
+		# return HttpResponse(template.render(context, request))
 
 
 ######################### information ################################
 
 def information(request, infotype):
-
-	print (infotype)
 
 	if infotype == "changelog":
 		pagetitle = 'title'
@@ -978,8 +1049,6 @@ def information(request, infotype):
 		shape_object = Terminology.objects.filter(digisig_column='shape').order_by('term_name')
 		nature_object = Terminology.objects.filter(digisig_column='nature').order_by('term_name')
 
-
-		print (class_object, shape_object)
 		context = {
 			'pagetitle': pagetitle,
 			'class_object': class_object,
@@ -1217,8 +1286,6 @@ def information(request, infotype):
 
 		time5 = gettime(start_time)
 
-		print (time1, time1b, time1c, time2, time2a, time2b, time3, time4, time5)
-
 		template = loader.get_template('digisig/machinelearning_info.html')
 
 		loadtime = gettime(start_time)
@@ -1430,7 +1497,6 @@ def actor_page(request, digisig_entity_number):
 		'reference_set': reference_set,
 		}
 
-	print("Compute Time:", time()-starttime)
 	return HttpResponse(template.render(context, request))
 
 
@@ -1440,7 +1506,6 @@ def actor_page(request, digisig_entity_number):
 
 def collection_page(request, digisig_entity_number):
 	pagetitle = 'Collection'
-	starttime = time()
 	
 	### This code prepares collection info box and the data for charts on the collection page
 
@@ -1457,7 +1522,6 @@ def collection_page(request, digisig_entity_number):
 	collection_dic["notes"] = collection.notes
 	contributor_dic = sealdescription_contributorgenerate(collection, collection_dic)
 
-	print("Compute Time1:", time()-starttime)
 
 	sealdescription_set = Sealdescription.objects.filter(fk_seal__gt=1).select_related('fk_seal')
 
@@ -1477,21 +1541,21 @@ def collection_page(request, digisig_entity_number):
 		collection_dic["totalseals"] = sealdescription_set.distinct(
 			'fk_seal').count()
 
-	print("Compute Time2:", time()-starttime)
+
 	### generate the collection info data for chart 1
 	actorscount = sealdescription_set.filter(fk_seal__fk_individual_realizer__gt=10000019).count()
 
-	print("Compute Time2a:", time()-starttime)
+
 	datecount =sealdescription_set.filter(fk_seal__date_origin__gt=1).count()
 
-	print("Compute Time2b:", time()-starttime)
+
 
 	classcount = sealdescription_set.filter(
 		fk_seal__fk_seal_face__fk_class__isnull=False).exclude(
 		fk_seal__fk_seal_face__fk_class=10000367).exclude(
 		fk_seal__fk_seal_face__fk_class=10001007).count()
 
-	print("Compute Time2c:", time()-starttime)
+
 
 	# placecount = Locationname.objects.exclude(
 	# 	locationreference__fk_locationstatus=2).filter(
@@ -1504,11 +1568,11 @@ def collection_page(request, digisig_entity_number):
 	# 	fk_seal__fk_seal_face__manifestation__fk_support__fk_part__fk_event__fk_event_locationreference__fk_locationname__fk_location=7042).count()
 
 
-	print("Compute Time2d:", time()-starttime)
+
 
 	facecount = sealdescription_set.filter(fk_seal__fk_seal_face__fk_faceterm=1).distinct('fk_seal__fk_seal_face').count() 
 
-	print("Compute Time2e:", time()-starttime)
+
 
 	actors = calpercent(collection_dic["totalseals"], actorscount)
 	date = calpercent(collection_dic["totalseals"], datecount)
@@ -1521,7 +1585,7 @@ def collection_page(request, digisig_entity_number):
 	data1 = [actors, date, fclass]
 	labels1 = ["actor", "date", "class"]
 
-	print("Compute Time3:", time()-starttime)
+
 	### generate the collection info data for chart 2 -- 'Percentage of seals per class',
 
 	result = Terminology.objects.filter(
@@ -1542,19 +1606,19 @@ def collection_page(request, digisig_entity_number):
 			data2.append((r.num_cases / totalcases) * 100)
 			labels2.append(r.term_name)
 
-	print("Compute Time3a:", time()-starttime)
+
 	### generate the collection info data for chart 3  -- 'Percentage of seals by period',
 
 	data3, labels3 = datedistribution(qcollection)
 
 	# ### generate the collection info data for chart 4 -- seals per region,
 
-	print("Compute Time3b:", time()-starttime)
+
 	## data for colorpeth map
 	maplayer1 = get_object_or_404(Jsonstorage, id_jsonfile=1)
 	maplayer = json.loads(maplayer1.jsonfiletxt)
 
-	print("Compute Time3d:", time()-starttime)
+
 	## data for region map
 	# make circles data -- defaults -- note that this code is very similar to the function mapdata2
 	#data for region map 
@@ -1574,13 +1638,13 @@ def collection_page(request, digisig_entity_number):
 				'region__location__locationname__locationreference__fk_event__part__fk_part__fk_support')).values(
 		'id_regiondisplay', 'id_regiondisplay', 'regiondisplay_label', 'numregions', 'regiondisplay_long', 'regiondisplay_lat')
 
-	print("Compute Time3e:", time()-starttime)
+
 
 	region_dict = mapgenerator3(regiondisplayset)
 
 	# ### generate the collection info data for chart 5 --  'Percentage of actors per class',
 
-	print("Compute Time4:", time()-starttime)
+
 
 	#for print group totals (legacy)
 	if (qcollection == 30000287):
@@ -1618,7 +1682,7 @@ def collection_page(request, digisig_entity_number):
 		'labels3': labels3,
 		'data3': data3,
 		# 'labels4': labels4,
-		# 'data4': data4,
+		# 'data4': data4,await 
 		'region_dict': region_dict,
 		'maplayer': maplayer,
 		'labels5': labels5,
@@ -1627,8 +1691,7 @@ def collection_page(request, digisig_entity_number):
 	}
 		
 	template = loader.get_template('digisig/collection.html') 
-
-	print("Compute Time5:", time()-starttime)                  
+                 
 	return HttpResponse(template.render(context, request))
 
 
@@ -1637,101 +1700,30 @@ def collection_page(request, digisig_entity_number):
 
 ############################## Item #############################
 
-def item_page(request, digisig_entity_number):
+async def item_page(request, digisig_entity_number):
 
-	try:
-		manifestation_object = sealsearch()
-		manifestation_object = manifestation_object.filter(
-			fk_support__fk_part__fk_item=digisig_entity_number).order_by(
-			"fk_support__fk_number_currentposition")
+	part_dic = await partobjectforitem_define(digisig_entity_number)
 
-		firstmanifestation = manifestation_object.first()
-		item_object = firstmanifestation.fk_support.fk_part.fk_item
-		part_object = firstmanifestation.fk_support.fk_part
-		event_object = firstmanifestation.fk_support.fk_part.fk_event
+	if len(part_dic) == 1:
 
-	except:
-		part_object = Part.objects.filter(fk_item=digisig_entity_number).select_related(
-			'fk_item__fk_repository').select_related(
-			'fk_event').first()
-		event_object = part_object.fk_event
-		item_object = part_object.fk_item
-
-	pagetitle = item_object.fk_repository.repository_fulltitle + " " + item_object.shelfmark
-
-	event_dic = {}
-	event_dic["part_object"] = part_object
-	event_dic = eventset_datedata(event_object, event_dic)
-	event_dic = eventset_locationdata(event_object, event_dic)
-	event_dic = eventset_references(event_object, event_dic)
-
-	place_object = event_dic["location"]
-	mapdic = mapgenerator(place_object, 0)
-	externallinkset = externallinkgenerator(digisig_entity_number)
-
-	#for part images (code to show images not implemented yet)
-	representationset = {}
-
-	try: 
-		representation_part = Representation.objects.filter(fk_digisig=part_object.id_part).select_related('fk_connection')
-
-		for t in representation_part:
-			#Holder for representation info
-			representation_dic = {}
-
-			#for all images
-			connection = t.fk_connection
-			representation_dic["connection"] = t.fk_connection
-			representation_dic["connection_thumb"] = t.fk_connection.thumb
-			representation_dic["connection_medium"] = t.fk_connection.medium
-			representation_dic["representation_filename"] = t.representation_filename_hash
-			representation_dic["representation_thumbnail"] = t.representation_thumbnail_hash
-			representation_dic["id_representation"] = t.id_representation 
-			representation_dic["fk_digisig"] = t.fk_digisig
-			representation_dic["repository_fulltitle"] = item_object.fk_repository.repository_fulltitle
-			representation_dic["shelfmark"] = item_object.shelfmark
-			representation_dic["fk_item"] = item_object.id_item
-			representationset[t.id_representation] = representation_dic
-
-	except:
-		print ('no image of document available')
-
-	## prepare the data for each displayed seal manifestation
-
-	manifestation_set = {}
-
-	try:
-		for e in manifestation_object:
-			manifestation_dic = {}
-			manifestation_dic = manifestation_fetchrepresentations(e, manifestation_dic)
-			manifestation_dic = manifestation_fetchsealdescriptions(e, manifestation_dic)
-			manifestation_dic = manifestation_fetchstandardvalues (e, manifestation_dic)
-			manifestation_set[e.id_manifestation] = manifestation_dic
-
-		totalrows = manifestation_object.count
-		totaldisplay = len(manifestation_set)
-
-	except:
-		totalrows = 0
-		totaldisplay = 0
-
-	template = loader.get_template('digisig/item.html')
-	context = {
-		'pagetitle': pagetitle,
-		'item_object': item_object,
-		'event_dic': event_dic,
-		'mapdic': mapdic,
-		'representationset': representationset,
-		'manifestationset': manifestation_set,
-		'totalrows': totalrows,
-		'totaldisplay': totaldisplay,
-		'externallink_object': externallinkset,
-		#'location': location,
-		#'location_dict': location_dict,
-		}
+		for key, part_info in part_dic.items():
+			template = loader.get_template('digisig/item.html')
+			context = {
+				'pagetitle': part_info['pagetitle'],
+				'part_object': part_info,
+				'mapdic': part_info['mapdic'],
+				}
+	else:
+		template = loader.get_template('digisig/item.html')
+		for key, part_info in part_dic.items():
+			template = loader.get_template('digisig/item.html')
+			context = {
+				'pagetitle': part_info['pagetitle'],
+				'part_object': part_info,
+				'mapdic': part_info['mapdic'],
+				}
 
 	return HttpResponse(template.render(context, request))
-
 
 ############################ Manifestation #####################
 
@@ -1791,7 +1783,6 @@ def manifestation_page(request, digisig_entity_number):
 				'manifestation_object': manifestation_object,
 		}
 
-	print("Compute Time:", time()-starttime)
 	return HttpResponse(template.render(context, request))
 
 
@@ -1867,8 +1858,6 @@ def place_page(request, digisig_entity_number):
 		'pagecounternextnext': pagecounternextnext,
 		}
 
-	print("Compute Time:", time()-starttime)
-
 	return HttpResponse(template.render(context, request))
 
 
@@ -1928,34 +1917,52 @@ def representation_page(request, digisig_entity_number):
 		'representation_dic': representation_dic,
 		}
 
-	print("Compute Time:", time()-starttime)
 	return HttpResponse(template.render(context, request))
 
 
 ############################## Seal #############################
 
 
-def seal_page(request, digisig_entity_number):
+async def seal_page(request, digisig_entity_number):
 	pagetitle = 'title'
 	template = loader.get_template('digisig/seal.html')
 
-	seal_info, face_set, face_obverse = sealmetadata(digisig_entity_number)
+	manifestation_set = await seal_searchsetgenerate(digisig_entity_number)
+	representation_set = await representationsetgenerate2(manifestation_set)
+	manifestation_display_dic, description_set, listofseals, listofevents = await manifestation_displaysetgenerate(manifestation_set, representation_set)
+	description_set = await sealdescription_displaysetgenerate2(listofseals, description_set)
+	# location_set = await location_displaysetgenerate(listofevents)
 
-	seal_info["actor_label"] = namecompiler(face_obverse.fk_seal.fk_individual_realizer)
-	seal_info["obverse"] = sealinfo_classvalue(face_obverse)
+	seal_info = await seal_displaysetgenerate(manifestation_display_dic, description_set, digisig_entity_number)
 
-	try: 
-		face_reverse = face_set.get(fk_faceterm=2)
-		seal_info["reverse"] = sealinfo_classvalue(face_reverse)
+	#manifestation_displayset = await finalassembly_displaysetgenerate(manifestation_display_dic, location_set, description_set)
 
-	except:
-		print ("no reverse")
 
-	manifestation_object = sealsearch()
 
-	seal_info["manifestation_set"] = sealsearchmanifestationmetadata(manifestation_object.filter(fk_face__fk_seal=digisig_entity_number))
+	#manifestation_object = await sealsearch3(digisig_entity_number)
 
-	seal_info["totalrows"] = len(seal_info["manifestation_set"])
+
+
+
+
+
+	# seal_info, face_set, face_obverse = await sealmetadata(digisig_entity_number)
+
+	# seal_info["actor_label"] = namecompiler(face_obverse.fk_seal.fk_individual_realizer)
+	# seal_info["obverse"] = await sealinfo_classvalue(face_obverse)
+
+	# try: 
+	# 	face_reverse = face_set.get(fk_faceterm=2)
+	# 	seal_info["reverse"] = sealinfo_classvalue(face_reverse)
+
+	# except:
+	# 	print ("no reverse")
+
+	# manifestation_object = await sealsearch()
+
+	# seal_info["manifestation_set"] = sealsearchmanifestationmetadata(manifestation_object.filter(fk_face__fk_seal=digisig_entity_number))
+
+	# seal_info["totalrows"] = len(seal_info["manifestation_set"])
 
 	context = {
 		'pagetitle': pagetitle,
@@ -1968,24 +1975,18 @@ def seal_page(request, digisig_entity_number):
 ############################## Seal description #############################
 
 
-def sealdescription_page(request, digisig_entity_number):
-
-	starttime = time()
+async def sealdescription_page(request, digisig_entity_number):
 
 	template = loader.get_template('digisig/sealdescription.html')
 
-	sealdescription_object = Sealdescription.objects.select_related(
-		'fk_collection').select_related(
-		'fk_seal').get(
-		id_sealdescription=digisig_entity_number)
+	sealdescription_object = await sealdescription_fetchobject(digisig_entity_number)
 	
 	pagetitle = sealdescription_object.fk_collection.collection_title
 
-	sealdescription_dic = {}
-	sealdescription_dic= sealdescription_fetchrepresentation(sealdescription_object, sealdescription_dic)
-	sealdescription_dic = sealdescription_contributorgenerate(sealdescription_object.fk_collection, sealdescription_dic)
 
-	externallinkset = externallinkgenerator(digisig_entity_number)
+	sealdescription_dic= await sealdescription_fetchrepresentation(sealdescription_object)
+	sealdescription_dic = await sealdescription_contributorgenerate(sealdescription_object.fk_collection, sealdescription_dic)
+	externallinkset = await externallinkgenerator(digisig_entity_number)
 
 	context = {
 		'pagetitle': pagetitle,
@@ -1994,8 +1995,6 @@ def sealdescription_page(request, digisig_entity_number):
 		'externallinkset': externallinkset, 
 		}
 
-	print (sealdescription_dic)
-	print("Compute Time:", time()-starttime)
 	return HttpResponse(template.render(context, request))
 
 

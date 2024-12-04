@@ -133,15 +133,11 @@ async def search(request, searchtype):
 				qpagination = form.cleaned_data['pagination']
 				qname = form.cleaned_data['name']
 				qnamelen = len(qname)
-				# if qnamelen > 0:
-				# 	individual_object = await personsearch_people(qnamelen, qname, londonevents)
 				form = PeopleForm(request.POST)
 
 		else:
 			qnamelen = 0
 			qname = ""
-			#individual_object = await personsearch_people(qnamelen, qname, qpagination, londonevents)
-			#form = PeopleForm()
 			qpagination = 1
 
 		individual_set, totalrows, totaldisplay, qpagination = await personsearch_people(qnamelen, qname, qpagination, londonevents) 
@@ -351,8 +347,6 @@ def part_page(request, witness_entity_number):
 	except:
 		print ('no image of document available')
 
-	## prepare the data for each displayed seal manifestation
-
 	template = loader.get_template('witness/item.html')
 	context = {
 		'pagetitle': pagetitle,
@@ -373,8 +367,6 @@ def part_page(request, witness_entity_number):
 
 
 def item_page(request, witness_entity_number):
-
-	starttime = time()
 
 	try:
 		manifestation_object = sealsearch()
@@ -449,8 +441,6 @@ def item_page(request, witness_entity_number):
 	except:
 		totalrows = 0
 		totaldisplay = 0
-
-	print("Compute Time:", time()-starttime)
 
 	template = loader.get_template('witness/item.html')
 	context = {

@@ -20,7 +20,71 @@ from asgiref.sync import sync_to_async
 from django.urls import reverse
 
 
+#### exhitions
+@sync_to_async
+def exhibitgenerate():
 
+	# create the set of RTIs
+	representation_set = {}
+
+	# select all representations that are RTIs....
+	rti_set = Representation.objects.filter(fk_representation_type=2).values('fk_digisig', 'id_representation')
+
+	rti_set_filter =rti_set.values('fk_digisig')
+
+	rti_set_targets = rti_set.values_list('fk_digisig', 'id_representation', named=True)
+
+	representation_objects = Representation.objects.filter(
+		fk_digisig__in=rti_set_filter, primacy=1).select_related(
+		'fk_connection').values('fk_connection__thumb', 'representation_thumbnail_hash', 'fk_connection__medium', 'representation_filename_hash', 'fk_digisig')
+
+	for r in representation_objects:
+		representation_dic = r
+
+		for l in rti_set_targets:
+			if l.fk_digisig == r['fk_digisig']:
+				r['id_num'] = l.id_representation
+				representation_set[l.id_representation] = representation_dic
+				break
+
+	return (representation_set)
+
+
+### discovery
+@sync_to_async
+def collectionform_options(form):
+	#Form for collections, map and time analysis
+
+	collections_options = [('30000287', 'All Collections')]
+	graphchoices = [('1', 'Seal Descriptions'), ('2', 'Seal Impressions, Matrices and Casts')]
+	mapchoices = [('1', 'Places'), ('2', 'Counties'), ('3', 'Regions')]
+	sealtype_options = [('', 'None')]
+	period_options = [('', 'None')]
+	timegroup_options2 = []
+
+	for e in Collection.objects.order_by('collection_shorttitle'):
+		collections_options.append((e.id_collection, e.collection_shorttitle))
+
+	for e in Sealtype.objects.order_by('sealtype_name'):
+		sealtype_options.append((e.id_sealtype, e.sealtype_name))
+
+	for e in TimegroupC.objects.order_by('pk_timegroup_c'):
+		timegroup_options2.append((e.pk_timegroup_c, e.timegroup_c_range))
+
+
+	form.fields['collection'].choices = collections_options
+	form.fields['mapchoice'].choices = mapchoices
+	form.fields['timechoice'].choices = timegroup_options2
+	form.fields['sealtypechoice'].choices = sealtype_options
+
+	# collection = forms.ChoiceField(choices=collections_options, required=False)
+	# #graphchoice = forms.ChoiceField(choices=graphchoices, required=False)
+	# mapchoice = forms.ChoiceField(choices=mapchoices, required=False)
+	# timechoice = forms.ChoiceField(choices=timegroup_options2, required=False)
+	# # classname = forms.ChoiceField(label='Digisig Class', choices=classname_options, required=False)
+	# sealtypechoice = forms.ChoiceField(choices=sealtype_options, required=False)
+
+	return(form)
 
 #####parish search
 
@@ -34,7 +98,6 @@ def londonparishes_options():
 		londonparishes_options.append((e.id_location, e.location))
 
 	return(londonparishes_options)
-
 
 #####person search
 
@@ -89,6 +152,50 @@ def personsearch_people(qnamelen, qname, qpagination, londonevents):
 	return(individual_set, totalrows, totaldisplay, qpagination)
 
 ## a function to apply this complex filter to actor searches
+
+
+@sync_to_async
+def peoplesearchfilter(individual_object, form):
+
+	qname = form.cleaned_data['name']   
+	qpagination = form.cleaned_data['pagination']
+	qgroup = form.cleaned_data['group']
+	qclass = form.cleaned_data['personclass']
+	qorder = form.cleaned_data['personorder']
+
+	if qgroup.isdigit():
+		qgroup = int(qgroup)
+		if int(qgroup) == 2: individual_object = individual_object.filter(corporateentity=True)
+		if int(qgroup) == 1: individual_object = individual_object.filter(corporateentity=False)
+
+	if qnamelen > 0:
+		individual_object = individual_object.filter(
+			Q(
+				fullname_modern__icontains=qname) | Q(
+				fullname_original__icontains=qname) | Q(
+				fk_descriptor_title__descriptor_original__icontains=qname)| Q(
+				fk_descriptor_name__descriptor_original__icontains=qname)| Q(
+				fk_descriptor_prefix1__prefix__icontains=qname)| Q(
+				fk_descriptor_descriptor1__descriptor_original__icontains=qname)| Q(
+				fk_descriptor_prefix2__prefix__icontains=qname)| Q(
+				fk_descriptor_descriptor2__descriptor_original__icontains=qname)| Q(
+				fk_descriptor_prefix3__prefix__icontains=qname)| Q(
+				fk_descriptor_descriptor3__descriptor_original__icontains=qname)) 
+
+	if qclass.isdigit():
+		if int(qclass) > 0:
+			qclass = int(qclass)
+			individual_object = individual_object.filter(fk_group_class=qclass)
+
+	if qorder.isdigit():
+		if int(qorder) > 0:
+			qorder = int(qorder)
+			individual_object = individual_object.filter(fk_group_order=qorder)
+
+	return (individual_object)
+
+
+
 
 @sync_to_async
 def parishvalue(witness_entity_number):
@@ -1065,8 +1172,9 @@ def mapgenerator(location_object, count_in):
 	return(mapdic)
 
 
-
+@sync_to_async
 def mapgenerator2(location_object):
+
 	center_lat = []
 	center_long = []
 
@@ -1107,8 +1215,7 @@ def mapgenerator2(location_object):
 
 	return(mapdic, center_long, center_lat)
 
-
-
+@sync_to_async
 def seriesset():
 	series_object = serializers.serialize('json', Series.objects.all(), fields=('pk_series','fk_repository'))
 
@@ -1250,24 +1357,27 @@ def collectiondata(collectionid, sealcount):
 
 	return(collectiondatapackage)
 
-## a function to apply this complex filter to actor searches
+
+@sync_to_async
 def individualsearch():
 
-	individual_object = Individual.objects.select_related(
-	'fk_group').select_related(
-	'fk_descriptor_title').select_related(
-	'fk_descriptor_name').select_related(
-	'fk_descriptor_prefix1').select_related(
-	'fk_descriptor_descriptor1').select_related(
-	'fk_separator_1').select_related(
-	'fk_descriptor_prefix2').select_related(
-	'fk_descriptor_descriptor2').select_related(
-	'fk_descriptor_prefix3').select_related(
-	'fk_descriptor_descriptor3').select_related(
-	'fk_group__fk_group_order').select_related(
-	'fk_group__fk_group_class')
+	individual_object = Individual.objects.exclude(
+		id_individual=10000019).select_related(
+		'fk_group').select_related(
+		'fk_descriptor_title').select_related(
+		'fk_descriptor_name').select_related(
+		'fk_descriptor_prefix1').select_related(
+		'fk_descriptor_descriptor1').select_related(
+		'fk_separator_1').select_related(
+		'fk_descriptor_prefix2').select_related(
+		'fk_descriptor_descriptor2').select_related(
+		'fk_descriptor_prefix3').select_related(
+		'fk_descriptor_descriptor3').select_related(
+		'fk_group__fk_group_order').select_related(
+		'fk_group__fk_group_class').order_by('fk_group__group_name', 'fk_descriptor_name')
 
 	return(individual_object)
+
 
 def referencecollectindividual(reference_set):
 	reference_set = reference_set.select_related(
@@ -1419,6 +1529,316 @@ def representationmetadata_sealdescription(representation_case, representation_d
 
 	return(representation_dic)
 
+
+@sync_to_async
+def itemform_options(form):
+
+	series_all_options = [('', 'None')]
+	repositories_all_options = [('', 'None')]
+
+	for e in Series.objects.exclude(series_name__istartswith="z").order_by('fk_repository'):
+		repository = e.fk_repository
+		appendvalue = repository.repository + " : " + e.series_name
+		series_all_options.append((e.pk_series, appendvalue))
+
+	for e in Repository.objects.order_by('repository_fulltitle'):
+		repositories_all_options.append((e.fk_repository, e.repository_fulltitle))
+
+	form.fields['series'].choices = series_all_options
+	form.fields['repository'].choices = repositories_all_options
+
+	return (form)
+
+@sync_to_async
+def itemsearch():
+
+	item_object = Item.objects.all().order_by(
+	"fk_repository", "fk_series", "classmark_number3", "classmark_number2", "classmark_number1").select_related(
+	'fk_repository')
+
+	return (item_object)
+
+@sync_to_async
+def itemsearchfilter(item_object, form):
+
+	qrepository = int(form.cleaned_data['repository'])
+	qseries = int(form.cleaned_data['series'])
+	qshelfmark = form.cleaned_data['shelfmark']
+	qsearchphrase = form.cleaned_data['searchphrase']
+	qpagination = int(form.cleaned_data['pagination'])
+
+	if series > 0:
+		item_object = item_object.filter(fk_series=series)
+
+	elif repository > 0:
+		item_object = item_object.filter(fk_repository=repository)
+
+	else:
+		print ("No repository or series specified")
+
+	if len(shelfmark) > 0:
+		item_object = item_object.filter(shelfmark__icontains=shelfmark)
+
+	# if len(searchphrase) > 0:
+	# 	item_object = item_object.filter(part_description__icontains=searchphrase)
+
+	return (item_object, qpagination)
+
+
+@sync_to_async
+def item_displaysetgenerate(item_pageobject):
+
+	## not implemented yet
+
+	# listofitems = []
+
+	# for i in item_pageobject:
+	# 	listofitems.append(i.id_item)
+
+	# part_object = Part.objects.filter(fk_item__in=listofitems)
+
+	# partset = []
+
+	# for p in part_object.object_list:
+	# 	partset.append(p.id_part)
+
+	# representation_part = Representation.objects.filter(fk_digisig__in=partset).select_related('fk_connection')
+
+	# for i in part_object:
+	# 	part_dic = {}
+	# 	part_dic["id_item"] = i.fk_item.id_item
+	# 	part_dic["shelfmark"] = i.fk_item.shelfmark
+	# 	part_dic["repository"] = i.fk_item.fk_repository.repository_fulltitle
+	# 	itemset[i.id_part] = part_dic
+
+	# for r in representation_part:
+	# 	connection = r.fk_connection
+	# 	itemset[r.fk_digisig]["connection"] = connection.thumb
+	# 	itemset[r.fk_digisig]["medium"] = r.representation_filename
+	# 	itemset[r.fk_digisig]["thumb"] = r.representation_thumbnail_hash
+	# 	itemset[r.fk_digisig]["id_representation"] = r.id_representation 
+
+	return(item_pageobject)
+
+@sync_to_async
+def placeform_options(form):
+
+	county_options = [('0', 'None')]
+	region_options = [('0', 'None')]
+
+	for e in Region.objects.filter(location__isnull=False).filter(fk_locationtype=4).order_by('region_label').distinct('region_label'):
+		county_options.append((e.pk_region, e.region_label))
+
+	for e in Regiondisplay.objects.filter(region__location__isnull=False).order_by('regiondisplay_label').distinct('regiondisplay_label'):
+		region_options.append((e.id_regiondisplay, e.regiondisplay_label))
+
+	form.fields['county'].choices = county_options
+	form.fields['region'].choices = region_options
+
+	return(form)
+
+@sync_to_async
+def place_search():
+
+	place_object = Location.objects.filter(
+		locationname__locationreference__fk_locationstatus=1, longitude__isnull=False, latitude__isnull=False).order_by(
+		'location').annotate(count=Count('locationname__locationreference'))
+
+	return (place_object)
+
+@sync_to_async
+def placesearchfilter(placeset):
+
+	qregion = form.cleaned_data['region']
+	qcounty = form.cleaned_data['county']   
+	qpagination = form.cleaned_data['pagination']
+	qlocation_name = form.cleaned_data['location_name']
+
+	if qregion.isdigit():
+		if int(qregion) > 0:
+			placeset = placeset.filter(fk_region__fk_regiondisplay=qregion)
+			regionselect = True
+
+	if regionselect == False:
+		if qcounty.isdigit():
+			if int(qcounty) > 0:
+				placeset = placeset.filter(fk_region=qcounty)
+
+	if len(qlocation_name) > 0:
+		placeset = placeset.filter(location__icontains=qlocation_name)
+
+	if qpagination < 1: qapgination =1 
+
+	return (placeset, qpagination)
+
+@sync_to_async
+def placeobjectannotate(place_object):
+
+	place_object.annotate(count=Count('locationname__locationreference'))
+
+	totalcount = 1
+	for p in place_object:
+		if totalcount < 10:
+			print (p, p.count)
+			totalcount = totalcount + 1 
+
+	return (place_object)
+
+
+@sync_to_async
+def manifestationsform_options(form):
+
+	repositories_options = [('','None')]
+	series_options = [('', 'None')]
+	location_options = [('', 'None')]
+	nature_options = [('', 'None')]
+	representation_options = [('', 'None')]
+	timegroup_options = [('', 'None')]
+	shape_options = [('', 'None')]
+	classname_options = [('', 'None')]
+	group_options = [('', 'None')]
+
+	for e in Repository.objects.order_by('repository_fulltitle'):
+		repositories_options.append((e.fk_repository, e.repository_fulltitle))
+
+	for e in Series.objects.select_related('fk_repository').order_by('series_name').distinct('series_name'):
+		appendvalue = str(e.fk_repository) + " : " + e.series_name
+		series_options.append((e.pk_series, appendvalue))
+
+	for e in Region.objects.order_by('region_label').distinct('region_label'):
+		location_options.append((e.pk_region, e.region_label))
+
+	for e in Nature.objects.order_by('nature_name').distinct('nature_name'):
+		nature_options.append((e.pk_nature, e.nature_name))
+
+	for e in RepresentationType.objects.order_by('representation_type').distinct('representation_type').exclude(pk_representation_type=5):
+		representation_options.append((e.pk_representation_type, e.representation_type))
+		
+	for e in TimegroupC.objects.order_by('pk_timegroup_c'):
+		timegroup_options.append((e.timegroup_c, e.timegroup_c_range))
+
+	for e in Shape.objects.order_by('shape').distinct('shape'):
+		shape_options.append((e.pk_shape, e.shape))
+
+	for e in Terminology.objects.filter(term_type=1).order_by('term_name').distinct('term_name'):
+		classname_options.append((e.id_term, e.term_name))
+
+	for e in Printgroup.objects.order_by('printgroup_order'):
+		group_options.append((e.pk_printgroup, e.printgroup))
+
+	form.fields['repository'].choices = repositories_options
+	form.fields['series'].choices = series_options	
+	form.fields['location'].choices = location_options
+	form.fields['nature'].choices = nature_options
+	form.fields['representation'].choices = representation_options
+	form.fields['timegroup'].choices = timegroup_options
+	form.fields['shape'].choices = shape_options
+	form.fields['classname'].choices = classname_options
+	form.fields['group'].choices = group_options 
+
+	return (form)
+
+@sync_to_async
+def peopleform_options(form):
+
+	#Form for Actor search
+
+	Choices = [('0', 'None'), ('1', 'Individual'), ('2', 'Corporate')]
+	personclass_options = []
+	personorder_options = []
+
+	for e in Groupclass.objects.order_by('groupclass'):
+		personclass_options.append((e.fk_group_class, e.groupclass))
+
+	for e in Grouporder.objects.order_by('grouporder'):
+		personorder_options.append((e.fk_group_order, e.grouporder))
+
+	form.fields['group'].choices = Choices
+	form.fields['personclass'].choices = personclass_options
+	form.fields['personorder'].choices = personorder_options 
+
+	return(form)
+
+
+@sync_to_async
+def sealdescriptionform_options(form):
+
+	collections_options = [('30000287', 'All Collections')]
+
+	for e in Collection.objects.order_by('collection_shorttitle').annotate(numdescriptions=Count('sealdescription')):
+		if (e.numdescriptions > 0):
+			collections_options.append((e.id_collection, e.collection_shorttitle))
+
+	form.fields['collection'].choices = collections_options
+
+	return(form)
+
+@sync_to_async
+def sealdescription_search():
+	sealdescription_objects = Sealdescription.objects.all().select_related(
+		'fk_collection').select_related('fk_seal__fk_individual_realizer').select_related(
+		'fk_seal').order_by(
+		'id_sealdescription')
+
+	return(sealdescription_objects)
+
+@sync_to_async
+def sealdescriptionsearchfilter(sealdescription_object, form):
+
+	qcollection = form.cleaned_data['collection']   
+	qcataloguecode = form.cleaned_data['cataloguecode']
+	qcataloguemotif = form.cleaned_data['cataloguemotif']
+	qcataloguename = form.cleaned_data['cataloguename']
+	qpagination = form.cleaned_data['pagination']
+
+	if qcollection.isdigit():
+		if int(qcollection) > 0:
+			if int(qcollection) == 30000287:
+				print("all collections")
+			else: sealdescription_object = sealdescription_object.filter(fk_collection=qcollection)
+			
+	if len(qcataloguecode) > 0:
+		sealdescription_object = sealdescription_object.filter(sealdescription_identifier__icontains=qcataloguecode)
+
+	if len(qcataloguemotif) > 0:
+		sealdescription_object = sealdescription_object.filter(
+			Q(motif_obverse__contains=qcataloguemotif) | Q(motif_reverse__icontains=qcataloguemotif)
+			)
+
+	if len(qcataloguename) > 0:
+		sealdescription_object = sealdescription_object.filter(sealdescription_title__icontains=qcataloguename)
+
+	if qpagination < 1: qapgination =1 
+
+	return(sealdescription_object, qpagination)
+
+@sync_to_async
+def sealdescription_displaysetgenerate(sealdescription_object):
+
+	sealdescription_displayset = {}
+	for sd in sealdescription_object:
+		sealdes_temp = {}
+		sealdes_temp['id_sealdescription'] = sd.id_sealdescription
+		sealdes_temp['fk_seal'] = sd.fk_seal.id_seal
+		sealdes_temp['sealdescription_title'] = sd.sealdescription_title
+		sealdes_temp['collection_shorttitle'] = sd.fk_collection.collection_shorttitle
+		sealdes_temp['sealdescription_identifier'] = sd.sealdescription_identifier
+		sealdes_temp['catalogue_pagenumber'] = sd.catalogue_pagenumber
+		sealdes_temp['motif_reverse'] = sd.motif_reverse
+		sealdes_temp['motif_obverse'] = sd.motif_obverse
+		sealdes_temp['legend_obverse'] = sd.legend_obverse
+		sealdes_temp['legend_reverse'] = sd.legend_reverse
+		sealdes_temp['realizer'] = sd.fk_seal.fk_individual_realizer
+		#sealdes_temp['collection_thumbnail'] = sd.collection_thumbnail
+		#sealdes_temp['collection_fulltitle'] = sd.collection_fulltitle
+		sealdes_temp['fk_collection'] = sd.fk_collection
+
+		sealdescription_displayset[sd.id_sealdescription] = sealdes_temp
+
+	return (sealdescription_displayset)
+
+
+@sync_to_async
 def sealsearch():
 	manifestation_object = Manifestation.objects.all().select_related(
 	'fk_face__fk_seal').select_related(
@@ -1435,6 +1855,363 @@ def sealsearch():
 
 	return(manifestation_object)
 
+@sync_to_async
+def sealsearch2():
+	manifestation_object = Manifestation.objects.all().values('id_manifestation').order_by('id_manifestation')
+
+	return(manifestation_object)
+
+@sync_to_async
+def sealsearch3(sealentity):
+	manifestation_object = Manifestation.objects.filter(fk_face__fk_seal=sealentity).values('id_manifestation').order_by('id_manifestation')
+
+	return(manifestation_object)
+
+
+### this is works without running through paginator
+@sync_to_async
+def representationsetgenerate2(manifestation_object):
+
+	listofmanifestations = []
+	for m in manifestation_object:
+		listofmanifestations.append(m['id_manifestation'])
+
+	representation_set = Representation.objects.filter(
+		fk_manifestation__in=listofmanifestations).filter(
+		primacy=1).values('representation_thumbnail_hash', 
+		'representation_filename_hash', 
+		'id_representation',
+		'fk_manifestation',
+		'fk_connection__thumb',
+		'fk_connection__medium') 
+
+	return(representation_set)
+
+@sync_to_async
+def seal_searchsetgenerate(digisig_entity_number):
+### maindata for manifestations
+
+	manifestation_set = Manifestation.objects.filter(
+		fk_face__fk_seal=digisig_entity_number).select_related(
+		'fk_support__fk_part__fk_item__fk_repository').select_related(
+		'fk_support__fk_number_currentposition').select_related(
+		'fk_support__fk_attachment').select_related(
+		'fk_support__fk_supportstatus').select_related(
+		'fk_support__fk_nature').select_related(
+		'fk_imagestate').select_related(
+		'fk_position').select_related(
+		'fk_support__fk_part__fk_event').select_related(
+		'fk_face__fk_seal').order_by(
+		'id_manifestation').values(
+		'id_manifestation',
+		'fk_position',
+		'fk_face',
+		'fk_face__fk_seal',
+		'fk_support__fk_part__fk_item', 
+		'fk_support__fk_part__fk_item__fk_repository__repository_fulltitle',
+		'fk_support__fk_part__fk_item__shelfmark',
+		'fk_support__fk_supportstatus',
+		'fk_support__fk_attachment',
+		'fk_support__fk_number_currentposition',
+		'fk_support__fk_nature',
+		'label_manifestation_repository',
+		'fk_imagestate',
+		'fk_support__fk_part',
+		'fk_support__fk_part__fk_event',
+		'fk_support__fk_part__fk_event__repository_startdate',
+		'fk_support__fk_part__fk_event__repository_enddate',
+		'fk_support__fk_part__fk_event__startdate',
+		'fk_support__fk_part__fk_event__enddate')
+
+	return(manifestation_set)
+
+@sync_to_async
+def seal_displaysetgenerate(manifestation_display_dic, description_set, digisig_entity_number):
+
+	face_set = Face.objects.filter(
+		fk_seal=digisig_entity_number).select_related(
+		'fk_seal__fk_individual_realizer').select_related(
+		'fk_seal__fk_individual_realizer__fk_group').select_related(
+		'fk_seal__fk_individual_realizer__fk_descriptor_title').select_related(
+		'fk_seal__fk_individual_realizer__fk_descriptor_name').select_related(
+		'fk_seal__fk_individual_realizer__fk_descriptor_prefix1').select_related(
+		'fk_seal__fk_individual_realizer__fk_descriptor_descriptor1').select_related(
+		'fk_seal__fk_individual_realizer__fk_descriptor_prefix2').select_related(
+		'fk_seal__fk_individual_realizer__fk_descriptor_descriptor2').select_related(
+		'fk_seal__fk_individual_realizer__fk_descriptor_prefix3').select_related(
+		'fk_seal__fk_individual_realizer__fk_descriptor_descriptor3').select_related(
+		'fk_class').values(
+		'fk_seal__date_origin',
+		'fk_faceterm__faceterm',
+		'fk_seal__fk_individual_realizer',
+		'fk_seal__fk_individual_realizer__fk_group__group_name',
+		'fk_seal__fk_individual_realizer__fk_descriptor_title__descriptor_modern',
+		'fk_seal__fk_individual_realizer__fk_descriptor_name__descriptor_modern',
+		'fk_seal__fk_individual_realizer__fk_descriptor_prefix1__prefix_english',
+		'fk_seal__fk_individual_realizer__fk_descriptor_descriptor1__descriptor_modern',
+		'fk_seal__fk_individual_realizer__fk_descriptor_prefix2__prefix_english',
+		'fk_seal__fk_individual_realizer__fk_descriptor_descriptor2__descriptor_modern',
+		'fk_seal__fk_individual_realizer__fk_descriptor_prefix3__prefix_english',
+		'fk_seal__fk_individual_realizer__fk_descriptor_descriptor3__descriptor_modern',
+		'fk_seal__date_origin',
+		'fk_class')
+
+	seal_info = {}
+	obverse = {}
+	reverse = {}
+
+
+	for f in face_set:
+		if f['fk_faceterm__faceterm'] == "Obverse":			
+			obverse['faceterm'] = f['fk_faceterm__faceterm']
+			obverse['fk_class'] = f['fk_class']
+		if f['fk_faceterm__faceterm'] == "Reverse":			
+			reverse['faceterm'] = f['fk_faceterm__faceterm']
+			reverse['fk_class'] = f['fk_class']
+
+		seal_info['date_origin'] = f['fk_seal__date_origin']
+		seal_info['id_individual'] = f['fk_seal__fk_individual_realizer']
+
+		n1= f['fk_seal__fk_individual_realizer__fk_group__group_name'] 
+		n2= f['fk_seal__fk_individual_realizer__fk_descriptor_title__descriptor_modern']
+		n3= f['fk_seal__fk_individual_realizer__fk_descriptor_name__descriptor_modern']
+		n4= f['fk_seal__fk_individual_realizer__fk_descriptor_prefix1__prefix_english']
+		n5= f['fk_seal__fk_individual_realizer__fk_descriptor_descriptor1__descriptor_modern']
+		n6= f['fk_seal__fk_individual_realizer__fk_descriptor_prefix2__prefix_english']
+		n7= f['fk_seal__fk_individual_realizer__fk_descriptor_descriptor2__descriptor_modern']
+		n8= f['fk_seal__fk_individual_realizer__fk_descriptor_prefix3__prefix_english']
+		n9= f['fk_seal__fk_individual_realizer__fk_descriptor_descriptor3__descriptor_modern']
+
+		namevariable= ""
+		try: 
+			if (n1 != None): namevariable = n1
+			if (n2 != None): namevariable = namevariable + " " + n2
+			if (n3 != None): namevariable = namevariable + " " + n3
+			if (n4 != None): namevariable = namevariable + " " + n4
+			if (n5 != None): namevariable = namevariable + " " + n5
+			if (n6 != None): namevariable = namevariable + " " + n6
+			if (n7 != None): namevariable = namevariable + " " + n7
+			if (n8 != None): namevariable = namevariable + " " + n8
+			if (n9 != None): namevariable = namevariable + " " + n9
+		except:
+			print ("problem with name")
+
+		seal_info['actor_label'] = namevariable.strip()
+
+	seal_info['manifestation_set'] = manifestation_display_dic
+	seal_info['obverse'] = obverse
+	seal_info['reverse'] = reverse
+	seal_info['sealdescription'] = description_set
+
+	# for key, m in manifestation_display_dic.items():
+	# 	m["sealdescription"] = description_set[m["id_seal"]]
+		# m["locationname"] = location_set[m['fk_event']]["locationname"]
+		# m["location"] = location_set[m['fk_event']]['location']
+		# m["repository_location"] = location_set[m['fk_event']]['repository_location']
+		# m["id_location"] = location_set[m['fk_event']]['id_location']
+	
+	return (seal_info)
+
+
+@sync_to_async
+def representationsetgenerate(manifestation_pageobject):
+
+	representation_set = Representation.objects.filter(
+		fk_manifestation__in=manifestation_pageobject.object_list).filter(
+		primacy=1).values('representation_thumbnail_hash', 
+		'representation_filename_hash', 
+		'id_representation',
+		'fk_manifestation',
+		'fk_connection__thumb',
+		'fk_connection__medium') 
+
+	# representation_missing = Representation.objects.values(
+	# 	'representation_thumbnail_hash', 
+	# 	'representation_filename_hash', 
+	# 	'id_representation',
+	# 	'fk_manifestation').get(
+	# 	id_representation=12204474)
+
+	# representation_dic_spare = {}
+	# representation_dic_spare["representation_thumbnail_hash"] = representation_missing['representation_thumbnail_hash']
+	# representation_dic_spare["representation_filename_hash"] = representation_missing['representation_filename_hash']
+	# representation_dic_spare["id_representation"] = representation_missing['id_representation']
+
+	return(representation_set)
+
+
+@sync_to_async
+def manifestation_searchsetgenerate(manifestation_pageobject):
+### maindata for manifestations
+
+	manifestation_set = Manifestation.objects.filter(
+		id_manifestation__in=manifestation_pageobject.object_list).select_related(
+		'fk_face__fk_seal').select_related(
+		'fk_support__fk_part__fk_item__fk_repository').select_related(
+		'fk_support__fk_number_currentposition').select_related(
+		'fk_support__fk_attachment').select_related(
+		'fk_support__fk_supportstatus').select_related(
+		'fk_support__fk_nature').select_related(
+		'fk_imagestate').select_related(
+		'fk_position').select_related(
+		'fk_support__fk_part__fk_event').order_by(
+		'id_manifestation').values(
+		'id_manifestation',
+		'fk_position', 
+		'fk_face__fk_seal', 
+		'fk_support__fk_part__fk_item', 
+		'fk_support__fk_part__fk_item__fk_repository__repository_fulltitle',
+		'fk_support__fk_part__fk_item__shelfmark',
+		'fk_support__fk_supportstatus',
+		'fk_support__fk_attachment',
+		'fk_support__fk_number_currentposition',
+		'fk_support__fk_nature',
+		'label_manifestation_repository',
+		'fk_imagestate',
+		'fk_support__fk_part',
+		'fk_support__fk_part__fk_event',
+		'fk_support__fk_part__fk_event__repository_startdate',
+		'fk_support__fk_part__fk_event__repository_enddate',
+		'fk_support__fk_part__fk_event__startdate',
+		'fk_support__fk_part__fk_event__enddate')
+
+	return(manifestation_set)
+
+@sync_to_async
+def manifestation_displaysetgenerate(manifestation_set, representation_set):
+### maindata for manifestations
+
+	manifestation_display_dic = {}
+	listofseals = []
+	listofevents = []
+	description_set = {}
+
+	for e in manifestation_set:
+
+		manifestation_dic = {}
+		manifestation_dic["id_manifestation"] = e['id_manifestation']
+		manifestation_dic["fk_position"] = e['fk_position']
+		manifestation_dic["id_seal"] = e['fk_face__fk_seal']
+		manifestation_dic["id_item"] = e['fk_support__fk_part__fk_item']
+		manifestation_dic["fk_event"] = e['fk_support__fk_part__fk_event']
+		manifestation_dic["repository_fulltitle"] = e['fk_support__fk_part__fk_item__fk_repository__repository_fulltitle']
+		manifestation_dic["shelfmark"] = e['fk_support__fk_part__fk_item__shelfmark']
+		manifestation_dic["fk_supportstatus"] = e['fk_support__fk_supportstatus']
+		manifestation_dic["fk_attachment"] = e['fk_support__fk_attachment']	
+		manifestation_dic["number"] = e['fk_support__fk_number_currentposition']
+		manifestation_dic["support_type"] = e['fk_support__fk_nature']
+		manifestation_dic["label_manifestation_repository"] = e['label_manifestation_repository']
+		
+		#Adding these values through logic seems to dramatically decrease the query run time as compared to DBS query
+		if e['fk_imagestate'] == 2:
+			manifestation_dic["imagestate_term"] = "Seal matrix"
+		else:	
+			manifestation_dic["imagestate_term"] = "Seal impression"
+
+		manifestation_dic["partvalue"] = e['fk_support__fk_part']
+		manifestation_dic["repository_startdate"] = e['fk_support__fk_part__fk_event__repository_startdate']
+		manifestation_dic["repository_enddate"] = e['fk_support__fk_part__fk_event__repository_startdate']
+		manifestation_dic["startdate"] = e['fk_support__fk_part__fk_event__startdate']
+		manifestation_dic["enddate"] = e['fk_support__fk_part__fk_event__enddate']
+
+		for r in representation_set:
+			if r['fk_manifestation'] == manifestation_dic["id_manifestation"]:
+				manifestation_dic["thumb"] = r['fk_connection__thumb']
+				manifestation_dic["medium"] = r['fk_connection__medium']
+				manifestation_dic["representation_thumbnail_hash"] = r['representation_thumbnail_hash']
+				manifestation_dic["representation_filename_hash"] = r['representation_filename_hash']
+				manifestation_dic["id_representation"] = r['id_representation']
+				pass
+
+		manifestation_display_dic[e['id_manifestation']] = manifestation_dic
+		description_set[e['fk_face__fk_seal']] = {}
+		listofseals.append(e['fk_face__fk_seal'])
+		listofevents.append(e['fk_support__fk_part__fk_event'])
+
+	return(manifestation_display_dic, description_set, listofseals, listofevents)
+
+
+@sync_to_async
+def sealdescription_displaysetgenerate2(listofseals, description_set):
+
+## gather the sealdescription references
+	sealdescription_set = Sealdescription.objects.filter(
+		fk_seal__in=listofseals).values(
+		'id_sealdescription',
+		'fk_collection__collection_shorttitle',
+		'sealdescription_identifier',
+		'fk_seal')
+
+	for s in sealdescription_set:
+		description = {}
+		description["sealdescription_id"] = s['id_sealdescription']
+		description["collection"] = s['fk_collection__collection_shorttitle']
+		description["identifier"] = s['sealdescription_identifier']
+		description["fk_seal"] = s['fk_seal']  
+		description_set[description["fk_seal"]][s['id_sealdescription']] = description
+
+	return(description_set)
+
+@sync_to_async
+def location_displaysetgenerate(listofevents):
+
+##gather the location references
+	locationreference_set = Locationreference.objects.filter(
+		fk_event__in=listofevents,fk_locationstatus=1).values(
+		'fk_locationname', 
+		'fk_locationname__fk_location', 
+		'fk_locationname__fk_location__location',
+		'fk_locationname__fk_location__id_location',
+		'fk_event')
+
+	location_set = {}
+
+	for l in locationreference_set:
+		location = {}
+		location["locationname"] = l['fk_locationname']
+		location["location"] = l['fk_locationname__fk_location']
+		location["repository_location"] = l['fk_locationname__fk_location__location']
+		location["id_location"] = l['fk_locationname__fk_location__id_location']
+
+		location_set[l['fk_event']] = location
+
+	return(location_set)
+
+@sync_to_async
+def finalassembly_displaysetgenerate(manifestation_display_dic, location_set, description_set):
+### final assembly
+
+	for key, m in manifestation_display_dic.items():
+		m["sealdescription"] = description_set[m["id_seal"]]
+		m["locationname"] = location_set[m['fk_event']]["locationname"]
+		m["location"] = location_set[m['fk_event']]['location']
+		m["repository_location"] = location_set[m['fk_event']]['repository_location']
+		m["id_location"] = location_set[m['fk_event']]['id_location']
+	
+	return(manifestation_display_dic)
+
+@sync_to_async
+def sealsearch_searchset(manifestation_object):
+
+	## prepare the data for each displayed seal manifestation to be displayed
+
+	manifestation_set = {}
+
+	for e in manifestation_object:
+		manifestation_dic = {}
+		manifestation_dic = manifestation_fetchrepresentations(e, manifestation_dic)
+		manifestation_dic = manifestation_fetchsealdescriptions(e, manifestation_dic)
+		manifestation_dic = manifestation_fetchlocations(e, manifestation_dic)
+		manifestation_dic = manifestation_fetchstandardvalues(e, manifestation_dic)
+
+		manifestation_set[e.id_manifestation] = manifestation_dic
+
+	return (manifestation_set)
+
+
+
+
+@sync_to_async
 def sealsearchfilter(manifestation_object, form):
 	qrepository = form.cleaned_data['repository']   
 	qseries = form.cleaned_data['series']
@@ -1473,13 +2250,13 @@ def sealsearchfilter(manifestation_object, form):
 			manifestation_object = manifestation_object.filter(
 				fk_support__fk_part__fk_event__locationreference__fk_locationname__fk_location__fk_region=qlocation)
 
-	# if qtimegroup.isdigit():
-	# 	if int(qtimegroup) > 0:
-	# 		temporalperiod_target = (TimegroupA.objects.get(pk_timegroup_a = qtimegroup))   
-	# 		yearstart = (temporalperiod_target.timegroup_a_startdate)
-	# 		manifestation_object = manifestation_object.filter(
-	# 			fk_support__fk_part__fk_event__repository_startdate__lt=datetime.strptime(str(yearstart), "%Y")).filter(
-	# 			fk_support__fk_part__fk_event__repository_enddate__gt=datetime.strptime(str(yearstart+50), "%Y"))
+	if qtimegroup.isdigit():
+		if int(qtimegroup) > 0:
+			temporalperiod_target = (TimegroupA.objects.get(pk_timegroup_a = qtimegroup))   
+			yearstart = (temporalperiod_target.timegroup_a_startdate)
+			manifestation_object = manifestation_object.filter(
+				fk_support__fk_part__fk_event__repository_startdate__lt=datetime.strptime(str(yearstart), "%Y")).filter(
+				fk_support__fk_part__fk_event__repository_enddate__gt=datetime.strptime(str(yearstart+50), "%Y"))
 
 	if qshape.isdigit():
 		if int(qshape) > 0:
@@ -1529,6 +2306,7 @@ def sealsearchfilter(manifestation_object, form):
 
 	return(manifestation_object, qpagination)
 
+@sync_to_async
 def defaultpagination(pagination_object, qpagination):
 
 	pagination_object = Paginator(pagination_object, 10).page(qpagination)
@@ -1612,7 +2390,17 @@ def sealsearchmanifestationmetadata(manifestation_object):
 	return (manifestation_set)
 
 
+@sync_to_async
+def sealdescription_fetchobject(digisig_entity_number):
+	sealdescription_object = Sealdescription.objects.select_related(
+		'fk_collection').select_related(
+		'fk_seal').get(
+		id_sealdescription=digisig_entity_number)
+
+	return (sealdescription_object)
+
 #assembles the list of people credited with a work
+@sync_to_async
 def sealdescription_contributorgenerate(collection, contributor_dic):
 
 	collectioncontributions = Collectioncontributor.objects.filter(
@@ -1643,8 +2431,10 @@ def sealdescription_contributorgenerate(collection, contributor_dic):
 
 	return(contributor_dic)
 
+@sync_to_async
+def	sealdescription_fetchrepresentation(sealdescription_object):
 
-def	sealdescription_fetchrepresentation(sealdescription_object, sealdescription_dic):
+	sealdescription_dic = {}
 
 	try:
 		representation_set = Representation.objects.select_related(
@@ -1663,7 +2453,7 @@ def	sealdescription_fetchrepresentation(sealdescription_object, sealdescription_
 
 	return(sealdescription_dic)
 
-
+@sync_to_async
 def	manifestation_fetchrepresentations(e, manifestation_dic):
 
 	try:
@@ -1681,7 +2471,7 @@ def	manifestation_fetchrepresentations(e, manifestation_dic):
 
 	return(manifestation_dic)
 
-
+@sync_to_async
 def manifestation_fetchsealdescriptions(e, manifestation_dic):
 	sealdescription_set = Sealdescription.objects.filter(fk_seal=e.fk_face.fk_seal).select_related('fk_collection')
 
@@ -1699,6 +2489,7 @@ def manifestation_fetchsealdescriptions(e, manifestation_dic):
 	
 	return(manifestation_dic)
 
+@sync_to_async
 def manifestation_fetchlocations(e, manifestation_dic):
 	locationreference = Locationreference.objects.select_related(
 		'fk_locationname__fk_location').get(
@@ -1710,6 +2501,7 @@ def manifestation_fetchlocations(e, manifestation_dic):
 
 	return (manifestation_dic)
 
+@sync_to_async
 def manifestation_fetchstandardvalues (e, manifestation_dic):
 	facevalue = e.fk_face
 	sealvalue = facevalue.fk_seal
@@ -1775,6 +2567,7 @@ def sealmetadata(digisig_entity_number):
 	return (seal_info, face_set, face_obverse)
 
 #information for class value
+@sync_to_async
 def sealinfo_classvalue (face_case):
 	
 	classvalue = {}
@@ -1813,6 +2606,21 @@ def sealinfo_classvalue (face_case):
 		print("level5 unassigned")			
 
 	return(classvalue)
+
+
+@sync_to_async
+def actornamegenerator(individual_object):
+
+	individual_set = {}
+
+	for i in individual_object:
+		individual_info = {}
+		individual_info['actor_name'] = namecompiler(i)
+		individual_info['id_individual'] = i.id_individual
+		individual_set[i.id_individual] = individual_info
+
+	return(individual_set)
+
 
 def namecompiler(individual_object):
 
@@ -2386,12 +3194,192 @@ def referenceset_references5(witness_entity_number, ref_dic_locations):
 
 
 #externallinks for object
-def externallinkgenerator(digisig_entity_number):
-	externallinkset = []
-	externallinkset = Externallink.objects.filter(internal_entity=digisig_entity_number)
-
+@sync_to_async
+def externallinkgenerator(entity_number):
+	externallinkset = Externallink.objects.filter(internal_entity=entity_number).values('external_link')
 	return (externallinkset)	
 
+@sync_to_async
+def partobjectforitem_define(entity_number):
+
+	#### prepare parts
+	part_object = Part.objects.filter(
+		fk_item=entity_number).values(
+		'id_part',
+		'part_description',
+		'fk_item',
+		'fk_item__shelfmark',
+		'fk_item__fk_repository__repository_fulltitle',
+		'fk_event',
+		'fk_event__repository_startdate',
+		'fk_event__repository_enddate',
+		'fk_event__startdate',
+		'fk_event__enddate',
+		'fk_event__repository_location')
+
+	part_dic= {}
+	reference_dic= {}
+	manifestationpart = {}
+	listofparts = []
+	listofitems = []
+	listofevents = []
+
+	for p in part_object:
+		part_temp_dic = {}
+		part_temp_dic['fk_item'] = p['fk_item']
+		part_temp_dic['id_part'] = p['id_part']
+		part_temp_dic['part_description'] = p['part_description']
+		part_temp_dic['fk_event'] = p['fk_event']
+		part_temp_dic['pagetitle'] = p['fk_item__fk_repository__repository_fulltitle'] + " " + p['fk_item__shelfmark']
+		part_temp_dic['fk_repository'] = p['fk_item__fk_repository__repository_fulltitle']
+		part_temp_dic['shelfmark'] = p['fk_item__shelfmark']
+		part_temp_dic['year1'] = p['fk_event__repository_startdate']
+		part_temp_dic['year2'] = p['fk_event__repository_enddate']
+		part_temp_dic['year3'] = p['fk_event__startdate']
+		part_temp_dic['year4'] = p['fk_event__enddate']
+		part_temp_dic["repository_location"] = p['fk_event__repository_location']
+
+		listofparts.append(p['id_part'])
+		listofitems.append(p['fk_item'])
+		listofevents.append(p['fk_event'])
+
+		part_dic[p['id_part']] = part_temp_dic
+
+		reference_dic.update({p['fk_event']: {} })
+		manifestationpart.update({p['id_part']: {} })
+
+	### prepare representations of part
+	representation_part = Representation.objects.filter(fk_digisig__in=listofparts).select_related('fk_connection')
+
+	try:
+		for t in representation_part:
+			#for all images
+			connection = t.fk_connection
+			part_dic[t.fk_digisig]["connection"] = t.fk_connection
+			part_dic[t.fk_digisig]["connection_thumb"] = t.fk_connection.thumb
+			part_dic[t.fk_digisig]["connection_medium"] = t.fk_connection.medium
+			part_dic[t.fk_digisig]["representation_filename"] = t.representation_filename_hash
+			part_dic[t.fk_digisig]["representation_thumbnail"] = t.representation_thumbnail_hash
+			part_dic[t.fk_digisig]["id_representation"] = t.id_representation 
+
+	except:
+		print ('no image of PART available')
+
+	### prepare references
+	referenceset = Referenceindividual.objects.filter(
+		fk_event__in=listofevents).order_by(
+		"fk_referencerole__role_order", "pk_referenceindividual").values(
+		'pk_referenceindividual',
+		'fk_individual',
+		'fk_individual__fullname_original',
+		'referenceindividual',
+		'fk_referencerole__referencerole',
+		'fk_individualoffice',
+		'fk_event',
+		)
+	
+	for referencecase in referenceset:
+
+		reference_dic_temp = {}
+		reference_dic_temp['pk_referenceindividual']= referencecase['pk_referenceindividual']
+		reference_dic_temp['fk_individual']= referencecase['fk_individual']
+		reference_dic_temp['fullname_original']= referencecase['fk_individual__fullname_original']
+		reference_dic_temp['referenceindividual']= referencecase['referenceindividual']
+		reference_dic_temp['fk_referencerole']= referencecase['fk_referencerole__referencerole']
+		reference_dic_temp['fk_individualoffice']= referencecase['fk_individualoffice']
+		reference_dic_temp['fk_event'] = referencecase['fk_event']
+
+
+		reference_dic[referencecase['fk_event']].update ({referencecase['pk_referenceindividual']: reference_dic_temp})
+
+	for partneedingreference in part_dic.values():
+		searchvalue = partneedingreference['fk_event'] 
+		partneedingreference['reference_set'] = reference_dic[searchvalue]
+
+	# try:
+	# 	externallinkset = Externallink.objects.filter(internal_entity_in=listofitems)
+
+	# 	links_dic = {}
+	# 	for e in externallinkset:
+	# 		links_dic[e.internal_entity].update({e.id_external_link}:{external_link})
+
+	# 	for l in links_dic:
+	# 		part_dic[l.]
+
+	location_object = Location.objects.filter(
+		locationname__locationreference__fk_event__in=listofevents, locationname__locationreference__location_reference_primary = False).values(
+		'locationname__locationreference__fk_event',
+		'location',
+		'id_location',
+		'longitude',
+		'latitude').first()
+
+	l = location_object
+
+	searchvalue = int(location_object['locationname__locationreference__fk_event'])
+
+	for key, part_info in part_dic.items():
+		 
+		if searchvalue == part_info['fk_event']:
+
+			mapdic = {"type": "FeatureCollection"}
+			properties = {}
+			geometry = {}
+			location = {}
+			placelist = []
+
+			location= {"type": "Point", "coordinates":[ location_object['longitude'], location_object['latitude'] ]}
+			location_dict = {'location': location_object['location'], 'latitude': location_object['latitude'], 'longitude': location_object['longitude']} 
+
+			properties = {"id_location": location_object['id_location'], "location": location}
+			geometry = {"type": "Point", "coordinates": [location_object['longitude'] , location_object['latitude']]}
+			location = {"type": "Feature", "properties": properties, "geometry": geometry}
+			placelist.append(location)
+
+			mapdic["features"] = placelist
+
+			part_info["location"] = location
+			part_info["location_name"] = location_object['location'] 
+			part_info["location_id"] = location_object['id_location'] 
+			part_info["location_latitude"] = location_object['longitude'] 
+			part_info["location_latitude"] = location_object['latitude']
+			part_info['location_dict'] = location_dict
+			part_info['mapdic'] = mapdic
+
+
+	## find seals associated with the parts
+	manifestation_set = Manifestation.objects.filter(
+		fk_support__fk_part__in=listofparts).values(
+		'label_manifestation_repository',
+		'id_manifestation',
+		'fk_position__position',
+		'fk_face__fk_seal',
+		'fk_imagestate__imagestate_term',
+		'fk_support__fk_supportstatus__supportstatus',
+		'fk_support__fk_part',
+		'fk_support__fk_attachment__attachment',
+		'fk_support__fk_number_currentposition__number',
+		)
+
+	for manifestationcase in manifestation_set:
+		manifestation_dic = {}
+		manifestation_dic['fk_seal'] = manifestationcase['fk_face__fk_seal']
+		manifestation_dic['id_manifestation'] = manifestationcase['id_manifestation']
+		manifestation_dic['imagestate_term'] = manifestationcase['fk_imagestate__imagestate_term']
+		manifestation_dic['fk_supportstatus'] = manifestationcase['fk_support__fk_supportstatus__supportstatus']
+		manifestation_dic['label_manifestation_repository'] = manifestationcase['label_manifestation_repository']
+		manifestation_dic['fk_attachment'] = manifestationcase['fk_support__fk_attachment__attachment']
+		manifestation_dic['number'] = manifestationcase['fk_support__fk_number_currentposition__number']
+		manifestation_dic['fk_position'] = manifestationcase['fk_position__position']
+
+		manifestationpart[manifestationcase['fk_support__fk_part']].update ({manifestationcase['id_manifestation']: manifestation_dic})
+
+	for partneedingmanifestation in part_dic.values():
+		searchvalue = partneedingmanifestation['id_part'] 
+		partneedingmanifestation['manifestation_set'] = manifestationpart[searchvalue]
+
+	return (part_dic)
+	
 
 #info for collections page
 def classdistribution(classset, facecount):

@@ -15,33 +15,33 @@ shape_options = [('', 'None')]
 classname_options = [('', 'None')]
 group_options = [('', 'None')]
 
-for e in Repository.objects.order_by('repository_fulltitle'):
-	repositories_options.append((e.fk_repository, e.repository_fulltitle))
+# for e in Repository.objects.order_by('repository_fulltitle'):
+# 	repositories_options.append((e.fk_repository, e.repository_fulltitle))
 
-for e in Series.objects.order_by('series_name').distinct('series_name'):
-	appendvalue = str(e.fk_repository) + " : " + e.series_name
-	series_options.append((e.pk_series, appendvalue))
+# for e in Series.objects.order_by('series_name').distinct('series_name'):
+# 	appendvalue = str(e.fk_repository) + " : " + e.series_name
+# 	series_options.append((e.pk_series, appendvalue))
 
-for e in Printgroup.objects.order_by('printgroup_order'):
-	group_options.append((e.pk_printgroup, e.printgroup))
+# for e in Printgroup.objects.order_by('printgroup_order'):
+# 	group_options.append((e.pk_printgroup, e.printgroup))
 
-for e in Region.objects.order_by('region_label').distinct('region_label'):
-	location_options.append((e.pk_region, e.region_label))
+# for e in Region.objects.order_by('region_label').distinct('region_label'):
+# 	location_options.append((e.pk_region, e.region_label))
 
-for e in Nature.objects.order_by('nature_name').distinct('nature_name'):
-	nature_options.append((e.pk_nature, e.nature_name))
+# for e in Nature.objects.order_by('nature_name').distinct('nature_name'):
+# 	nature_options.append((e.pk_nature, e.nature_name))
 
-for e in RepresentationType.objects.order_by('representation_type').distinct('representation_type').exclude(pk_representation_type=5):
-	representation_options.append((e.pk_representation_type, e.representation_type))
+# for e in RepresentationType.objects.order_by('representation_type').distinct('representation_type').exclude(pk_representation_type=5):
+# 	representation_options.append((e.pk_representation_type, e.representation_type))
 	
-for e in TimegroupC.objects.order_by('pk_timegroup_c'):
-	timegroup_options.append((e.timegroup_c, e.timegroup_c_range))
+# for e in TimegroupC.objects.order_by('pk_timegroup_c'):
+# 	timegroup_options.append((e.timegroup_c, e.timegroup_c_range))
 
-for e in Shape.objects.order_by('shape').distinct('shape'):
-	shape_options.append((e.pk_shape, e.shape))
+# for e in Shape.objects.order_by('shape').distinct('shape'):
+# 	shape_options.append((e.pk_shape, e.shape))
 
-for e in Terminology.objects.filter(term_type=1).order_by('term_name').distinct('term_name'):
-	classname_options.append((e.id_term, e.term_name))
+# for e in Terminology.objects.filter(term_type=1).order_by('term_name').distinct('term_name'):
+# 	classname_options.append((e.id_term, e.term_name))
 
 class ManifestationForm(forms.Form):
 	repository = forms.ChoiceField(choices=repositories_options, required=False)
@@ -90,12 +90,12 @@ class CollectionForm(forms.Form):
 
 #Form for quering seal descriptions
 
-collections_options = [('30000287', 'All Collections')]
+# collections_options = [('30000287', 'All Collections')]
 
-for e in Collection.objects.order_by('collection_shorttitle').annotate(numdescriptions=Count('sealdescription')):
+# for e in Collection.objects.order_by('collection_shorttitle').annotate(numdescriptions=Count('sealdescription')):
 
-	if (e.numdescriptions > 0):
-		collections_options.append((e.id_collection, e.collection_shorttitle))
+# 	if (e.numdescriptions > 0):
+# 		collections_options.append((e.id_collection, e.collection_shorttitle))
 
 class SealdescriptionForm(forms.Form):
 	pagination = forms.IntegerField(initial=1, widget=forms.HiddenInput)
@@ -113,11 +113,11 @@ Choices = [('0', 'None'), ('1', 'Individual'), ('2', 'Corporate')]
 personclass_options = []
 personorder_options = []
 
-for e in Groupclass.objects.order_by('groupclass'):
-	personclass_options.append((e.fk_group_class, e.groupclass))
+# for e in Groupclass.objects.order_by('groupclass'):
+# 	personclass_options.append((e.fk_group_class, e.groupclass))
 
-for e in Grouporder.objects.order_by('grouporder'):
-	personorder_options.append((e.fk_group_order, e.grouporder))
+# for e in Grouporder.objects.order_by('grouporder'):
+# 	personorder_options.append((e.fk_group_order, e.grouporder))
 
 class PeopleForm(forms.Form):
 	name = forms.CharField(label='id_name', max_length=100, required=False, widget=forms.TextInput(attrs={'placeholder': 'Example: John'}))
