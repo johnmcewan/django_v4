@@ -92,23 +92,6 @@ async def discover(request, discovertype):
 	if discovertype == "map":
 
 		pagetitle = 'Map'
-
-		form = CollectionForm(request.POST or None)
-		form = await collectionform_options(form)
-
-
-		if request.method == 'POST':
-
-			if form.is_valid(): 
-				manifestation_object, qpagination = await sealsearchfilter(manifestation_object, form)
-
-
-
-
-
-
-
-		#default
 		qcollection= 30000287
 		qmapchoice = 1
 		mapdic = []
@@ -117,12 +100,11 @@ async def discover(request, discovertype):
 		mapcounties = []
 		location_dict = []
 
+		form = CollectionForm(request.POST or None)
+		form = await collectionform_options(form)
 
-
-		#adjust values if form submitted
 		if request.method == 'POST':
-			form = CollectionForm(request.POST)
-			
+
 			if form.is_valid():
 				collectionstr = form.cleaned_data['collection']
 				#make sure values are not empty then try and convert to ints
@@ -133,65 +115,23 @@ async def discover(request, discovertype):
 				if len(mapchoicestr) > 0:
 					qmapchoice = int(mapchoicestr)
 
-		#map points
-		if (qmapchoice == 1):
-			if (qcollection == 30000287):
-				locationset = Location.objects.filter(
-					Q(locationname__locationreference__fk_locationstatus=1)).annotate(count=Count('locationname__locationreference__fk_event__part__fk_part__fk_support'))
+			#map points
+			if (qmapchoice == 1):
 
+				locationset = await map_locationset(qcollection)
+				location_dict, center_long, center_lat = await mapgenerator2(locationset)		
+
+			#map counties
+			elif (qmapchoice == 2):
+				#if collection is set then limit the scope of the dataset
+
+				mapcounties = await map_placeset(qcollection)
+
+			#map regions
 			else:
-				#data for location map
-				locationset = Location.objects.filter(
-					Q(locationname__locationreference__fk_event__part__fk_part__fk_support__fk_face__fk_seal__sealdescription__fk_collection=qcollection)).annotate(count=Count('locationname__locationreference__fk_event__part__fk_part__fk_support'))
 
-			location_dict, center_long, center_lat = mapgenerator2(locationset)
-
-		#map counties
-		elif (qmapchoice == 2):
-			#if collection is set then limit the scope of the dataset
-			if (qcollection == 30000287):
-				#data for map counties
-				placeset = Region.objects.filter(fk_locationtype=4, 
-					location__locationname__locationreference__fk_locationstatus=1
-					).annotate(numplaces=Count('location__locationname__locationreference__fk_event__part__fk_part__fk_support')) 
-
-			else:
-				#data for map counties
-				placeset = Region.objects.filter(fk_locationtype=4, 
-					location__locationname__locationreference__fk_locationstatus=1, 
-					location__locationname__locationreference__fk_event__part__fk_part__fk_support__fk_face__fk_seal__sealdescription__fk_collection=qcollection
-					).annotate(numplaces=Count('location__locationname__locationreference'))
-
-			## data for colorpeth map
-			mapcounties1 = get_object_or_404(Jsonstorage, id_jsonfile=1)
-			mapcounties = json.loads(mapcounties1.jsonfiletxt)
-
-			for i in mapcounties:
-				if i == "features":
-					for b in mapcounties[i]:
-						j = b["properties"]
-						countyvalue = j["HCS_NUMBER"]
-						countyname = j["NAME"]
-						numberofcases = placeset.filter(fk_his_countylist=countyvalue)
-						for i in numberofcases:
-							j["cases"] = i.numplaces
-
-		#map regions
-		else:
-			if (qcollection == 30000287):
-				regiondisplayset = Regiondisplay.objects.filter(region__location__locationname__locationreference__fk_locationstatus=1
-					).annotate(numregions=Count('region__location__locationname__locationreference__fk_event__part__fk_part__fk_support')) 
-
-			else:
-				#data for region map 
-				regiondisplayset = Regiondisplay.objects.filter( 
-					region__location__locationname__locationreference__fk_locationstatus=1, 
-					region__location__locationname__locationreference__fk_event__part__fk_part__fk_support__fk_face__fk_seal__sealdescription__fk_collection=qcollection
-					).annotate(numregions=Count('region__location__locationname__locationreference'))
-
-			region_dict = mapgenerator3(regiondisplayset)
-
-		form = CollectionForm(initial={'collection': qcollection, 'mapchoice': qmapchoice})		
+				regiondisplayset = await map_regionset(qcollection)
+				region_dict = await mapgenerator3(regiondisplayset)
 
 		template = loader.get_template('digisig/map.html')
 		context = {
@@ -203,6 +143,105 @@ async def discover(request, discovertype):
 			}
 
 		return HttpResponse(template.render(context, request))
+
+
+
+
+
+		# #default
+		# qcollection= 30000287
+		# qmapchoice = 1
+		# mapdic = []
+		# regiondisplayset = []
+		# region_dict = []
+		# mapcounties = []
+		# location_dict = []
+
+		# #adjust values if form submitted
+		# if request.method == 'POST':
+		# 	form = CollectionForm(request.POST)
+			
+		# 	if form.is_valid():
+		# 		collectionstr = form.cleaned_data['collection']
+		# 		#make sure values are not empty then try and convert to ints
+		# 		if len(collectionstr) > 0:
+		# 			qcollection = int(collectionstr)
+
+		# 		mapchoicestr = form.cleaned_data['mapchoice']
+		# 		if len(mapchoicestr) > 0:
+		# 			qmapchoice = int(mapchoicestr)
+
+		# #map points
+		# if (qmapchoice == 1):
+		# 	if (qcollection == 30000287):
+		# 		locationset = Location.objects.filter(
+		# 			Q(locationname__locationreference__fk_locationstatus=1)).annotate(count=Count('locationname__locationreference__fk_event__part__fk_part__fk_support'))
+
+		# 	else:
+		# 		#data for location map
+		# 		locationset = Location.objects.filter(
+		# 			Q(locationname__locationreference__fk_event__part__fk_part__fk_support__fk_face__fk_seal__sealdescription__fk_collection=qcollection)).annotate(count=Count('locationname__locationreference__fk_event__part__fk_part__fk_support'))
+
+		# 	location_dict, center_long, center_lat = mapgenerator2(locationset)
+
+		# #map counties
+		# elif (qmapchoice == 2):
+		# 	#if collection is set then limit the scope of the dataset
+		# 	if (qcollection == 30000287):
+		# 		#data for map counties
+		# 		placeset = Region.objects.filter(fk_locationtype=4, 
+		# 			location__locationname__locationreference__fk_locationstatus=1
+		# 			).annotate(numplaces=Count('location__locationname__locationreference__fk_event__part__fk_part__fk_support')) 
+
+		# 	else:
+		# 		#data for map counties
+		# 		placeset = Region.objects.filter(fk_locationtype=4, 
+		# 			location__locationname__locationreference__fk_locationstatus=1, 
+		# 			location__locationname__locationreference__fk_event__part__fk_part__fk_support__fk_face__fk_seal__sealdescription__fk_collection=qcollection
+		# 			).annotate(numplaces=Count('location__locationname__locationreference'))
+
+		# 	## data for colorpeth map
+		# 	mapcounties1 = get_object_or_404(Jsonstorage, id_jsonfile=1)
+		# 	mapcounties = json.loads(mapcounties1.jsonfiletxt)
+
+		# 	for i in mapcounties:
+		# 		if i == "features":
+		# 			for b in mapcounties[i]:
+		# 				j = b["properties"]
+		# 				countyvalue = j["HCS_NUMBER"]
+		# 				countyname = j["NAME"]
+		# 				numberofcases = placeset.filter(fk_his_countylist=countyvalue)
+		# 				for i in numberofcases:
+		# 					j["cases"] = i.numplaces
+
+		# #map regions
+		# else:
+		# 	if (qcollection == 30000287):
+		# 		regiondisplayset = Regiondisplay.objects.filter(region__location__locationname__locationreference__fk_locationstatus=1
+		# 			).annotate(numregions=Count('region__location__locationname__locationreference__fk_event__part__fk_part__fk_support')) 
+
+		# 	else:
+		# 		#data for region map 
+		# 		regiondisplayset = Regiondisplay.objects.filter( 
+		# 			region__location__locationname__locationreference__fk_locationstatus=1, 
+		# 			region__location__locationname__locationreference__fk_event__part__fk_part__fk_support__fk_face__fk_seal__sealdescription__fk_collection=qcollection
+		# 			).annotate(numregions=Count('region__location__locationname__locationreference'))
+
+		# 	region_dict = mapgenerator3(regiondisplayset)
+
+
+		# form = CollectionForm(initial={'collection': qcollection, 'mapchoice': qmapchoice})		
+
+		# template = loader.get_template('digisig/map.html')
+		# context = {
+		# 	'pagetitle': pagetitle,
+		# 	'location_dict': location_dict,
+		# 	'counties_dict': mapcounties,
+		# 	'region_dict': region_dict,
+		# 	'form': form,
+		# 	}
+
+		# return HttpResponse(template.render(context, request))
 
 
 
@@ -392,8 +431,12 @@ async def analyze(request, analysistype):
 ###### Dates ##########
 	if analysistype == "dates":
 
+		pagetitle = 'Dates'
+
+		form = DateForm(request.POST or None)
+		form = await dateform_options(form)
+
 		#default values
-		pagetitle = 'dates'
 		resulttext = ''
 		resultrange= ''
 		decisiontreetext = ''
@@ -404,109 +447,33 @@ async def analyze(request, analysistype):
 		representationset = []
 		manifestation_set = []
 
-		if request.method == "POST":
-			form = DateForm(request.POST)
-			if form.is_valid():
-				qclass = form.cleaned_data['classname']
-				qshape = form.cleaned_data['shape']	
-				qvertical = form.cleaned_data['face_vertical']
-				qhorizontal = form.cleaned_data['face_horizontal']
-				# qpagination = form.cleaned_data['pagination']
+		if request.method == 'POST':
 
-				if qclass.isdigit():
-					if int(qclass) > 0:
-						qclass = int(qclass)
-						class_object = get_object_or_404(Classification, id_class=qclass)
-
-				if qshape.isdigit():
-					qshape = int(qshape)
-					if int(qshape) > 0:
-						qshape = int(qshape)
-						shape_object = get_object_or_404(Shape, pk_shape=qshape)
-
-				if qvertical > 0:
-					if qhorizontal > 0:
-						resultarea = faceupdater(qshape, qvertical, qhorizontal)
+			if form.is_valid(): 
+				shape_object, class_object, resultarea = await datesearchfilter(form)
 
 				try:
 					# fetch the current model
-
 					url = os.path.join(settings.BASE_DIR, 'digisig\\static\\ml\\ml_tree')
 
-
-					with open(url, 'rb') as file:	
-						mlmodel = pickle.load(file)
-
 				except:
-					print ("exception occurred")
 					# fetch the current model
 					url = os.path.join(settings.BASE_DIR, 'staticfiles/ml/ml_tree')
 
-					with open(url, 'rb') as file:	
-						mlmodel = pickle.load(file)
+				with open(url, 'rb') as file:	
+					mlmodel = pickle.load(file)
 
 				# pass model and features of seal to function that predicts the date
-				result, result1, resulttext, finalnodevalue, df = mlpredictcase(class_object, shape_object, resultarea, mlmodel)
+				result, result1, resulttext, finalnodevalue, df = await mlpredictcase(class_object, shape_object, resultarea, mlmodel)
 
 				# get information about decision path
-				decisionpathout, decisiontreedic = mlshowpath(mlmodel, df)
+				decisionpathout, decisiontreedic = await mlshowpath(mlmodel, df)
 
-				#find other seals assigned to this decision tree group
-				timegroupcases = Seal.objects.filter(
-					date_prediction_node=finalnodevalue).order_by(
-					"date_origin").select_related(
-					'fk_timegroupc').values(
-					'date_origin', 'id_seal', 'fk_timegroupc', 'fk_timegroupc__timegroup_c_range', 'fk_seal_face__fk_shape', 'fk_seal_face__fk_class')
+				seal_set, resultrange, resultset, labels, data1 = await finalnodevalue_set(finalnodevalue, shape_object, class_object)
 
-				resultrange, resultset = getquantiles(timegroupcases)
-				labels, data1 = temporaldistribution(timegroupcases)
-				sealtargets = timegroupcases.values_list('id_seal', flat='True')
+				seal_set, totalrows, totaldisplay = await defaultpagination(seal_set, 1)
 
-				# #identify a subset of seal to display as suggestions
-				seal_set = Representation.objects.filter(
-					primacy=1).filter(
-					fk_manifestation__fk_face__fk_seal__in=sealtargets).filter(
-					fk_manifestation__fk_face__fk_shape=shape_object).filter(
-					fk_manifestation__fk_face__fk_class=class_object).select_related(
-					'fk_connection').select_related(
-					'fk_manifestation__fk_face__fk_seal').select_related(
-					'fk_manifestation__fk_support__fk_part__fk_item__fk_repository').select_related(
-					'fk_manifestation__fk_support__fk_number_currentposition').select_related(
-					'fk_manifestation__fk_support__fk_attachment').select_related(
-					'fk_manifestation__fk_support__fk_supportstatus').select_related(
-					'fk_manifestation__fk_support__fk_nature').select_related(
-					'fk_manifestation__fk_imagestate').select_related(
-					'fk_manifestation__fk_position').select_related(
-					'fk_manifestation__fk_support__fk_part__fk_event').order_by(
-					'fk_manifestation')
-
-				seal_set, totalrows, totaldisplay, qpagination = defaultpagination(seal_set, 1)
-
-				manifestation_set = {}
-				
-				for s in seal_set:
-					manifestation_dic = {}
-					connection = s.fk_connection
-					manifestation_dic["thumb"] = connection.thumb
-					manifestation_dic["medium"] = connection.medium
-					manifestation_dic["representation_thumbnail_hash"] = s.representation_thumbnail_hash
-					manifestation_dic["representation_filename_hash"] = s.representation_filename_hash 
-					manifestation_dic["id_representation"] = s.id_representation	
-					manifestation_dic["id_item"] = s.fk_manifestation.fk_support.fk_part.fk_item.id_item
-					manifestation_dic["id_manifestation"] = s.fk_manifestation.id_manifestation
-					manifestation_dic["id_seal"] = s.fk_manifestation.fk_face.fk_seal.id_seal
-					manifestation_dic["repository_fulltitle"] = s.fk_manifestation.fk_support.fk_part.fk_item.fk_repository.repository_fulltitle
-					manifestation_dic["number"] = s.fk_manifestation.fk_support.fk_number_currentposition.number
-					manifestation_dic["imagestate_term"] = s.fk_manifestation.fk_imagestate
-					manifestation_dic["shelfmark"] = s.fk_manifestation.fk_support.fk_part.fk_item.shelfmark
-					manifestation_dic["label_manifestation_repository"] = s.fk_manifestation.label_manifestation_repository
-
-					manifestation_set[s.fk_manifestation.id_manifestation] = manifestation_dic
-
-				form = DateForm(request.POST)
-
-		else:
-			form = DateForm()
+				manifestation_set = await mlmanifestation_set(seal_set)
 
 		# print (decisiontreetext)
 		# print (type(decisiontreetext))
@@ -530,6 +497,148 @@ async def analyze(request, analysistype):
 
 		template = loader.get_template('digisig/analysis_date.html')
 		return HttpResponse(template.render(context, request))
+
+
+
+
+		# #default values
+		# pagetitle = 'dates'
+		# resulttext = ''
+		# resultrange= ''
+		# decisiontreetext = ''
+		# decisiontreedic = ''
+		# finalnodevalue = ''
+		# labels = []
+		# data1 = []
+		# representationset = []
+		# manifestation_set = []
+
+		# if request.method == "POST":
+		# 	form = DateForm(request.POST)
+		# 	if form.is_valid():
+		# 		qclass = form.cleaned_data['classname']
+		# 		qshape = form.cleaned_data['shape']	
+		# 		qvertical = form.cleaned_data['face_vertical']
+		# 		qhorizontal = form.cleaned_data['face_horizontal']
+		# 		# qpagination = form.cleaned_data['pagination']
+
+		# 		if qclass.isdigit():
+		# 			if int(qclass) > 0:
+		# 				qclass = int(qclass)
+		# 				class_object = get_object_or_404(Classification, id_class=qclass)
+
+		# 		if qshape.isdigit():
+		# 			qshape = int(qshape)
+		# 			if int(qshape) > 0:
+		# 				qshape = int(qshape)
+		# 				shape_object = get_object_or_404(Shape, pk_shape=qshape)
+
+		# 		if qvertical > 0:
+		# 			if qhorizontal > 0:
+		# 				resultarea = faceupdater(qshape, qvertical, qhorizontal)
+
+		# 		try:
+		# 			# fetch the current model
+
+		# 			url = os.path.join(settings., 'digisig\\static\\ml\\ml_tree')
+
+
+		# 			with open(url, 'rb') as file:	
+		# 				mlmodel = pickle.load(file)
+
+		# 		except:
+		# 			print ("exception occurred")
+		# 			# fetch the current model
+		# 			url = os.path.join(settings.BASE_DIR, 'staticfiles/ml/ml_tree')
+
+		# 			with open(url, 'rb') as file:	
+		# 				mlmodel = pickle.load(file)
+
+		# 		# pass model and features of seal to function that predicts the date
+		# 		result, result1, resulttext, finalnodevalue, df = mlpredictcase(class_object, shape_object, resultarea, mlmodel)
+
+		# 		# get information about decision path
+		# 		decisionpathout, decisiontreedic = mlshowpath(mlmodel, df)
+
+		# 		#find other seals assigned to this decision tree group
+		# 		timegroupcases = Seal.objects.filter(
+		# 			date_prediction_node=finalnodevalue).order_by(
+		# 			"date_origin").select_related(
+		# 			'fk_timegroupc').values(
+		# 			'date_origin', 'id_seal', 'fk_timegroupc', 'fk_timegroupc__timegroup_c_range', 'fk_seal_face__fk_shape', 'fk_seal_face__fk_class')
+
+		# 		resultrange, resultset = getquantiles(timegroupcases)
+		# 		labels, data1 = temporaldistribution(timegroupcases)
+		# 		sealtargets = timegroupcases.values_list('id_seal', flat='True')
+
+		# 		# #identify a subset of seal to display as suggestions
+		# 		seal_set = Representation.objects.filter(
+		# 			primacy=1).filter(
+		# 			fk_manifestation__fk_face__fk_seal__in=sealtargets).filter(
+		# 			fk_manifestation__fk_face__fk_shape=shape_object).filter(
+		# 			fk_manifestation__fk_face__fk_class=class_object).select_related(
+		# 			'fk_connection').select_related(
+		# 			'fk_manifestation__fk_face__fk_seal').select_related(
+		# 			'fk_manifestation__fk_support__fk_part__fk_item__fk_repository').select_related(
+		# 			'fk_manifestation__fk_support__fk_number_currentposition').select_related(
+		# 			'fk_manifestation__fk_support__fk_attachment').select_related(
+		# 			'fk_manifestation__fk_support__fk_supportstatus').select_related(
+		# 			'fk_manifestation__fk_support__fk_nature').select_related(
+		# 			'fk_manifestation__fk_imagestate').select_related(
+		# 			'fk_manifestation__fk_position').select_related(
+		# 			'fk_manifestation__fk_support__fk_part__fk_event').order_by(
+		# 			'fk_manifestation')
+
+		# 		seal_set, totalrows, totaldisplay, qpagination = defaultpagination(seal_set, 1)
+
+		# 		manifestation_set = {}
+				
+		# 		for s in seal_set:
+		# 			manifestation_dic = {}
+		# 			connection = s.fk_connection
+		# 			manifestation_dic["thumb"] = connection.thumb
+		# 			manifestation_dic["medium"] = connection.medium
+		# 			manifestation_dic["representation_thumbnail_hash"] = s.representation_thumbnail_hash
+		# 			manifestation_dic["representation_filename_hash"] = s.representation_filename_hash 
+		# 			manifestation_dic["id_representation"] = s.id_representation	
+		# 			manifestation_dic["id_item"] = s.fk_manifestation.fk_support.fk_part.fk_item.id_item
+		# 			manifestation_dic["id_manifestation"] = s.fk_manifestation.id_manifestation
+		# 			manifestation_dic["id_seal"] = s.fk_manifestation.fk_face.fk_seal.id_seal
+		# 			manifestation_dic["repository_fulltitle"] = s.fk_manifestation.fk_support.fk_part.fk_item.fk_repository.repository_fulltitle
+		# 			manifestation_dic["number"] = s.fk_manifestation.fk_support.fk_number_currentposition.number
+		# 			manifestation_dic["imagestate_term"] = s.fk_manifestation.fk_imagestate
+		# 			manifestation_dic["shelfmark"] = s.fk_manifestation.fk_support.fk_part.fk_item.shelfmark
+		# 			manifestation_dic["label_manifestation_repository"] = s.fk_manifestation.label_manifestation_repository
+
+		# 			manifestation_set[s.fk_manifestation.id_manifestation] = manifestation_dic
+
+		# 		form = DateForm(request.POST)
+
+		# else:
+		# 	form = DateForm()
+
+		# # print (decisiontreetext)
+		# # print (type(decisiontreetext))
+		# # print (decisiontreetext[1])
+
+		# # print (manifestation_set)
+		# #print (labels, data1)
+
+		# context = {
+		# 	'pagetitle': pagetitle,
+		# 	'form': form,
+		# 	'resulttext': resulttext,
+		# 	'resultrange': resultrange,
+		# 	'labels': labels,
+		# 	'data1': data1,
+		# 	# 'representationset': representationset,
+		# 	'manifestation_set': manifestation_set,
+		# 	'decisiontreedic': decisiontreedic,
+		# 	'finalnodevalue': finalnodevalue,
+		# 	}
+
+		# template = loader.get_template('digisig/analysis_date.html')
+		# return HttpResponse(template.render(context, request))
 
 
 #################### Search #########################
@@ -557,7 +666,7 @@ async def search(request, searchtype):
 			if form.is_valid(): 
 				individual_object, qpagination = await peoplesearchfilter(individual_object, form)
 
-		individual_object, totalrows, totaldisplay, qpagination = await defaultpagination(individual_object, qpagination)
+		individual_object, totalrows, totaldisplay = await defaultpagination(individual_object, qpagination)
 
 		pagecountercurrent = qpagination
 		pagecounternext = qpagination + 1
@@ -678,7 +787,7 @@ async def search(request, searchtype):
 			if form.is_valid(): 
 				item_object, qpagination = await itemsearchfilter(item_object, form)
 
-		item_pageobject, totalrows, totaldisplay, qpagination = await defaultpagination(item_object, qpagination)
+		item_pageobject, totalrows, totaldisplay = await defaultpagination(item_object, qpagination)
 
 		pagecountercurrent = qpagination 
 		pagecounternext = qpagination + 1
@@ -833,7 +942,7 @@ async def search(request, searchtype):
 			if form.is_valid(): 
 				manifestation_object, qpagination = await sealsearchfilter(manifestation_object, form)
 
-		manifestation_pageobject, totalrows, totaldisplay, qpagination = await defaultpagination(manifestation_object, qpagination)
+		manifestation_pageobject, totalrows, totaldisplay = await defaultpagination(manifestation_object, qpagination)
 
 		pagecountercurrent = qpagination 
 		pagecounternext = qpagination + 1
@@ -883,7 +992,7 @@ async def search(request, searchtype):
 			if form.is_valid(): 
 				sealdescription_object, qpagination = await sealdescriptionsearchfilter(sealdescription_object, form)
 
-		sealdescription_object, totalrows, totaldisplay, qpagination = await defaultpagination(sealdescription_object, qpagination) 
+		sealdescription_object, totalrows, totaldisplay = await defaultpagination(sealdescription_object, qpagination) 
 
 		pagecountercurrent = qpagination
 		pagecounternext = qpagination + 1
@@ -926,7 +1035,7 @@ async def search(request, searchtype):
 
 		place_object = await placeobjectannotate(place_object)
 
-		placepage_object, totalrows, totaldisplay, qpagination = await defaultpagination(place_object, qpagination) 
+		placepage_object, totalrows, totaldisplay = await defaultpagination(place_object, qpagination) 
 
 		pagecountercurrent = qpagination
 		pagecounternext = qpagination + 1
@@ -1466,7 +1575,7 @@ def actor_page(request, digisig_entity_number):
 
 	#hack to deal with cases where there are too many seals for the form to handle
 	qpagination = 1
-	manifestation_object, totalrows, totaldisplay, qpagination = defaultpagination(manifestation_object, qpagination)
+	manifestation_object, totalrows, totaldisplay = defaultpagination(manifestation_object, qpagination)
 
 	manifestation_set={}
 
@@ -1825,7 +1934,7 @@ def place_page(request, digisig_entity_number):
 		form = PageCycleForm()
 
 	## these pagecounters are going to break on pages that are small lists
-	manifestation_object, totalrows, totaldisplay, qpagination = defaultpagination(manifestation_object, qpagination)
+	manifestation_object, totalrows, totaldisplay = defaultpagination(manifestation_object, qpagination)
 	pagecountercurrent = qpagination 
 	pagecounternext = qpagination + 1
 	pagecounternextnext = qpagination +2
