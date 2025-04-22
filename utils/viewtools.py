@@ -1228,27 +1228,54 @@ def map_placeset(qcollection):
 		placeset = Region.objects.filter(fk_locationtype=4, 
 			location__locationname__locationreference__fk_locationstatus=1, 
 			location__locationname__locationreference__fk_event__part__fk_part__fk_support__fk_face__fk_seal__fk_sealsealdescription__fk_collection=qcollection
-			).annotate(numplaces=Count('location__locationname__locationreference')).values(
+			).annotate(numplaces=Count('location__locationname__locationreference')).values_list(
 			'numplaces', 
-			'fk_his_countylist')
+			'fk_his_countylist', flat=True)
 
-	#print(placeset)
+	return(placeset)
+
+@sync_to_async
+def map_counties(placeset):
 
 	## data for colorpeth map
 	mapcounties1 = get_object_or_404(Jsonstorage, id_jsonfile=1)
 	mapcounties = json.loads(mapcounties1.jsonfiletxt)
 
-	for i in mapcounties:
-		if i == "features":
-			for b in mapcounties[i]:
-				j = b["properties"]
-				countyvalue = j["HCS_NUMBER"]
-				countyname = j["NAME"]
-				numberofcases = placeset.filter(fk_his_countylist=countyvalue)
-				for i in numberofcases:
-					j["cases"] = i.numplaces
+	# for i in mapcounties:
+	# 	if i == "features":
+	# 		for b in mapcounties[i]:
+	# 			j = b["properties"]
+	# 			countyvalue = j["HCS_NUMBER"]
+	# 			countyname = j["NAME"]
+	# 			numberofcases = placeset.filter(fk_his_countylist=countyvalue)
+	# 			for t in numberofcases:
+	# 				j["cases"] = t['numplaces']
 
-	return(mapcounties)
+	# return(mapcounties)
+
+	# Create a dictionary to quickly access numplaces by county ID
+	county_places = {}
+	for place in placeset:
+		county_id = place['fk_his_countylist']
+		num_places = place['numplaces']
+		if county_id not in county_places:
+			county_places[county_id] = 0
+		county_places[county_id] += num_places  # Accumulate if multiple places per county
+
+	# Iterate through the features in mapcounties and update 'cases'
+	if "features" in mapcounties:
+		for feature in mapcounties["features"]:
+			properties = feature.get("properties")
+			if properties:
+				county_value = properties.get("HCS_NUMBER")
+				if county_value in county_places:
+					properties["cases"] = county_places[county_value]
+				else:
+					properties["cases"] = 0  # Or some other default value if no places
+
+	return mapcounties
+
+
 
 @sync_to_async
 def map_regionset(qcollection):

@@ -125,7 +125,8 @@ async def discover(request, discovertype):
 			elif (qmapchoice == 2):
 				#if collection is set then limit the scope of the dataset
 
-				mapcounties = await map_placeset(qcollection)
+				placeset = await map_placeset(qcollection)
+				mapcounties = await map_counties(placeset)
 
 			#map regions
 			else:
@@ -143,10 +144,6 @@ async def discover(request, discovertype):
 			}
 
 		return HttpResponse(template.render(context, request))
-
-
-
-
 
 		# #default
 		# qcollection= 30000287
