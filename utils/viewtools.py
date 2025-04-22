@@ -1377,8 +1377,9 @@ def seriesset():
 
 	return (series_object)
 
-
+@sync_to_async
 def mapgenerator3(regiondisplayset):
+
 	## data for region map
 	# make circles data -- defaults -- note that this code is very similar to the function mapdata2
 	mapdic = {"type": "FeatureCollection"}
@@ -1391,12 +1392,12 @@ def mapgenerator3(regiondisplayset):
 
 	#for circles
 	for r in regiondisplayset:
-		if (r['numregions'] > 0):
-			value1 = r['id_regiondisplay']
-			value2 = r['regiondisplay_label']
-			value3 = r['numregions']
-			value4 = r['regiondisplay_long']
-			value5 = r['regiondisplay_lat']
+		if (r.numregions > 0):
+			value1 = r.id_regiondisplay
+			value2 = r.regiondisplay_label
+			value3 = r.numregions
+			value4 = r.regiondisplay_long
+			value5 = r.regiondisplay_lat
 
 			popupcontent = str(value2)
 			if value3 > 0:
