@@ -1192,6 +1192,52 @@ def roundedoval(height, width):
 
 	return(returnarea)
 
+@sync_to_async
+def collection_details(qcollection):
+
+	collection = Collection.objects.get(id_collection=qcollection)
+
+	collection_dic = {}
+	collection_dic["id_collection"] = int(qcollection)
+	collection_dic["collection_thumbnail"] = collection.collection_thumbnail
+	collection_dic["collection_publicationdata"] = collection.collection_publicationdata
+	collection_dic["collection_fulltitle"] = collection.collection_fulltitle
+	collection_dic["notes"] = collection.notes
+
+	sealdescription_set = Sealdescription.objects.filter(fk_seal__gt=1).select_related('fk_seal')
+
+	#if collection is set then limit the scope of the dataset
+	if (qcollection == 30000287):
+		collection_dic["collection_title"] = 'All Collections'
+		pagetitle = 'All Collections'
+		collection_dic["totalsealdescriptions"] = sealdescription_set.count()
+		collection_dic["totalseals"] = sealdescription_set.distinct('fk_seal').count()
+
+	else:
+		collection_dic["collection_title"] = collection.collection_title
+		pagetitle = collection.collection_title
+		sealdescription_set = sealdescription_set.filter(fk_collection=qcollection)
+		collection_dic["totalsealdescriptions"] = sealdescription_set.distinct(
+			'sealdescription_identifier').count()
+		collection_dic["totalseals"] = sealdescription_set.distinct(
+			'fk_seal').count()
+
+	return(collection, collection_dic, sealdescription_set)
+
+@sync_to_async
+def collection_counts(sealdescription_set):
+	actorscount = sealdescription_set.filter(fk_seal__fk_individual_realizer__gt=10000019).count()
+
+	datecount =sealdescription_set.filter(fk_seal__date_origin__gt=1).count()
+
+	classcount = sealdescription_set.filter(
+		fk_seal__fk_seal_face__fk_class__isnull=False).exclude(
+		fk_seal__fk_seal_face__fk_class=10000367).exclude(
+		fk_seal__fk_seal_face__fk_class=10001007).count()
+
+	facecount = sealdescription_set.filter(fk_seal__fk_seal_face__fk_faceterm=1).distinct('fk_seal__fk_seal_face').count() 
+
+	return(actorscount, datecount, classcount, facecount)
 
 @sync_to_async
 def map_locationset(qcollection):
@@ -1326,7 +1372,6 @@ def mapgenerator(location_object, count_in):
 	mapdic["features"] = placelist
 
 	return(mapdic)
-
 
 @sync_to_async
 def mapgenerator2(location_object):

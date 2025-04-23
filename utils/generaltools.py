@@ -3,6 +3,8 @@ from digisig.models import *
 from django.shortcuts import get_object_or_404
 from django.core import serializers
 from datetime import datetime
+from asgiref.sync import sync_to_async
+
 # import urllib.request
 import shutil
 # from PIL import Image
@@ -833,6 +835,7 @@ def addimageformanifestation(manifestationvalue, image_url, imagesuffix):
 ############################# functions ##############################
 
 ### calculate the percentage
+@sync_to_async
 def calpercent(total, portion):
 	output = (portion/total) * 100
 	return (output)

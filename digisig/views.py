@@ -1629,7 +1629,7 @@ def actor_page(request, digisig_entity_number):
 
 #https://allwin-raju-12.medium.com/reverse-relationship-in-django-f016d34e2c68
 
-def collection_page(request, digisig_entity_number):
+async def collection_page(request, digisig_entity_number):
 	pagetitle = 'Collection'
 	
 	### This code prepares collection info box and the data for charts on the collection page
@@ -1637,79 +1637,58 @@ def collection_page(request, digisig_entity_number):
 	#defaults
 	qcollection = int(digisig_entity_number)
 
-	collection = Collection.objects.get(id_collection=qcollection)
+	collection, collection_dic, sealdescription_set = await collection_details(qcollection)
 
-	collection_dic = {}
-	collection_dic["id_collection"] = int(qcollection)
-	collection_dic["collection_thumbnail"] = collection.collection_thumbnail
-	collection_dic["collection_publicationdata"] = collection.collection_publicationdata
-	collection_dic["collection_fulltitle"] = collection.collection_fulltitle
-	collection_dic["notes"] = collection.notes
-	contributor_dic = sealdescription_contributorgenerate(collection, collection_dic)
+	contributor_dic = await sealdescription_contributorgenerate(collection, collection_dic)
 
+	# collection = Collection.objects.get(id_collection=qcollection)
 
-	sealdescription_set = Sealdescription.objects.filter(fk_seal__gt=1).select_related('fk_seal')
+	# collection_dic = {}
+	# collection_dic["id_collection"] = int(qcollection)
+	# collection_dic["collection_thumbnail"] = collection.collection_thumbnail
+	# collection_dic["collection_publicationdata"] = collection.collection_publicationdata
+	# collection_dic["collection_fulltitle"] = collection.collection_fulltitle
+	# collection_dic["notes"] = collection.notes
+	# contributor_dic = sealdescription_contributorgenerate(collection, collection_dic)
 
-	#if collection is set then limit the scope of the dataset
-	if (qcollection == 30000287):
-		collection_dic["collection_title"] = 'All Collections'
-		pagetitle = 'All Collections'
-		collection_dic["totalsealdescriptions"] = sealdescription_set.count()
-		collection_dic["totalseals"] = sealdescription_set.distinct('fk_seal').count()
+	# sealdescription_set = Sealdescription.objects.filter(fk_seal__gt=1).select_related('fk_seal')
 
-	else:
-		collection_dic["collection_title"] = collection.collection_title
-		pagetitle = collection.collection_title
-		sealdescription_set = sealdescription_set.filter(fk_collection=qcollection)
-		collection_dic["totalsealdescriptions"] = sealdescription_set.distinct(
-			'sealdescription_identifier').count()
-		collection_dic["totalseals"] = sealdescription_set.distinct(
-			'fk_seal').count()
+	# #if collection is set then limit the scope of the dataset
+	# if (qcollection == 30000287):
+	# 	collection_dic["collection_title"] = 'All Collections'
+	# 	pagetitle = 'All Collections'
+	# 	collection_dic["totalsealdescriptions"] = sealdescription_set.count()
+	# 	collection_dic["totalseals"] = sealdescription_set.distinct('fk_seal').count()
+
+	# else:
+	# 	collection_dic["collection_title"] = collection.collection_title
+	# 	pagetitle = collection.collection_title
+	# 	sealdescription_set = sealdescription_set.filter(fk_collection=qcollection)
+	# 	collection_dic["totalsealdescriptions"] = sealdescription_set.distinct(
+	# 		'sealdescription_identifier').count()
+	# 	collection_dic["totalseals"] = sealdescription_set.distinct(
+	# 		'fk_seal').count()
 
 
 	### generate the collection info data for chart 1
-	actorscount = sealdescription_set.filter(fk_seal__fk_individual_realizer__gt=10000019).count()
+	actorscount, datecount, classcount, facecount = await collection_counts(sealdescription_set)
 
+	# actorscount = sealdescription_set.filter(fk_seal__fk_individual_realizer__gt=10000019).count()
 
-	datecount =sealdescription_set.filter(fk_seal__date_origin__gt=1).count()
+	# datecount =sealdescription_set.filter(fk_seal__date_origin__gt=1).count()
 
+	# classcount = sealdescription_set.filter(
+	# 	fk_seal__fk_seal_face__fk_class__isnull=False).exclude(
+	# 	fk_seal__fk_seal_face__fk_class=10000367).exclude(
+	# 	fk_seal__fk_seal_face__fk_class=10001007).count()
 
-
-	classcount = sealdescription_set.filter(
-		fk_seal__fk_seal_face__fk_class__isnull=False).exclude(
-		fk_seal__fk_seal_face__fk_class=10000367).exclude(
-		fk_seal__fk_seal_face__fk_class=10001007).count()
-
-
-
-	# placecount = Locationname.objects.exclude(
-	# 	locationreference__fk_locationstatus=2).filter(
-	# 	locationreference__fk_event__part__fk_part__fk_support__gt=1).count()
-
-	# print (placecount)
-
-	# placecount = sealdescription_set.exclude=Q(
-	# 	fk_seal__fk_seal_face__manifestation__fk_support__fk_part__fk_event__fk_event_locationreference__fk_locationstatus__isnull=True).exclude(
-	# 	fk_seal__fk_seal_face__manifestation__fk_support__fk_part__fk_event__fk_event_locationreference__fk_locationname__fk_location=7042).count()
-
-
-
-
-	facecount = sealdescription_set.filter(fk_seal__fk_seal_face__fk_faceterm=1).distinct('fk_seal__fk_seal_face').count() 
-
-
+	# facecount = sealdescription_set.filter(fk_seal__fk_seal_face__fk_faceterm=1).distinct('fk_seal__fk_seal_face').count() 
 
 	actors = calpercent(collection_dic["totalseals"], actorscount)
 	date = calpercent(collection_dic["totalseals"], datecount)
 	fclass = calpercent(facecount, classcount)
-	#place = calpercent(collection_dic["totalseals"], placecount)
-
-	# data1 = [actors, date, fclass, place]
-	# labels1 = ["actor", "date", "class", "place"]
-
 	data1 = [actors, date, fclass]
 	labels1 = ["actor", "date", "class"]
-
 
 	### generate the collection info data for chart 2 -- 'Percentage of seals per class',
 
