@@ -188,9 +188,9 @@ collection2_options = []
 # 	#### forcing addition of Linenthal --- 2023_9_26
 # 	collection2_options.append((30000337, 'Linenthal, Schoyen Collection'))
 
-class MLpredictionForm(forms.Form):
-	classification = forms.ChoiceField(choices=classification_options, required=False)
-	collection2 = forms.ChoiceField(choices=collection2_options, required=False)
+# class MLpredictionForm(forms.Form):
+# 	classification = forms.ChoiceField(choices=classification_options, required=False)
+# 	collection2 = forms.ChoiceField(choices=collection2_options, required=False)
 
 
 # For for parish selection

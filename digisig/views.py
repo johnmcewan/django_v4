@@ -246,8 +246,6 @@ async def discover(request, discovertype):
 
 async def analyze(request, analysistype):
 
-	print (analysistype)
-
 	if analysistype == "time":
 
 		pagetitle = 'Time'
@@ -1149,12 +1147,15 @@ async def search(request, searchtype):
 
 ######################### information ################################
 
-def information(request, infotype):
+
+async def information(request, infotype):
 
 	if infotype == "changelog":
 		pagetitle = 'title'
 
-		change_object = Changes.objects.all().order_by('-change_date')
+		change_object = await information_changes() 
+
+		# Changes.objects.all().order_by('-change_date')
 		context = {
 			'pagetitle': pagetitle,
 			'change_object': change_object,
@@ -1169,10 +1170,8 @@ def information(request, infotype):
 		pagetitle = 'title'
 
 		template = loader.get_template('digisig/help.html')
-		class_object = Terminology.objects.filter(
-			term_deprecated=0).order_by('term_name')
-		shape_object = Terminology.objects.filter(digisig_column='shape').order_by('term_name')
-		nature_object = Terminology.objects.filter(digisig_column='nature').order_by('term_name')
+
+		class_object, shape_object, nature_object = await information_help()
 
 		context = {
 			'pagetitle': pagetitle,
@@ -1181,8 +1180,6 @@ def information(request, infotype):
 			'nature_object': nature_object,
 			}
 		return HttpResponse(template.render(context, request))
-
-
 
 
 ########################### Contributors #########################
@@ -1204,137 +1201,34 @@ def information(request, infotype):
 		#default
 		digisig_entity_number= 30000287
 
+		form = CollectionForm(request.POST or None)
+		form = await digisigcollection_options(form)
+
 		#adjust values if form submitted
 		if request.method == 'POST':
-			form = CollectionForm(request.POST)
-			
+
 			if form.is_valid():
 				collectionstr = form.cleaned_data['collection']
+
+				print ("here is clean ", form.cleaned_data['collection'])
+
 				#make sure values are not empty then try and convert to ints
 				if len(collectionstr) > 0:
 					digisig_entity_number = int(collectionstr)
 
+			else:
+				print ("not valid")
+
 		targetphrase = "/page/collection/" + str(digisig_entity_number)
+
 		return redirect(targetphrase)
 
 
 ############ Terminology ###############
-
 	if infotype =="terminology":
 		pagetitle = 'Terminology'
 
-		## code for assembling the classification data
-		term_object = Terminology.objects.filter(
-			term_deprecated=0, level__isnull=False).order_by('term_sortorder')
-
-		termobject = []
-		toplevel = term_object.filter(level=1)
-
-		fifthset = {}
-		topset = {}
-		level5 = {}
-		level4= {}
-		level3= {}
-		level2= {}
-		level1= {}
-
-		#images for display
-		exampleset1 = {}
-		exampleset2 = {}
-		exampleset3 = {}
-		exampleset4 = {}
-		exampleset5 = {}
-
-		for t in toplevel:
-			target1 = t.level1
-			name1 = t.term_name
-			idterm1 = t.id_term
-			tooltip1 = t.term_definition
-			exampleset1= examplefinder(idterm1)
-
-			secondlevel = term_object.filter(level=2, level1=target1)
-			for s in secondlevel:
-				target2 = s.level2
-				name2 = s.term_name
-				idterm2 = s.id_term
-				tooltip2 = s.term_definition
-				exampleset2 = examplefinder(idterm2)
-
-				thirdlevel = term_object.filter(level=3, level2=target2)
-				for th in thirdlevel:
-					target3 = th.level3
-					name3 = th.term_name
-					idterm3 = th.id_term
-					tooltip3 = th.term_definition
-					exampleset3 = examplefinder(idterm3)
-
-					fourthlevel = term_object.filter(level=4, level3=target3)
-					for fo in fourthlevel:
-						target4 = fo.level4
-						name4 = fo.term_name
-						idterm4 = fo.id_term
-						tooltip4 = fo.term_definition
-						exampleset4 = examplefinder(idterm4)
-
-						fifthlevel = term_object.filter(level=5, level4=target4)
-						for fi in fifthlevel:
-							name5 = fi.term_name
-							idterm5 = fi.id_term
-							tooltip5 = fi.term_definition
-							exampleset5 = examplefinder(idterm5)
-							fifthset[name5] = {"id_term": idterm5, "examples": exampleset5, "tooltip": tooltip5}
-							exampleset5 = {}
-		
-						level4[name4] = {"id_term": idterm4, "children": fifthset, "examples": exampleset4, "tooltip": tooltip4}
-						fifthset = {}
-						exampleset4 = {}
-		
-					level3[name3] = {"id_term": idterm3, "children": level4, "examples": exampleset3, "tooltip": tooltip3}
-					level4= {}
-					exampleset3 = {}
-	
-				level2[name2] = {"id_term": idterm2, "children":level3, "examples": exampleset2, "tooltip": tooltip2}
-				level3 = {}
-				exampleset2 = {}
-
-			topset[name1] = {"id_term": idterm1, "children": level2, "examples": exampleset1, "tooltip": tooltip1}
-			level2 = {}
-
-
-		## code for assembling the shape data
-		shapeterms = Terminology.objects.filter(digisig_column="shape").order_by("term_name")
-	
-		shapeset = {}
-		for s in shapeterms:
-			nameshape = s.term_name
-			shapeterm = s.id_term
-			tooltip = s.term_definition
-			examplesetshape = examplefinder(shapeterm)
-			shapeset[nameshape] = {"id_term": shapeterm, "examples":examplesetshape, "tooltip": tooltip}
-
-		## code for assembling the nature data
-		natureterms = Terminology.objects.filter(digisig_column="nature").order_by("term_name")
-	
-		natureset = {}
-		for n in natureterms:
-			namenature = n.term_name
-			natureterm = n.id_term
-			tooltip = n.term_definition
-			examplesetnature = examplefinder(natureterm)
-			natureset[namenature] = {"id_term": natureterm, "examples":examplesetnature, "tooltip": tooltip}
-
-
-		## code for assembling the general data
-		generalterms = Terminology.objects.filter(digisig_column="general").order_by("term_name")
-
-		generalset = {}
-		for g in generalterms:
-			namegeneral = g.term_name
-			generalterm = g.id_term
-			tooltip = g.term_definition
-			examplesetgeneral = examplefinder(generalterm)
-			generalset[namegeneral] = {"id_term": generalterm, "examples":examplesetgeneral, "tooltip": tooltip}
-
+		generalset, natureset, topset, shapeset, term_object = await information_terminology()
 
 		context = {
 			'generalobject': generalset,
@@ -1350,88 +1244,7 @@ def information(request, infotype):
 
 ################################ ML ######################################
 
-	if infotype == "machinelearning_info":
-
-		start_time = datetime.now()
-
-		pagetitle = 'ML'
-
-		time1 = gettime(start_time)
-
-		url = os.path.join(settings.STATIC_ROOT, 'ml/ml_faceobjectset')
-		with open(url, 'rb') as file:	
-			face_objectset = pickle.load(file)
-
-		time1b = gettime(start_time)
-
-		facecount= face_objectset.count()
-
-		time1c = gettime(start_time)
-
-		## data for class distribution
-		data2, labels2 = classdistributionv2(face_objectset)
-
-		time2 = gettime(start_time)
-
-		## data for temporal distribution
-		seallist = face_objectset.values_list("fk_seal", flat=True)
-		time2a = gettime(start_time)
-		sealset = Seal.objects.filter(id_seal__in=seallist)
-		time2b = gettime(start_time)
-		data3, labels3 = datedistribution(sealset)
-
-		data3 = data3[:6]
-		labels3 = labels3[:6]
-
-		time3 = gettime(start_time)
-
-		## data for spatial distribution
-		regiondisplayset = Regiondisplay.objects.filter(
-			region__location__locationname__locationreference__fk_locationstatus=1,
-			region__location__locationname__locationreference__fk_event__part__fk_part__fk_support__fk_face__in=face_objectset
-			).annotate(numregions=Count('region__location__locationname__locationreference'))
-
-		region_dict = mapgenerator3(regiondisplayset)
-
-		time4 = gettime(start_time)
-
-		## data for actor distribution
-		printgroupset = Printgroup.objects.annotate(numcases=Count('fk_printgroup', filter=Q(fk_printgroup__face__in=face_objectset))).order_by('printgroup_order')
-		data5 = []
-		labels5 = []
-
-
-		for g in printgroupset:
-			if (g.numcases > 0):
-				percentagedata = (g.numcases/facecount)*100 
-				# if percentagedata > 1:
-				data5.append(percentagedata)
-				labels5.append(g.printgroup)
-
-
-		time5 = gettime(start_time)
-
-		template = loader.get_template('digisig/machinelearning_info.html')
-
-		loadtime = gettime(start_time)
-
-		context = {
-			'pagetitle': pagetitle,
-			'face_objectset': face_objectset,
-			'facenumbercount': facecount,
-			'labels2': labels2,
-			'data2': data2,
-			'data3': data3,
-			'labels3': labels3,
-			'region_dict': region_dict,
-			'data5': data5,
-			'labels5': labels5,
-			'loadtime': loadtime,
-			}
-
-		return HttpResponse(template.render(context, request))
-
-
+	#### 4/23/2024 -- removed hyper link to this page
 	if infotype == "machinelearning":
 
 		pagetitle = 'ML'
@@ -1448,87 +1261,50 @@ def information(request, infotype):
 				qclassification = int(form.cleaned_data['classification'])
 				qcollection = int(form.cleaned_data['collection2'])
 
-		seal_set = Seal.objects.filter(fk_sealsealdescription__fk_collection=qcollection).filter(fk_seal_face__fk_class=qclassification)
+		event_seal, labels, data1, data2 = await information_ML(qcollection, qclassification)
 
-		data1 = []
-		data2 = []
-		labels = []
-		event_seal = []
+		# data1 = []
+		# data2 = []
+		# labels = []
+		# event_seal = []
 
-		if len(seal_set) > 0:
-			for s in seal_set:
+		# seal_set = Seal.objects.filter(fk_sealsealdescription__fk_collection=qcollection).filter(fk_seal_face__fk_class=qclassification)
 
-				### 1/7/2024 -- attempting to put human readable labels -- not working yet -- javascript fails on string with quotes
-				sealdescription_entry = Sealdescription.objects.get(Q(fk_collection=qcollection) & Q(fk_seal=s.id_seal))
+		# if len(seal_set) > 0:
+		# 	for s in seal_set:
 
-				event_seal = Event.objects.get(part__fk_part__fk_support__fk_face__fk_seal=s.id_seal)
+		# 		### 1/7/2024 -- attempting to put human readable labels -- not working yet -- javascript fails on string with quotes
+		# 		sealdescription_entry = Sealdescription.objects.get(Q(fk_collection=qcollection) & Q(fk_seal=s.id_seal))
 
-				try:
-					start = event_seal.repository_startdate
-					end = event_seal.repository_enddate
-					starty = start.year
-					endy = end.year
+		# 		event_seal = Event.objects.get(part__fk_part__fk_support__fk_face__fk_seal=s.id_seal)
 
-					try:
-						start2 = event_seal.startdate
-						end2 = event_seal.enddate
+		# 		try:
+		# 			start = event_seal.repository_startdate
+		# 			end = event_seal.repository_enddate
+		# 			starty = start.year
+		# 			endy = end.year
 
-						if start2.year > 0 :
-							data1.append([starty, endy])
-							# data2.append(liney)
-							data2.append([start2.year, end2.year])
-							#labels.append(event_seal.pk_event)
-							labels.append(s.id_seal)
+		# 			try:
+		# 				start2 = event_seal.startdate
+		# 				end2 = event_seal.enddate
 
-					except:
+		# 				if start2.year > 0 :
+		# 					data1.append([starty, endy])
+		# 					# data2.append(liney)
+		# 					data2.append([start2.year, end2.year])
+		# 					#labels.append(event_seal.pk_event)
+		# 					labels.append(s.id_seal)
 
-						print ("fail2", event_seal)
+		# 			except:
 
-					if starty > 1500:
-						print ("fail", event_seal, start, end, starty, endy, start2, end2)
+		# 				print ("fail2", event_seal)
 
-				except:
+		# 			if starty > 1500:
+		# 				print ("fail", event_seal, start, end, starty, endy, start2, end2)
 
-					print ("fail1", event_seal)
+		# 		except:
 
-						# try:
-						# 	labels.append(sealdescription_entry.sealdescription_identifier)
-						# except:
-						# 	labels.append(s.id_seal)
-
-				# try:
-				# 	event_seal = Event.objects.get(part__fk_part__fk_support__fk_face__fk_seal=s.id_seal)
-				# 	start = event_seal.repository_startdate
-				# 	end = event_seal.repository_enddate
-				# 	# line = event_seal.startdate
-				# 	start2 = event_seal.startdate
-				# 	end2 = event_seal.enddate
-
-				# 	try:
-				# 		starty = start.year
-				# 		endy = end.year
-				# 		# liney = line.year
-
-				# 		data1.append([starty, endy])
-				# 		# data2.append(liney)
-				# 		data2.append([start2.year, end2.year])
-				# 		#labels.append(event_seal.pk_event)
-				# 		labels.append(s.id_seal)
-
-				# 		# try:
-				# 		# 	labels.append(sealdescription_entry.sealdescription_identifier)
-				# 		# except:
-				# 		# 	labels.append(s.id_seal)
-				# 	except:
-				# 		print ("fault")
-
-
-				# 	if (s.id.seal == 10413111):
-				# 		print ("case found") 
-				# 		print (start, end, start2, end2, starty, endy)
-
-				# except:
-				# 	print ("no event", s.id_seal)
+		# 			print ("fail1", event_seal)
 
 		template = loader.get_template('digisig/machinelearning.html')
 
@@ -1542,6 +1318,91 @@ def information(request, infotype):
 			}
 
 		return HttpResponse(template.render(context, request))
+
+
+
+	##### not sure what this is -- but an experiment and probably defunct
+	# if infotype == "machinelearning_info":
+
+	# 	pagetitle = 'ML'
+
+	# 	time1 = gettime(start_time)
+
+	# 	url = os.path.join(settings.STATIC_ROOT, 'ml/ml_faceobjectset')
+	# 	with open(url, 'rb') as file:	
+	# 		face_objectset = pickle.load(file)
+
+	# 	time1b = gettime(start_time)
+
+	# 	facecount= face_objectset.count()
+
+	# 	time1c = gettime(start_time)
+
+	# 	## data for class distribution
+	# 	data2, labels2 = classdistributionv2(face_objectset)
+
+	# 	time2 = gettime(start_time)
+
+	# 	## data for temporal distribution
+	# 	seallist = face_objectset.values_list("fk_seal", flat=True)
+	# 	time2a = gettime(start_time)
+	# 	sealset = Seal.objects.filter(id_seal__in=seallist)
+	# 	time2b = gettime(start_time)
+	# 	data3, labels3 = datedistribution(sealset)
+
+	# 	data3 = data3[:6]
+	# 	labels3 = labels3[:6]
+
+	# 	time3 = gettime(start_time)
+
+	# 	## data for spatial distribution
+	# 	regiondisplayset = Regiondisplay.objects.filter(
+	# 		region__location__locationname__locationreference__fk_locationstatus=1,
+	# 		region__location__locationname__locationreference__fk_event__part__fk_part__fk_support__fk_face__in=face_objectset
+	# 		).annotate(numregions=Count('region__location__locationname__locationreference'))
+
+	# 	region_dict = mapgenerator3(regiondisplayset)
+
+	# 	time4 = gettime(start_time)
+
+	# 	## data for actor distribution
+	# 	printgroupset = Printgroup.objects.annotate(numcases=Count('fk_printgroup', filter=Q(fk_printgroup__face__in=face_objectset))).order_by('printgroup_order')
+	# 	data5 = []
+	# 	labels5 = []
+
+
+	# 	for g in printgroupset:
+	# 		if (g.numcases > 0):
+	# 			percentagedata = (g.numcases/facecount)*100 
+	# 			# if percentagedata > 1:
+	# 			data5.append(percentagedata)
+	# 			labels5.append(g.printgroup)
+
+
+	# 	time5 = gettime(start_time)
+
+	# 	template = loader.get_template('digisig/machinelearning_info.html')
+
+	# 	loadtime = gettime(start_time)
+
+	# 	context = {
+	# 		'pagetitle': pagetitle,
+	# 		'face_objectset': face_objectset,
+	# 		'facenumbercount': facecount,
+	# 		'labels2': labels2,
+	# 		'data2': data2,
+	# 		'data3': data3,
+	# 		'labels3': labels3,
+	# 		'region_dict': region_dict,
+	# 		'data5': data5,
+	# 		'labels5': labels5,
+	# 		'loadtime': loadtime,
+	# 		}
+
+	# 	return HttpResponse(template.render(context, request))
+
+
+
 
 
 
@@ -1631,11 +1492,31 @@ def actor_page(request, digisig_entity_number):
 
 async def collection_page(request, digisig_entity_number):
 	pagetitle = 'Collection'
-	
-	### This code prepares collection info box and the data for charts on the collection page
 
 	#defaults
 	qcollection = int(digisig_entity_number)
+	
+	### This code prepares collection info box and the data for charts on the collection page
+
+	form = CollectionForm(request.POST or None)
+	collection_choices = await digisigcollection_options(form)
+
+	# #adjust values if form submitted
+	# if request.method == 'POST':
+		
+	# 	if form.is_valid():
+
+	# 		collection = form.cleaned_data['collection']
+
+	# 		#make sure values are not empty then try and convert to ints
+	# 		if len(collection) > 0:
+	# 			qcollection = int(collection)
+
+	# else:
+	# 	pass
+
+
+
 
 	collection, collection_dic, sealdescription_set = await collection_details(qcollection)
 
@@ -1684,95 +1565,99 @@ async def collection_page(request, digisig_entity_number):
 
 	# facecount = sealdescription_set.filter(fk_seal__fk_seal_face__fk_faceterm=1).distinct('fk_seal__fk_seal_face').count() 
 
-	actors = calpercent(collection_dic["totalseals"], actorscount)
-	date = calpercent(collection_dic["totalseals"], datecount)
-	fclass = calpercent(facecount, classcount)
+	actors = await calpercent(collection_dic["totalseals"], actorscount)
+	date = await calpercent(collection_dic["totalseals"], datecount)
+	fclass = await calpercent(facecount, classcount)
+ 
 	data1 = [actors, date, fclass]
 	labels1 = ["actor", "date", "class"]
 
 	### generate the collection info data for chart 2 -- 'Percentage of seals per class',
 
-	result = Terminology.objects.filter(
-		term_type=1).order_by(
-		'term_sortorder').annotate(
-		num_cases=Count("fk_term_interchange__fk_class__fk_class_face"))
+	data2, labels2 = await collection_chart2()
 
-	totalcases = sum([r.num_cases for r in result])	
+	# result = Terminology.objects.filter(
+	# 	term_type=1).order_by(
+	# 	'term_sortorder').annotate(
+	# 	num_cases=Count("fk_term_interchange__fk_class__fk_class_face"))
 
-	data2 = []
-	labels2 = []
+	# totalcases = sum([r.num_cases for r in result])	
 
-	for r in result:
+	# data2 = []
+	# labels2 = []
 
-		percentageresult = (r.num_cases / totalcases) * 100 
+	# for r in result:
 
-		if percentageresult > 1:
-			data2.append((r.num_cases / totalcases) * 100)
-			labels2.append(r.term_name)
+	# 	percentageresult = (r.num_cases / totalcases) * 100 
+
+	# 	if percentageresult > 1:
+	# 		data2.append((r.num_cases / totalcases) * 100)
+	# 		labels2.append(r.term_name)
 
 
 	### generate the collection info data for chart 3  -- 'Percentage of seals by period',
 
-	data3, labels3 = datedistribution(qcollection)
+	data3, labels3 = await datedistribution(qcollection)
 
 	# ### generate the collection info data for chart 4 -- seals per region,
 
-
 	## data for colorpeth map
-	maplayer1 = get_object_or_404(Jsonstorage, id_jsonfile=1)
-	maplayer = json.loads(maplayer1.jsonfiletxt)
+	# maplayer1 = get_object_or_404(Jsonstorage, id_jsonfile=1)
+	# maplayer = json.loads(maplayer1.jsonfiletxt)
+
+	maplayer = await collection_loadmaplayer(1)
 
 
 	## data for region map
 	# make circles data -- defaults -- note that this code is very similar to the function mapdata2
 	#data for region map 
 
-	if (qcollection == 30000287):
-		regiondisplayset = Regiondisplay.objects.filter(
-			region__location__locationname__locationreference__fk_locationstatus=1).annotate(
-			numregions=Count(
-				'region__location__locationname__locationreference__fk_event__part__fk_part__fk_support')).values(
-		'id_regiondisplay', 'id_regiondisplay', 'regiondisplay_label', 'numregions', 'regiondisplay_long', 'regiondisplay_lat') 
-	else:
-		regiondisplayset = Regiondisplay.objects.filter( 
-			region__location__locationname__locationreference__fk_locationstatus=1, 
-			region__location__locationname__locationreference__fk_event__part__fk_part__fk_support__fk_face__fk_seal__fk_sealsealdescription__fk_collection=qcollection
-			).annotate(
-			numregions=Count(
-				'region__location__locationname__locationreference__fk_event__part__fk_part__fk_support')).values(
-		'id_regiondisplay', 'id_regiondisplay', 'regiondisplay_label', 'numregions', 'regiondisplay_long', 'regiondisplay_lat')
+	# if (qcollection == 30000287):
+	# 	regiondisplayset = Regiondisplay.objects.filter(
+	# 		region__location__locationname__locationreference__fk_locationstatus=1).annotate(
+	# 		numregions=Count(
+	# 			'region__location__locationname__locationreference__fk_event__part__fk_part__fk_support')).values(
+	# 	'id_regiondisplay', 'id_regiondisplay', 'regiondisplay_label', 'numregions', 'regiondisplay_long', 'regiondisplay_lat') 
+	# else:
+	# 	regiondisplayset = Regiondisplay.objects.filter( 
+	# 		region__location__locationname__locationreference__fk_locationstatus=1, 
+	# 		region__location__locationname__locationreference__fk_event__part__fk_part__fk_support__fk_face__fk_seal__fk_sealsealdescription__fk_collection=qcollection
+	# 		).annotate(
+	# 		numregions=Count(
+	# 			'region__location__locationname__locationreference__fk_event__part__fk_part__fk_support')).values(
+	# 	'id_regiondisplay', 'id_regiondisplay', 'regiondisplay_label', 'numregions', 'regiondisplay_long', 'regiondisplay_lat')
 
+	regiondisplayset = await map_regionset(qcollection)
 
-
-	region_dict = mapgenerator3(regiondisplayset)
+	region_dict = await mapgenerator3(regiondisplayset)
 
 	# ### generate the collection info data for chart 5 --  'Percentage of actors per class',
 
+	data5, labels5 = await collection_printgroup(qcollection, collection_dic)
 
+	# #for print group totals (legacy)
+	# if (qcollection == 30000287):
+	# 	printgroupset = Printgroup.objects.annotate(numcases=Count('fk_printgroup', filter=Q(fk_printgroup__fk_sealsealdescription__fk_collection__gte=0))).order_by('printgroup_order')
 
-	#for print group totals (legacy)
-	if (qcollection == 30000287):
-		printgroupset = Printgroup.objects.annotate(numcases=Count('fk_printgroup', filter=Q(fk_printgroup__fk_sealsealdescription__fk_collection__gte=0))).order_by('printgroup_order')
+	# else: printgroupset = Printgroup.objects.annotate(numcases=Count('fk_printgroup', filter=Q(fk_printgroup__fk_sealsealdescription__fk_collection=qcollection))).order_by('printgroup_order')
 
-	else: printgroupset = Printgroup.objects.annotate(numcases=Count('fk_printgroup', filter=Q(fk_printgroup__fk_sealsealdescription__fk_collection=qcollection))).order_by('printgroup_order')
+	# #for modern group system
+	# if (qcollection == 30000287):
+	# 	groupset = Groupclass.objects.annotate(numcases=Count('id_groupclass', filter=Q(fk_group_class__fk_group__fk_actor_group__fk_sealsealdescription__fk_collection__gte=0))).order_by('id_groupclass')
 
-	#for modern group system
-	if (qcollection == 30000287):
-		groupset = Groupclass.objects.annotate(numcases=Count('id_groupclass', filter=Q(fk_group_class__fk_group__fk_actor_group__fk_sealsealdescription__fk_collection__gte=0))).order_by('id_groupclass')
+	# else:
+	# 	groupset = Groupclass.objects.annotate(numcases=Count('id_groupclass', filter=Q(fk_group_class__fk_group__fk_actor_group__fk_sealsealdescription__fk_collection=qcollection))).order_by('id_groupclass')
 
-	else:
-		groupset = Groupclass.objects.annotate(numcases=Count('id_groupclass', filter=Q(fk_group_class__fk_group__fk_actor_group__fk_sealsealdescription__fk_collection=qcollection))).order_by('id_groupclass')
+	# data5 = []
+	# labels5 = []
+	# for g in groupset:
+	# 	if (g.numcases > 0):
+	# 		percentagedata = (g.numcases/collection_dic["totalseals"])*100 
+	# 		# if percentagedata > 1:
+	# 		data5.append(percentagedata)
+	# 		labels5.append(g.groupclass)
 
-	data5 = []
-	labels5 = []
-	for g in groupset:
-		if (g.numcases > 0):
-			percentagedata = (g.numcases/collection_dic["totalseals"])*100 
-			# if percentagedata > 1:
-			data5.append(percentagedata)
-			labels5.append(g.groupclass)
-
-	form = CollectionForm(initial={'collection': collection.id_collection})     
+    
 	context = {
 		'pagetitle': pagetitle,
 		#'collectioninfo': collectioninfo,
@@ -1839,53 +1724,44 @@ def manifestation_page(request, digisig_entity_number):
 
 	manifestation_object = get_object_or_404(Manifestation, id_manifestation=digisig_entity_number)
 
-	if request.user.is_authenticated:
-		authenticationstatus = "authenticated"
-		template = loader.get_template('digisig/manifestation.html')
+	authenticationstatus = "authenticated"
+	template = loader.get_template('digisig/manifestation.html')
 
-		face_object = manifestation_object.fk_face
-		seal_object = face_object.fk_seal
-		sealdescription_set = Sealdescription.objects.filter(fk_seal=seal_object)
-		location_reference_object = Locationreference.objects.get(fk_event=manifestation_object.fk_support.fk_part.fk_event, fk_locationstatus=1)
+	face_object = manifestation_object.fk_face
+	seal_object = face_object.fk_seal
+	sealdescription_set = Sealdescription.objects.filter(fk_seal=seal_object)
+	location_reference_object = Locationreference.objects.get(fk_event=manifestation_object.fk_support.fk_part.fk_event, fk_locationstatus=1)
+	
+	try:
+		region = location_reference_object.fk_locationname.fk_location.fk_region.region_label
+	except:
+		region = "Undetermined"
 		
-		try:
-			region = location_reference_object.fk_locationname.fk_location.fk_region.region_label
-		except:
-			region = "Undetermined"
-			
-		try:
-			representation_object = Representation.objects.get(fk_digisig=digisig_entity_number, primacy=1)
-		except:
-			#add graphic of generic seal 
-			representation_object = Representation.objects.get(id_representation=12132404)
+	try:
+		representation_object = Representation.objects.get(fk_digisig=digisig_entity_number, primacy=1)
+	except:
+		#add graphic of generic seal 
+		representation_object = Representation.objects.get(id_representation=12132404)
 
-		externallink_object = Digisiglinkview.objects.filter(fk_digisigentity=digisig_entity_number)
+	externallink_object = Digisiglinkview.objects.filter(fk_digisigentity=digisig_entity_number)
 
-		individualtarget = seal_object.fk_individual_realizer
-		outname = namecompiler(individualtarget)
+	individualtarget = seal_object.fk_individual_realizer
+	outname = namecompiler(individualtarget)
 
-		context = {
-				'authenticationstatus': authenticationstatus,
-				'pagetitle': pagetitle,
-				'manifestation_object': manifestation_object,
-				'representation_object': representation_object,
-				'region': region,
-				'seal_object': seal_object,
-				'individualtarget': individualtarget.id_individual,
-				'sealdescription_object': sealdescription_set,
-				'externallink_object': externallink_object,
-				'outname': outname,
-				# 'rdftext': rdftext,
-		}
+	context = {
+			'authenticationstatus': authenticationstatus,
+			'pagetitle': pagetitle,
+			'manifestation_object': manifestation_object,
+			'representation_object': representation_object,
+			'region': region,
+			'seal_object': seal_object,
+			'individualtarget': individualtarget.id_individual,
+			'sealdescription_object': sealdescription_set,
+			'externallink_object': externallink_object,
+			'outname': outname,
+			# 'rdftext': rdftext,
+	}
 
-	else:
-		authenticationstatus = "public"
-		template = loader.get_template('digisig/manifestation_simple.html')
-
-		context = {
-				'pagetitle': pagetitle,
-				'manifestation_object': manifestation_object,
-		}
 
 	return HttpResponse(template.render(context, request))
 

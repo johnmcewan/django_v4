@@ -49,6 +49,205 @@ def exhibitgenerate():
 
 	return (representation_set)
 
+### information
+@sync_to_async
+def information_changes():
+	
+	return list(Changes.objects.all().order_by('-change_date'))
+
+@sync_to_async
+def information_help():
+	class_object = list(Terminology.objects.filter(term_deprecated=0).order_by('term_name'))
+	shape_object = list(Terminology.objects.filter(digisig_column='shape').order_by('term_name'))
+	nature_object = list(Terminology.objects.filter(digisig_column='nature').order_by('term_name'))
+
+	return(class_object, shape_object, nature_object)
+
+@sync_to_async
+def information_ML(qcollection, qclassification):
+
+	data1 = []
+	data2 = []
+	labels = []
+	event_seal = []
+
+	seal_set = Seal.objects.filter(fk_sealsealdescription__fk_collection=qcollection).filter(fk_seal_face__fk_class=qclassification)
+
+	if len(seal_set) > 0:
+		for s in seal_set:
+
+			### 1/7/2024 -- attempting to put human readable labels -- not working yet -- javascript fails on string with quotes
+			sealdescription_entry = Sealdescription.objects.get(Q(fk_collection=qcollection) & Q(fk_seal=s.id_seal))
+
+			event_seal = Event.objects.get(part__fk_part__fk_support__fk_face__fk_seal=s.id_seal)
+
+			try:
+				start = event_seal.repository_startdate
+				end = event_seal.repository_enddate
+				starty = start.year
+				endy = end.year
+
+				try:
+					start2 = event_seal.startdate
+					end2 = event_seal.enddate
+
+					if start2.year > 0 :
+						data1.append([starty, endy])
+						# data2.append(liney)
+						data2.append([start2.year, end2.year])
+						#labels.append(event_seal.pk_event)
+						labels.append(s.id_seal)
+
+				except:
+
+					print ("fail2", event_seal)
+
+				if starty > 1500:
+					print ("fail", event_seal, start, end, starty, endy, start2, end2)
+
+			except:
+
+				print ("fail1", event_seal)
+
+	return (event_seal, labels, data1, data2)
+
+
+@sync_to_async
+def information_terminology():
+	
+	## code for assembling the classification data
+	term_object = Terminology.objects.filter(
+		term_deprecated=0, level__isnull=False).order_by('term_sortorder')
+
+	termobject = []
+	toplevel = term_object.filter(level=1)
+
+	fifthset = {}
+	topset = {}
+	level5 = {}
+	level4= {}
+	level3= {}
+	level2= {}
+	level1= {}
+
+	#images for display
+	exampleset1 = {}
+	exampleset2 = {}
+	exampleset3 = {}
+	exampleset4 = {}
+	exampleset5 = {}
+
+	for t in toplevel:
+		target1 = t.level1
+		name1 = t.term_name
+		idterm1 = t.id_term
+		tooltip1 = t.term_definition
+		exampleset1= examplefinder(idterm1)
+
+		secondlevel = term_object.filter(level=2, level1=target1)
+		for s in secondlevel:
+			target2 = s.level2
+			name2 = s.term_name
+			idterm2 = s.id_term
+			tooltip2 = s.term_definition
+			exampleset2 = examplefinder(idterm2)
+
+			thirdlevel = term_object.filter(level=3, level2=target2)
+			for th in thirdlevel:
+				target3 = th.level3
+				name3 = th.term_name
+				idterm3 = th.id_term
+				tooltip3 = th.term_definition
+				exampleset3 = examplefinder(idterm3)
+
+				fourthlevel = term_object.filter(level=4, level3=target3)
+				for fo in fourthlevel:
+					target4 = fo.level4
+					name4 = fo.term_name
+					idterm4 = fo.id_term
+					tooltip4 = fo.term_definition
+					exampleset4 = examplefinder(idterm4)
+
+					fifthlevel = term_object.filter(level=5, level4=target4)
+					for fi in fifthlevel:
+						name5 = fi.term_name
+						idterm5 = fi.id_term
+						tooltip5 = fi.term_definition
+						exampleset5 = examplefinder(idterm5)
+						fifthset[name5] = {"id_term": idterm5, "examples": exampleset5, "tooltip": tooltip5}
+						exampleset5 = {}
+	
+					level4[name4] = {"id_term": idterm4, "children": fifthset, "examples": exampleset4, "tooltip": tooltip4}
+					fifthset = {}
+					exampleset4 = {}
+	
+				level3[name3] = {"id_term": idterm3, "children": level4, "examples": exampleset3, "tooltip": tooltip3}
+				level4= {}
+				exampleset3 = {}
+
+			level2[name2] = {"id_term": idterm2, "children":level3, "examples": exampleset2, "tooltip": tooltip2}
+			level3 = {}
+			exampleset2 = {}
+
+		topset[name1] = {"id_term": idterm1, "children": level2, "examples": exampleset1, "tooltip": tooltip1}
+		level2 = {}
+
+
+	## code for assembling the shape data
+	shapeterms = Terminology.objects.filter(digisig_column="shape").order_by("term_name")
+
+	shapeset = {}
+	for s in shapeterms:
+		nameshape = s.term_name
+		shapeterm = s.id_term
+		tooltip = s.term_definition
+		examplesetshape = examplefinder(shapeterm)
+		shapeset[nameshape] = {"id_term": shapeterm, "examples":examplesetshape, "tooltip": tooltip}
+
+	## code for assembling the nature data
+	natureterms = Terminology.objects.filter(digisig_column="nature").order_by("term_name")
+
+	natureset = {}
+	for n in natureterms:
+		namenature = n.term_name
+		natureterm = n.id_term
+		tooltip = n.term_definition
+		examplesetnature = examplefinder(natureterm)
+		natureset[namenature] = {"id_term": natureterm, "examples":examplesetnature, "tooltip": tooltip}
+
+
+	## code for assembling the general data
+	generalterms = Terminology.objects.filter(digisig_column="general").order_by("term_name")
+
+	generalset = {}
+	for g in generalterms:
+		namegeneral = g.term_name
+		generalterm = g.id_term
+		tooltip = g.term_definition
+		examplesetgeneral = examplefinder(generalterm)
+		generalset[namegeneral] = {"id_term": generalterm, "examples":examplesetgeneral, "tooltip": tooltip}
+
+	return (generalset, natureset, topset, shapeset, term_object)		
+
+#gets example for classification display
+def examplefinder(idterm):
+	examplesetouta = ""
+	examplesetoutb = ""
+	examplesetout = {}
+
+	example1 = Terminologyexample.objects.filter(fk_terminology=idterm)
+	for e in example1:
+		representationobject= e.fk_representation
+		key = representationobject.id_representation
+		root = representationobject.fk_connection
+
+		examplesetouta=root.thumb + representationobject.representation_thumbnail_hash
+		examplesetoutb=root.medium + representationobject.representation_filename_hash
+
+		examplesetout[key] = {"small": examplesetouta, "medium": examplesetoutb}
+
+	return (examplesetout)
+
 
 ### discovery
 @sync_to_async
@@ -82,6 +281,22 @@ def collectionform_options(form):
 	# timechoice = forms.ChoiceField(choices=timegroup_options2, required=False)
 	# # classname = forms.ChoiceField(label='Digisig Class', choices=classname_options, required=False)
 	# sealtypechoice = forms.ChoiceField(choices=sealtype_options, required=False)
+
+	return(form)
+
+#####collection options
+
+@sync_to_async
+def digisigcollection_options(form):
+
+	collection_options = [(30000287, 'All Collections')]
+
+	for e in Collection.objects.order_by('collection_shorttitle').annotate(numdescriptions=Count('sealdescription')):
+
+		if (e.numdescriptions > 0):
+			collection_options.append((e.id_collection, e.collection_shorttitle))
+
+	form.fields['collection'].choices = collection_options
 
 	return(form)
 
@@ -1240,6 +1455,29 @@ def collection_counts(sealdescription_set):
 	return(actorscount, datecount, classcount, facecount)
 
 @sync_to_async
+def collection_chart2():
+
+	result = Terminology.objects.filter(
+		term_type=1).order_by(
+		'term_sortorder').annotate(
+		num_cases=Count("fk_term_interchange__fk_class__fk_class_face"))
+
+	totalcases = sum([r.num_cases for r in result])	
+
+	data2 = []
+	labels2 = []
+
+	for r in result:
+		percentageresult = (r.num_cases / totalcases) * 100 
+
+		if percentageresult > 1:
+			data2.append((r.num_cases / totalcases) * 100)
+			labels2.append(r.term_name)
+
+	return(data2, labels2)
+
+
+@sync_to_async
 def map_locationset(qcollection):
 	if (qcollection == 30000287):
 		locationset = Location.objects.filter(
@@ -1322,7 +1560,6 @@ def map_counties(placeset):
 	return mapcounties
 
 
-
 @sync_to_async
 def map_regionset(qcollection):
 	if (qcollection == 30000287):
@@ -1333,7 +1570,7 @@ def map_regionset(qcollection):
 		#data for region map 
 		regiondisplayset = Regiondisplay.objects.filter( 
 			region__location__locationname__locationreference__fk_locationstatus=1, 
-			region__location__locationname__locationreference__fk_event__part__fk_part__fk_support__fk_face__fk_seal__sealdescription__fk_collection=qcollection
+			region__location__locationname__locationreference__fk_event__part__fk_part__fk_support__fk_face__fk_seal__fk_sealsealdescription__fk_collection=qcollection
 			).annotate(numregions=Count('region__location__locationname__locationreference'))
 
 	return(regiondisplayset)
@@ -1423,6 +1660,39 @@ def seriesset():
 	return (series_object)
 
 @sync_to_async
+def collection_loadmaplayer(selectedlayer):
+	maplayer1 = get_object_or_404(Jsonstorage, id_jsonfile=selectedlayer)
+	maplayer = json.loads(maplayer1.jsonfiletxt)
+
+	return(maplayer)
+
+@sync_to_async
+def collection_printgroup(qcollection, collection_dic):
+	#for print group totals (legacy)
+	if (qcollection == 30000287):
+		printgroupset = Printgroup.objects.annotate(numcases=Count('fk_printgroup', filter=Q(fk_printgroup__fk_sealsealdescription__fk_collection__gte=0))).order_by('printgroup_order')
+
+	else: printgroupset = Printgroup.objects.annotate(numcases=Count('fk_printgroup', filter=Q(fk_printgroup__fk_sealsealdescription__fk_collection=qcollection))).order_by('printgroup_order')
+
+	#for modern group system
+	if (qcollection == 30000287):
+		groupset = Groupclass.objects.annotate(numcases=Count('id_groupclass', filter=Q(fk_group_class__fk_group__fk_actor_group__fk_sealsealdescription__fk_collection__gte=0))).order_by('id_groupclass')
+
+	else:
+		groupset = Groupclass.objects.annotate(numcases=Count('id_groupclass', filter=Q(fk_group_class__fk_group__fk_actor_group__fk_sealsealdescription__fk_collection=qcollection))).order_by('id_groupclass')
+
+	data5 = []
+	labels5 = []
+	for g in groupset:
+		if (g.numcases > 0):
+			percentagedata = (g.numcases/collection_dic["totalseals"])*100 
+			# if percentagedata > 1:
+			data5.append(percentagedata)
+			labels5.append(g.groupclass)
+
+	return(data5, labels5)
+
+@sync_to_async
 def mapgenerator3(regiondisplayset):
 
 	## data for region map
@@ -1459,6 +1729,7 @@ def mapgenerator3(regiondisplayset):
 
 
 ### generate the collection info data for chart-- 'Percentage of seals by class',
+@sync_to_async
 def datedistribution(qcollection):
 	sealset = Seal.objects.values('date_origin')
 
