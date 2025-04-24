@@ -1685,15 +1685,11 @@ async def item_page(request, digisig_entity_number):
 
 ############################ Manifestation #####################
 
-
-def manifestation_page(request, digisig_entity_number): 
+async def manifestation_page(request, digisig_entity_number): 
 	pagetitle = 'title'
-
-	starttime = time()
 
 	manifestation_object = get_object_or_404(Manifestation, id_manifestation=digisig_entity_number)
 
-	authenticationstatus = "authenticated"
 	template = loader.get_template('digisig/manifestation.html')
 
 	face_object = manifestation_object.fk_face
@@ -1730,7 +1726,6 @@ def manifestation_page(request, digisig_entity_number):
 			'outname': outname,
 			# 'rdftext': rdftext,
 	}
-
 
 	return HttpResponse(template.render(context, request))
 
