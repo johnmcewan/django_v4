@@ -248,6 +248,81 @@ def examplefinder(idterm):
 
 	return (examplesetout)
 
+### analysis
+# @sync_to_async
+# def analyzetime_manifestations(qcollection, qtimechoice=None, qsealtypechoice=None):
+# 	#map points
+# 	totalcases = 0
+
+# 	#the queries deal with variations in the data differently -- undetermined locations, or ones to regions, 
+# 	#won't show on all maps
+# 	#to post correct totals, need to run query separately (which is inefficient)
+
+# 	if (qcollection == 30000287):
+# 		manifestationset = Manifestation.objects.all()
+# 	else:
+# 		manifestationset = Manifestation.objects.filter(fk_face__fk_seal__fk_sealsealdescription__fk_collection=qcollection)
+
+# 	totalcollectioncases = manifestationset.count()
+
+# 	if (qtimechoice > 0):
+# 		manifestationset = manifestationset.filter(fk_face__fk_seal__fk_timegroupc=qtimechoice)
+
+# 	totalcasesfromperiod = manifestationset.count()
+
+# 	if (qsealtypechoice > 0):
+# 		manifestationset = manifestationset.filter(fk_face__fk_seal__fk_sealtype=qsealtypechoice)
+
+# 	totalcases = manifestationset.count()
+
+# 	return(totalcases, totalcasesfromperiod, totalcollectioncases)
+
+# from django.db.models import Count
+# from asgiref.sync import sync_to_async
+
+@sync_to_async
+def analyzetime_manifestations(qcollection, qtimechoice=None, qsealtypechoice=None):
+    """
+    Analyzes manifestation data based on collection, time period, and seal type.
+
+    Args:
+        qcollection: The collection ID to filter by.
+        qtimechoice: Optional time group code to filter by (defaults to None).
+        qsealtypechoice: Optional seal type to filter by (defaults to None).
+
+    Returns:
+        A tuple containing:
+            - totalcases: The total count of manifestations after all filters.
+            - totalcasesfromperiod: The total count of manifestations filtered by time period (if provided).
+            - totalcollectioncases: The total count of manifestations for the given collection.
+    """
+    totalcases = 0
+    totalcasesfromperiod = 0
+
+    if qcollection == 30000287:
+        manifestationset = Manifestation.objects.all()
+    else:
+        manifestationset = Manifestation.objects.filter(
+            fk_face__fk_seal__fk_sealsealdescription__fk_collection=qcollection
+        )
+
+    totalcollectioncases = manifestationset.count()
+
+    # Filter by time choice only if it's not None and greater than 0
+    if qtimechoice is not None and qtimechoice > 0:
+        manifestationset = manifestationset.filter(fk_face__fk_seal__fk_timegroupc=qtimechoice)
+        totalcasesfromperiod = manifestationset.count()  # Calculate after time filter
+    else:
+        totalcasesfromperiod = totalcollectioncases # If no time filter, it's the same as collection total
+
+    # Filter by seal type choice only if it's not None and greater than 0
+    if qsealtypechoice is not None and qsealtypechoice > 0:
+        manifestationset = manifestationset.filter(fk_face__fk_seal__fk_sealtype=qsealtypechoice)
+
+    totalcases = manifestationset.count()
+
+    return totalcases, totalcasesfromperiod, totalcollectioncases
+
 
 ### discovery
 @sync_to_async
@@ -259,16 +334,16 @@ def collectionform_options(form):
 	mapchoices = [('1', 'Places'), ('2', 'Counties'), ('3', 'Regions')]
 	sealtype_options = [('', 'None')]
 	period_options = [('', 'None')]
-	timegroup_options2 = []
+	timegroup_options2 = [('', 'None')]
 
 	for e in Collection.objects.order_by('collection_shorttitle'):
 		collections_options.append((e.id_collection, e.collection_shorttitle))
 
-	# for e in Sealtype.objects.order_by('sealtype_name'):
-	# 	sealtype_options.append((e.id_sealtype, e.sealtype_name))
+	for e in Sealtype.objects.order_by('sealtype_name'):
+		sealtype_options.append((e.id_sealtype, e.sealtype_name))
 
-	# for e in TimegroupC.objects.order_by('pk_timegroup_c'):
-	# 	timegroup_options2.append((e.pk_timegroup_c, e.timegroup_c_range))
+	for e in TimegroupC.objects.order_by('pk_timegroup_c'):
+		timegroup_options2.append((e.pk_timegroup_c, e.timegroup_c_range))
 
 	form.fields['collection'].choices = collections_options
 	form.fields['mapchoice'].choices = mapchoices
@@ -1478,45 +1553,122 @@ def collection_chart2():
 
 
 @sync_to_async
-def map_locationset(qcollection):
-	if (qcollection == 30000287):
-		locationset = Location.objects.filter(
-			Q(locationname__locationreference__fk_locationstatus=1)).annotate(
-			count=Count('locationname__locationreference__fk_event__part__fk_part__fk_support'))
+# def map_locationset(qcollection):
+# 	if (qcollection == 30000287):
+# 		locationset = Location.objects.filter(
+# 			Q(locationname__locationreference__fk_locationstatus=1)).annotate(
+# 			count=Count('locationname__locationreference__fk_event__part__fk_part__fk_support'))
 
+# 	else:
+# 		#data for location map
+# 		locationset = Location.objects.filter(
+# 			Q(locationname__locationreference__fk_event__part__fk_part__fk_support__fk_face__fk_seal__fk_sealsealdescription__fk_collection=qcollection)).annotate(
+# 			count=Count('locationname__locationreference__fk_event__part__fk_part__fk_support'))
+def map_locationset(qcollection, qtimechoice=None, qsealtypechoice=None):
+	"""
+	Retrieves a queryset of Location objects based on the provided criteria.
+
+	Args:
+		qcollection: The collection ID to filter by.
+		qtimechoice: Optional time group code to filter by.
+		qsealtypechoice: Optional seal type to filter by.
+
+	Returns:
+		A queryset of Location objects with an annotation for 'count'.
+	"""
+	base_filters = Q(locationname__locationreference__fk_locationstatus=1)
+
+	if qcollection == 30000287:
+		pass ## This is a notional rather than actual collection, so do not try and filter on this value!
 	else:
-		#data for location map
-		locationset = Location.objects.filter(
-			Q(locationname__locationreference__fk_event__part__fk_part__fk_support__fk_face__fk_seal__fk_sealsealdescription__fk_collection=qcollection)).annotate(
-			count=Count('locationname__locationreference__fk_event__part__fk_part__fk_support'))
+		base_filters &= Q(locationname__locationreference__fk_event__part__fk_part__fk_support__fk_face__fk_seal__fk_sealsealdescription__fk_collection=qcollection)
 
-		# manifestation_set = Manifestation.objects.filter(fk_face__fk_seal__fk_sealsealdescription__fk_collection=qcollection).values('fk_support__fk_part__fk_event')
+	if qtimechoice is not None:
+		base_filters &= Q(locationname__locationreference__fk_event__part__fk_part__fk_support__fk_face__fk_seal__fk_timegroupc=qtimechoice)
 
-		# locationset = Location.objects.filter(
-		# 	Q(locationname__locationreference__fk_event__in=manifestation_set)).annotate(
-		# 	count=Count('locationname__locationreference__fk_event__part__fk_part__fk_support')).values('count')
+	if qsealtypechoice is not None:
+		base_filters &= Q(locationname__locationreference__fk_event__part__fk_part__fk_support__fk_face__fk_seal__fk_sealtype=qsealtypechoice)
+
+	locationset = Location.objects.filter(base_filters).annotate(
+		count=Count('locationname__locationreference__fk_event__part__fk_part__fk_support')
+	)
 
 	return(locationset)
 
-@sync_to_async
-def map_placeset(qcollection):
-	if (qcollection == 30000287):
-		#data for map counties
-		placeset = Region.objects.filter(fk_locationtype=4, 
-			location__locationname__locationreference__fk_locationstatus=1
-			).annotate(numplaces=Count('location__locationname__locationreference__fk_event__part__fk_part__fk_support')).values(
-			'numplaces', 
-			'fk_his_countylist') 
-	else:
-		#data for map counties
-		placeset = Region.objects.filter(fk_locationtype=4, 
-			location__locationname__locationreference__fk_locationstatus=1, 
-			location__locationname__locationreference__fk_event__part__fk_part__fk_support__fk_face__fk_seal__fk_sealsealdescription__fk_collection=qcollection
-			).annotate(numplaces=Count('location__locationname__locationreference')).values_list(
-			'numplaces', 
-			'fk_his_countylist', flat=True)
+# @sync_to_async
+# def map_placeset(qcollection):
+# 	if (qcollection == 30000287):
+# 		#data for map counties
+# 		placeset = Region.objects.filter(fk_locationtype=4, 
+# 			location__locationname__locationreference__fk_locationstatus=1
+# 			).annotate(numplaces=Count('location__locationname__locationreference__fk_event__part__fk_part__fk_support')).values(
+# 			'numplaces', 
+# 			'fk_his_countylist') 
+# 	else:
+# 		#data for map counties
+# 		placeset = Region.objects.filter(fk_locationtype=4, 
+# 			location__locationname__locationreference__fk_locationstatus=1, 
+# 			location__locationname__locationreference__fk_event__part__fk_part__fk_support__fk_face__fk_seal__fk_sealsealdescription__fk_collection=qcollection
+# 			).annotate(numplaces=Count('location__locationname__locationreference')).values(
+# 			'numplaces', 
+# 			'fk_his_countylist')
 
-	return(placeset)
+# 	return(placeset)
+
+@sync_to_async
+def map_placeset(qcollection, qtimechoice=None, qsealtypechoice=None):
+    """
+    Retrieves data for mapping counties based on the provided collection ID
+    and optional time and seal type filters.
+
+    Args:
+        qcollection: The collection ID to filter by.
+        qtimechoice: Optional time group code to filter by (defaults to None).
+        qsealtypechoice: Optional seal type to filter by (defaults to None).
+
+    Returns:
+        A queryset of Region objects with annotations for 'number_cases'
+        and selected 'fk_his_countylist' values.
+    """
+    base_filters = {
+        'fk_locationtype': 4,
+        'location__locationname__locationreference__fk_locationstatus': 1,
+    }
+
+    if qtimechoice is not None:
+        base_filters['location__locationname__locationreference__fk_event__part__fk_part__fk_support__fk_face__fk_seal__fk_timegroupc'] = qtimechoice
+
+    if qsealtypechoice is not None:
+        base_filters['location__locationname__locationreference__fk_event__part__fk_part__fk_support__fk_face__fk_seal__fk_sealtype'] = qsealtypechoice
+
+    if qcollection == 30000287:
+        # Data for map counties (specific condition)
+        queryset = Region.objects.filter(**base_filters).annotate(
+            number_cases=Count('location__locationname__locationreference__fk_event__part__fk_part__fk_support')
+        )
+    else:
+        # Data for map counties (general condition)
+        queryset = Region.objects.filter(
+            **base_filters,
+            location__locationname__locationreference__fk_event__part__fk_part__fk_support__fk_face__fk_seal__fk_sealsealdescription__fk_collection=qcollection
+        ).annotate(
+            number_cases=Count('location__locationname__locationreference')
+        )
+
+    placeset = queryset.values('number_cases', 'fk_his_countylist')
+
+    return (placeset)
+
+@sync_to_async
+def map_placecases(placeset):
+	
+	placecases = 0
+
+	for p in placeset:
+		placecases = placecases + p['number_cases']
+
+	return(placecases)
+
 
 @sync_to_async
 def map_counties(placeset):
@@ -1541,7 +1693,7 @@ def map_counties(placeset):
 	county_places = {}
 	for place in placeset:
 		county_id = place['fk_his_countylist']
-		num_places = place['numplaces']
+		num_places = place['number_cases']
 		if county_id not in county_places:
 			county_places[county_id] = 0
 		county_places[county_id] += num_places  # Accumulate if multiple places per county
@@ -1560,20 +1712,62 @@ def map_counties(placeset):
 	return mapcounties
 
 
+# @sync_to_async
+# def map_regionset(qcollection):
+# 	if (qcollection == 30000287):
+# 		regiondisplayset = Regiondisplay.objects.filter(region__location__locationname__locationreference__fk_locationstatus=1
+# 			).annotate(numregions=Count('region__location__locationname__locationreference__fk_event__part__fk_part__fk_support')) 
+
+# 	else:
+# 		#data for region map 
+# 		regiondisplayset = Regiondisplay.objects.filter( 
+# 			region__location__locationname__locationreference__fk_locationstatus=1, 
+# 			region__location__locationname__locationreference__fk_event__part__fk_part__fk_support__fk_face__fk_seal__fk_sealsealdescription__fk_collection=qcollection
+# 			).annotate(numregions=Count('region__location__locationname__locationreference'))
+
+# 	return(regiondisplayset)
+
 @sync_to_async
-def map_regionset(qcollection):
-	if (qcollection == 30000287):
-		regiondisplayset = Regiondisplay.objects.filter(region__location__locationname__locationreference__fk_locationstatus=1
-			).annotate(numregions=Count('region__location__locationname__locationreference__fk_event__part__fk_part__fk_support')) 
+def map_regionset(qcollection, qtimechoice=None, qsealtypechoice=None):
+    """
+    Retrieves a queryset of Regiondisplay objects for mapping regions,
+    filtered by the provided collection ID and optional time and seal type filters.
 
-	else:
-		#data for region map 
-		regiondisplayset = Regiondisplay.objects.filter( 
-			region__location__locationname__locationreference__fk_locationstatus=1, 
-			region__location__locationname__locationreference__fk_event__part__fk_part__fk_support__fk_face__fk_seal__fk_sealsealdescription__fk_collection=qcollection
-			).annotate(numregions=Count('region__location__locationname__locationreference'))
+    Args:
+        qcollection: The collection ID to filter by.
+        qtimechoice: Optional time group code to filter by (defaults to None).
+        qsealtypechoice: Optional seal type to filter by (defaults to None).
 
-	return(regiondisplayset)
+    Returns:
+        A queryset of Regiondisplay objects with an annotation for 'number_cases'.
+    """
+    base_filters = {
+        'region__location__locationname__locationreference__fk_locationstatus': 1,
+    }
+
+    if qtimechoice is not None:
+        base_filters['region__location__locationname__locationreference__fk_event__part__fk_part__fk_support__fk_face__fk_seal__fk_timegroupc'] = qtimechoice
+
+    if qsealtypechoice is not None:
+        base_filters['region__location__locationname__locationreference__fk_event__part__fk_part__fk_support__fk_face__fk_seal__fk_sealtype'] = qsealtypechoice
+
+    if qcollection == 30000287:
+        # Data for region map (specific collection)
+        queryset = Regiondisplay.objects.filter(**base_filters).annotate(
+            number_cases=Count('region__location__locationname__locationreference__fk_event__part__fk_part__fk_support')
+        )
+    else:
+        # Data for region map (other collections)
+        queryset = Regiondisplay.objects.filter(
+            **base_filters,
+            region__location__locationname__locationreference__fk_event__part__fk_part__fk_support__fk_face__fk_seal__fk_sealsealdescription__fk_collection=qcollection
+        ).annotate(
+            number_cases=Count('region__location__locationname__locationreference')
+        )
+
+    regionset = queryset.values('number_cases', 'id_regiondisplay', 'regiondisplay_label', 'regiondisplay_long', 'regiondisplay_lat')
+
+    return regionset
 
 
 def mapgenerator(location_object, count_in):
@@ -1707,12 +1901,12 @@ def mapgenerator3(regiondisplayset):
 
 	#for circles
 	for r in regiondisplayset:
-		if (r.numregions > 0):
-			value1 = r.id_regiondisplay
-			value2 = r.regiondisplay_label
-			value3 = r.numregions
-			value4 = r.regiondisplay_long
-			value5 = r.regiondisplay_lat
+		if (r['number_cases'] > 0):
+			value1 = r['id_regiondisplay']
+			value2 = r['regiondisplay_label']
+			value3 = r['number_cases']
+			value4 = r['regiondisplay_long']
+			value5 = r['regiondisplay_lat']
 
 			popupcontent = str(value2)
 			if value3 > 0:

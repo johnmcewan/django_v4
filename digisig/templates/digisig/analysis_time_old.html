@@ -4,6 +4,7 @@
 
 {% block content %}
 
+
 <!--leaflet -->		
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
 
@@ -23,7 +24,7 @@
 
 	<div class="mainpage" id="mainpage"> </div>
 
-	<div class="entity_chartfilter" id="entity_chartfilter">
+	<div class="entity_chartfilter2" id="entity_chartfilter2">
 		<div>
 			<h2>Select</h2>		
 			<form id="form" action="/analyze/time" method="post">
@@ -56,14 +57,42 @@
 		</div>
 	</div>
 
-	<div class="entity_chart" id="entity_chart">
+	<div class="entity_chart2" id="entity_chart2">
 		<div id="mapid1"></div>
 	</div>
+
+	<div class="results4" id="results4">
+		<div>
+			<h2>Results</h2>
+			<table>
+				<tr>
+					<td>Total cases from period</td>
+					<td>{{totalcasesfromperiod}}</td>
+				</tr>
+				<tr>
+					<td>Cases of seal type</td>
+					<td>{{totalcases}}</td>
+				</tr>
+				<tr>
+					<td>Num. cases of type represented on map</td>
+					<td>{{representedcases}}</td>
+				</tr>
+<!-- 				<tr>
+					<td>% of cases on map</td>
+					<td>{{percenttotal}}</td>
+				</tr>
+ -->			</table>
+		</div>
+	</div>
+
+
 
 	{{ location_dict|json_script:"mapdata1" }}
 	{{ counties_dict|json_script:"mapdata2" }}
 	{{ region_dict|json_script:"mapdata3" }}
 
+
+<script>
 
 <script>
 // This code could be rendered much more concise -- plenty of duplication here -- May/2022
@@ -358,4 +387,5 @@ var layer2 = new L.tileLayer('https://{s}.basemaps.cartocdn.com/light_nolabels/{
 	}
 </script>
 
-{% endblock %}
+{% endblock %}	
+
