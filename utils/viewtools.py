@@ -3901,7 +3901,6 @@ def referenceset_references5(witness_entity_number, ref_dic_locations):
 	return(reference_list)
 
 
-
 #externallinks for object
 @sync_to_async
 def externallinkgenerator(entity_number):
@@ -4088,7 +4087,43 @@ def partobjectforitem_define(entity_number):
 		partneedingmanifestation['manifestation_set'] = manifestationpart[searchvalue]
 
 	return (part_dic)
+
+@sync_to_async
+def manifestationobject_define(digisig_entity_number):
+
+	manifestation_object = Manifestation.objects.get(id_manifestation=digisig_entity_number)
+
+	manifestation_dic = {}
+
+	manifestation_dic['imagestate_term'] = manifestation_object['fk_imagestate__imagestate_term']
+	manifestation_dic['id_manifestation'] = manifestation_object['id_manifestation']
+	manifestation_dic['repository_fulltitle'] = manifestation_object['fk_support__fk_part__fk_item__fk_repository__repository_fulltitle']
+	manifestation_dic['fk_representation_type'] = manifestaiton_object['fk_representation_type']
+
+
+	face_object = manifestation_object.fk_face
+	seal_object = face_object.fk_seal
+	sealdescription_set = Sealdescription.objects.filter(fk_seal=seal_object)
+	location_reference_object = Locationreference.objects.get(fk_event=manifestation_object.fk_support.fk_part.fk_event, fk_locationstatus=1)
 	
+	try:
+		region = location_reference_object.fk_locationname.fk_location.fk_region.region_label
+	except:
+		region = "Undetermined"
+		
+	try:
+		representation_object = Representation.objects.get(fk_digisig=digisig_entity_number, primacy=1)
+	except:
+		#add graphic of generic seal 
+		representation_object = Representation.objects.get(id_representation=12132404)
+
+	externallink_object = Digisiglinkview.objects.filter(fk_digisigentity=digisig_entity_number)
+
+	individualtarget = seal_object.fk_individual_realizer
+	outname = namecompiler(individualtarget)
+
+
+	return(manifestationobject)	
 
 #info for collections page
 def classdistribution(classset, facecount):
