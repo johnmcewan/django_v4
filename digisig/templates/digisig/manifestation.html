@@ -1,4 +1,4 @@
-{% extends "sealquery/base.html" %}
+{% extends "digisig/base.html" %}
 
 {% load static %}
 
@@ -10,7 +10,7 @@
 
 
 	<div class="main-title">
-		<h1>{{manifestation_object.imagestate_term}}</h1>
+		<h1>{{manifestation_dic.imagestate_term}}</h1>
 	</div>
 
 	<div class="mainpage"></div>
@@ -21,46 +21,46 @@
 		<button onclick="toggle('entity-permalink')" class="closebutton">X</button>
 		<form action="#">
 			<label>Copy this URL to link to this page:</label>
-			<input id="input" class="text" name="" value="http://www.digisig.org/entity/{{manifestation_object.id_manifestation}}" type="text" readonly>
+			<input id="input" class="text" name="" value="http://www.digisig.org/entity/{{manifestation_dic.id_manifestation}}" type="text" readonly>
 		</form>
 		</div>
 	</div>
 
 
 	<div class="entity_detail" id="entity_detail">
-		<h3>{{manifestation_object.imagestate_term}} details
+		<h3>{{manifestation_dic.imagestate_term}} details
 			{% if authenticationstatus == "authenticated" %}
-			<button class="permalink"><a href=><a href="{% url 'edit_manifestation' digisig_entity_number=manifestation_object.id_manifestation %}">Edit</a></button>
+			<button class="permalink"><a href=><a href="{% url 'edit_manifestation' digisig_entity_number=manifestation_dic.id_manifestation %}">Edit</a></button>
 			{% endif %}  
 			<button onclick="toggle('entity-permalink')" class="permalink">Permalink</button>
 		</h3>
 		<table>
 				<tr>
 					<th>Held by </th>
-					<td>{{manifestation_object.fk_support.fk_part.fk_item.fk_repository.repository_fulltitle}}</td>
+					<td>{{manifestation_dic.repository_fulltitle}}</td>
 
-					{% if representation_object.fk_representation_type != 0 %}
+					{% if manifestation_dic.fk_representation_type != 0 %}
 					<td rowspan="4">
 					<figure>
-						<img class="modalimage" id="modalimagebase1" src="{{representation_object.fk_connection.thumb}}{{representation_object.representation_thumbnail_hash}}" alt="{{representation_object.id_representation}}" onclick="image(1)">
+						<img class="modalimage" id="modalimagebase1" src="{{manifestation_dic.fk_connection__thumb}}{{manifestation_dic.representation_thumbnail_hash}}" alt="{{manifestation_dic.id_representation}}" onclick="image(1)">
 					</figure>
 
 						<!-- The Modal -->
 						<div id="myModal1" class="modal" style="display: none;">
 						  <span class="close" onclick="modalclose(1)">&times;</span>
-						  <img class="modal-content" id="modalimg1" src="{{representation_object.fk_connection.medium}}{{representation_object.representation_filename}}" alt="{{representation_object.id_representation}}">
-						  <div class="modal-caption" id="caption1"><a href="{% url 'entity' representation_object.id_representation %}">Representation details</a></div>
+						  <img class="modal-content" id="modalimg1" src="{{manifestation_dic.fk_connection__medium}}{{manifestation_dic.representation_filename}}" alt="{{manifestation_dic.id_representation}}">
+						  <div class="modal-caption" id="caption1"><a href="{% url 'entity' manifestation_dic.id_representation %}">Representation details</a></div>
 						</div>
 					</td>
 					{% endif %}
 				</tr>
 
-			{% if manifestation_object.label_manifestation_repository %}
+			{% if manifestation_dic.label_manifestation_repository %}
 				<tr>
 					<th>Reference<a class="help" href="{% url 'entity' digisig_entity_number=10001567 %}" target="_blank"><i class="fas fa-question-circle"></i></a></th>
-					<td>{{manifestation_object.label_manifestation_repository}}
-						{% if manifestation_object.connection != null %}
-						<a class="dig-btn" href="{{manifestation_object.connection}}{{manifestation_object.ui_manifestation_repository}}" target="_blank">External Link</a>
+					<td>{{manifestation_dic.label_manifestation_repository}}
+						{% if manifestation_dic.connection != null %}
+						<a class="dig-btn" href="{{manifestation_dic.connection}}{{manifestation_dic.ui_manifestation_repository}}" target="_blank">External Link</a>
 						{% endif %}
 					</td>
 				</tr>
@@ -68,31 +68,31 @@
 	
 				<tr>
 					<th>Part of</th>
-					<td><a href="{% url 'entity' manifestation_object.fk_support.fk_part.fk_item.id_item %}">{{manifestation_object.fk_support.fk_part.fk_item.shelfmark}}</a></td>
+					<td><a href="{% url 'entity' manifestation_dic.id_item %}">{{manifestation_dic.shelfmark}}</a></td>
 				</tr>
 	
-			{% if manifestation_object.fk_support.fk_attachment != null %}
+			{% if manifestation_dic.fk_support.fk_attachment != null %}
 				<tr>
 					<th>Attachment <a class="help" href="{% url 'entity' digisig_entity_number=10001427 %}" target="_blank"><i class="fas fa-question-circle"></i></a></th>
-					<td>{{manifestation_object.fk_support.attachment}}</td>
+					<td>{{manifestation_dic.fk_support.attachment}}</td>
 				</tr>
 			{% endif %}
 
-			{% if manifestation_object.fk_support.fk_number_currentposition.number != 'Undetermined' %}
+			{% if manifestation_dic.fk_support.fk_number_currentposition.number != 'Undetermined' %}
 				<tr>
 					<th>Position <a class="help" href="{% url 'entity' digisig_entity_number=10001447 %}" target="_blank"><i class="fas fa-question-circle"></i></a></th>
-					<td>support {{manifestation_object.fk_support.fk_number_currentposition}}, {{manifestation_object.fk_support.position}}</td>
+					<td>support {{manifestation_dic.fk_support.fk_number_currentposition}}, {{manifestation_dic.fk_support.position}}</td>
 				</tr>
 			{% endif %}
 
 				<tr>
 					<th>Support status<a class="help" href="{% url 'entity' digisig_entity_number=10001377 %}" target="_blank"><i class="fas fa-question-circle"></i></a></th>
-					<td>{% if manifestation_object.fk_support.fk_supportstatus != null %}{{manifestation_object.fk_support.supportstatus}}{% if manifestation_object.fk_support.fk_supportstatus.supportstatus != 'undetermined' %} {{manifestation_object.fk_support.fk_supportstatus.supportstatus}}{% endif %}{% endif %}
+					<td>{% if manifestation_dic.fk_support.fk_supportstatus != null %}{{manifestation_dic.fk_support.supportstatus}}{% if manifestation_dic.fk_support.fk_supportstatus.supportstatus != 'undetermined' %} {{manifestation_dic.fk_support.fk_supportstatus.supportstatus}}{% endif %}{% endif %}
 				</tr>
 
 				<tr>
 					<th>Support type<a class="help" href="{% url 'entity' digisig_entity_number=10001377 %}" target="_blank"><i class="fas fa-question-circle"></i></a></th>
-					<td>{% if manifestation_object.fk_support.fk_nature != null %}{{manifestation_object.fk_support.fk_nature.nature_name}}{% if manifestation_object.fk_support.fk_material != null %} ({{manifestation_object.fk_support.fk_material.material}}){% endif %}{% endif %}
+					<td>{% if manifestation_dic.fk_support.fk_nature != null %}{{manifestation_dic.fk_support.fk_nature.nature_name}}{% if manifestation_dic.fk_support.fk_material != null %} ({{manifestation_dic.fk_support.fk_material.material}}){% endif %}{% endif %}
 				</tr>
 		</table>
 	</div>
@@ -105,7 +105,7 @@
 		<div>
 			<table id="entity1" style="display:none;">
 				<tr>
-					<th colspan="2"><h4><a class="headingbtn" href="{% url 'entity' manifestation_object.fk_face.fk_seal.id_seal %}">Seal details</a></h4></th>
+					<th colspan="2"><h4><a class="headingbtn" href="{% url 'entity' manifestation_dic.id_seal %}">Seal details</a></h4></th>
 				</tr>
 				
 				<tr>
@@ -147,9 +147,9 @@
 			<table id="entity2" style="display:none;">
 				<tr>
 					<th class="indent">Date</th>
-					<td>{{manifestation_object.fk_support.fk_part.fk_event.startdate}} 
-						{% if manifestation_object.fk_support.fk_part.fk_event.enddate %}
-					- {{manifestation_object.fk_support.fk_part.fk_event.enddate}}</td>
+					<td>{{manifestation_dic.fk_support.fk_part.fk_event.startdate}} 
+						{% if manifestation_dic.fk_support.fk_part.fk_event.enddate %}
+					- {{manifestation_dic.fk_support.fk_part.fk_event.enddate}}</td>
 					{% endif %}
 				</tr>
 				<tr>
@@ -212,11 +212,11 @@
 
 
 	<div class="entity_rdf">
-		<div hidden id="rdfajax">{% url 'ajax' digisig_entity_number=manifestation_object.id_manifestation %}</div>
+		<div hidden id="rdfajax">{% url 'ajax' digisig_entity_number=manifestation_dic.id_manifestation %}</div>
 		<div class="div-caption">
 			RDF 
 			<button id="entitybutton4" onclick="tbtoggle2('entity4', 'entitybutton4')" class="entity">+</button>
-			<button class="RDF-download"><a href="{% url 'data' digisig_entity_number=manifestation_object.id_manifestation %}">Download</a></button> 
+			<button class="RDF-download"><a href="{% url 'data' digisig_entity_number=manifestation_dic.id_manifestation %}">Download</a></button> 
 		</div>
 
 		<div>

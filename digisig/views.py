@@ -1686,44 +1686,58 @@ async def item_page(request, digisig_entity_number):
 ############################ Manifestation #####################
 
 async def manifestation_page(request, digisig_entity_number): 
+	####manifestation_dic = await manifestation_createdic(manifestation_object)
 	pagetitle = 'title'
 
-	manifestation_object = get_object_or_404(Manifestation, id_manifestation=digisig_entity_number)
+	# manifestation_object = await manifestationobject_define(digisig_entity_number)
+
+	manifestation_set = await seal_searchsetgenerate(digisig_entity_number, return_frommanifestation=True)
+	representation_set = await representationsetgenerate2(manifestation_set, primacy=True)
+	manifestation_display_dic, description_set, listofseals, listofevents = await manifestation_displaysetgenerate(manifestation_set, representation_set)
+	description_set = await sealdescription_displaysetgenerate2(listofseals, description_set)
+
+	manifestation_info = await seal_displaysetgenerate(manifestation_display_dic, description_set, digisig_entity_number)
+
+	first_item = next(iter(manifestation_display_dic.items()))
+	first_key, manifestation_dic = first_item
+
+	# manifestation_object = get_object_or_404(Manifestation, id_manifestation=digisig_entity_number)
+	# face_object = manifestation_object.fk_face
+	# seal_object = face_object.fk_seal
+	# sealdescription_set = Sealdescription.objects.filter(fk_seal=seal_object)
+
+	# location_reference_object = Locationreference.objects.get(fk_event=manifestation_object.fk_support.fk_part.fk_event, fk_locationstatus=1)
+	
+	# try:
+	# 	region = location_reference_object.fk_locationname.fk_location.fk_region.region_label
+	# except:
+	# 	region = "Undetermined"
+		
+	# try:
+	# 	representation_object = Representation.objects.get(fk_digisig=digisig_entity_number, primacy=1)
+	# except:
+	# 	#add graphic of generic seal 
+	# 	representation_object = Representation.objects.get(id_representation=12132404)
+
+	# externallink_object = Digisiglinkview.objects.filter(fk_digisigentity=digisig_entity_number)
+
+	# individualtarget = seal_object.fk_individual_realizer
+	# outname = namecompiler(individualtarget)
 
 	template = loader.get_template('digisig/manifestation.html')
-
-	face_object = manifestation_object.fk_face
-	seal_object = face_object.fk_seal
-	sealdescription_set = Sealdescription.objects.filter(fk_seal=seal_object)
-	location_reference_object = Locationreference.objects.get(fk_event=manifestation_object.fk_support.fk_part.fk_event, fk_locationstatus=1)
-	
-	try:
-		region = location_reference_object.fk_locationname.fk_location.fk_region.region_label
-	except:
-		region = "Undetermined"
-		
-	try:
-		representation_object = Representation.objects.get(fk_digisig=digisig_entity_number, primacy=1)
-	except:
-		#add graphic of generic seal 
-		representation_object = Representation.objects.get(id_representation=12132404)
-
-	externallink_object = Digisiglinkview.objects.filter(fk_digisigentity=digisig_entity_number)
-
-	individualtarget = seal_object.fk_individual_realizer
-	outname = namecompiler(individualtarget)
-
 	context = {
-			'authenticationstatus': authenticationstatus,
+			#'authenticationstatus': authenticationstatus,
 			'pagetitle': pagetitle,
-			'manifestation_object': manifestation_object,
-			'representation_object': representation_object,
-			'region': region,
-			'seal_object': seal_object,
-			'individualtarget': individualtarget.id_individual,
-			'sealdescription_object': sealdescription_set,
-			'externallink_object': externallink_object,
-			'outname': outname,
+			'manifestation_info': manifestation_info,
+			'manifestation_dic': manifestation_dic
+			# 'manifestation_object': manifestation_object,
+			# 'representation_object': representation_object,
+			# 'region': region,
+			# 'seal_object': seal_object,
+			# 'individualtarget': individualtarget.id_individual,
+			# 'sealdescription_object': sealdescription_set,
+			# 'externallink_object': externallink_object,
+			# 'outname': outname,
 			# 'rdftext': rdftext,
 	}
 
@@ -1881,14 +1895,7 @@ async def seal_page(request, digisig_entity_number):
 
 	#manifestation_displayset = await finalassembly_displaysetgenerate(manifestation_display_dic, location_set, description_set)
 
-
-
 	#manifestation_object = await sealsearch3(digisig_entity_number)
-
-
-
-
-
 
 	# seal_info, face_set, face_obverse = await sealmetadata(digisig_entity_number)
 

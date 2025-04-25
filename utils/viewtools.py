@@ -282,46 +282,46 @@ def examplefinder(idterm):
 
 @sync_to_async
 def analyzetime_manifestations(qcollection, qtimechoice=None, qsealtypechoice=None):
-    """
-    Analyzes manifestation data based on collection, time period, and seal type.
+	"""
+	Analyzes manifestation data based on collection, time period, and seal type.
 
-    Args:
-        qcollection: The collection ID to filter by.
-        qtimechoice: Optional time group code to filter by (defaults to None).
-        qsealtypechoice: Optional seal type to filter by (defaults to None).
+	Args:
+		qcollection: The collection ID to filter by.
+		qtimechoice: Optional time group code to filter by (defaults to None).
+		qsealtypechoice: Optional seal type to filter by (defaults to None).
 
-    Returns:
-        A tuple containing:
-            - totalcases: The total count of manifestations after all filters.
-            - totalcasesfromperiod: The total count of manifestations filtered by time period (if provided).
-            - totalcollectioncases: The total count of manifestations for the given collection.
-    """
-    totalcases = 0
-    totalcasesfromperiod = 0
+	Returns:
+		A tuple containing:
+			- totalcases: The total count of manifestations after all filters.
+			- totalcasesfromperiod: The total count of manifestations filtered by time period (if provided).
+			- totalcollectioncases: The total count of manifestations for the given collection.
+	"""
+	totalcases = 0
+	totalcasesfromperiod = 0
 
-    if qcollection == 30000287:
-        manifestationset = Manifestation.objects.all()
-    else:
-        manifestationset = Manifestation.objects.filter(
-            fk_face__fk_seal__fk_sealsealdescription__fk_collection=qcollection
-        )
+	if qcollection == 30000287:
+		manifestationset = Manifestation.objects.all()
+	else:
+		manifestationset = Manifestation.objects.filter(
+			fk_face__fk_seal__fk_sealsealdescription__fk_collection=qcollection
+		)
 
-    totalcollectioncases = manifestationset.count()
+	totalcollectioncases = manifestationset.count()
 
-    # Filter by time choice only if it's not None and greater than 0
-    if qtimechoice is not None and qtimechoice > 0:
-        manifestationset = manifestationset.filter(fk_face__fk_seal__fk_timegroupc=qtimechoice)
-        totalcasesfromperiod = manifestationset.count()  # Calculate after time filter
-    else:
-        totalcasesfromperiod = totalcollectioncases # If no time filter, it's the same as collection total
+	# Filter by time choice only if it's not None and greater than 0
+	if qtimechoice is not None and qtimechoice > 0:
+		manifestationset = manifestationset.filter(fk_face__fk_seal__fk_timegroupc=qtimechoice)
+		totalcasesfromperiod = manifestationset.count()  # Calculate after time filter
+	else:
+		totalcasesfromperiod = totalcollectioncases # If no time filter, it's the same as collection total
 
-    # Filter by seal type choice only if it's not None and greater than 0
-    if qsealtypechoice is not None and qsealtypechoice > 0:
-        manifestationset = manifestationset.filter(fk_face__fk_seal__fk_sealtype=qsealtypechoice)
+	# Filter by seal type choice only if it's not None and greater than 0
+	if qsealtypechoice is not None and qsealtypechoice > 0:
+		manifestationset = manifestationset.filter(fk_face__fk_seal__fk_sealtype=qsealtypechoice)
 
-    totalcases = manifestationset.count()
+	totalcases = manifestationset.count()
 
-    return totalcases, totalcasesfromperiod, totalcollectioncases
+	return totalcases, totalcasesfromperiod, totalcollectioncases
 
 
 ### discovery
@@ -1617,47 +1617,47 @@ def map_locationset(qcollection, qtimechoice=None, qsealtypechoice=None):
 
 @sync_to_async
 def map_placeset(qcollection, qtimechoice=None, qsealtypechoice=None):
-    """
-    Retrieves data for mapping counties based on the provided collection ID
-    and optional time and seal type filters.
+	"""
+	Retrieves data for mapping counties based on the provided collection ID
+	and optional time and seal type filters.
 
-    Args:
-        qcollection: The collection ID to filter by.
-        qtimechoice: Optional time group code to filter by (defaults to None).
-        qsealtypechoice: Optional seal type to filter by (defaults to None).
+	Args:
+		qcollection: The collection ID to filter by.
+		qtimechoice: Optional time group code to filter by (defaults to None).
+		qsealtypechoice: Optional seal type to filter by (defaults to None).
 
-    Returns:
-        A queryset of Region objects with annotations for 'number_cases'
-        and selected 'fk_his_countylist' values.
-    """
-    base_filters = {
-        'fk_locationtype': 4,
-        'location__locationname__locationreference__fk_locationstatus': 1,
-    }
+	Returns:
+		A queryset of Region objects with annotations for 'number_cases'
+		and selected 'fk_his_countylist' values.
+	"""
+	base_filters = {
+		'fk_locationtype': 4,
+		'location__locationname__locationreference__fk_locationstatus': 1,
+	}
 
-    if qtimechoice is not None:
-        base_filters['location__locationname__locationreference__fk_event__part__fk_part__fk_support__fk_face__fk_seal__fk_timegroupc'] = qtimechoice
+	if qtimechoice is not None:
+		base_filters['location__locationname__locationreference__fk_event__part__fk_part__fk_support__fk_face__fk_seal__fk_timegroupc'] = qtimechoice
 
-    if qsealtypechoice is not None:
-        base_filters['location__locationname__locationreference__fk_event__part__fk_part__fk_support__fk_face__fk_seal__fk_sealtype'] = qsealtypechoice
+	if qsealtypechoice is not None:
+		base_filters['location__locationname__locationreference__fk_event__part__fk_part__fk_support__fk_face__fk_seal__fk_sealtype'] = qsealtypechoice
 
-    if qcollection == 30000287:
-        # Data for map counties (specific condition)
-        queryset = Region.objects.filter(**base_filters).annotate(
-            number_cases=Count('location__locationname__locationreference__fk_event__part__fk_part__fk_support')
-        )
-    else:
-        # Data for map counties (general condition)
-        queryset = Region.objects.filter(
-            **base_filters,
-            location__locationname__locationreference__fk_event__part__fk_part__fk_support__fk_face__fk_seal__fk_sealsealdescription__fk_collection=qcollection
-        ).annotate(
-            number_cases=Count('location__locationname__locationreference')
-        )
+	if qcollection == 30000287:
+		# Data for map counties (specific condition)
+		queryset = Region.objects.filter(**base_filters).annotate(
+			number_cases=Count('location__locationname__locationreference__fk_event__part__fk_part__fk_support')
+		)
+	else:
+		# Data for map counties (general condition)
+		queryset = Region.objects.filter(
+			**base_filters,
+			location__locationname__locationreference__fk_event__part__fk_part__fk_support__fk_face__fk_seal__fk_sealsealdescription__fk_collection=qcollection
+		).annotate(
+			number_cases=Count('location__locationname__locationreference')
+		)
 
-    placeset = queryset.values('number_cases', 'fk_his_countylist')
+	placeset = queryset.values('number_cases', 'fk_his_countylist')
 
-    return (placeset)
+	return (placeset)
 
 @sync_to_async
 def map_placecases(placeset):
@@ -1729,45 +1729,45 @@ def map_counties(placeset):
 
 @sync_to_async
 def map_regionset(qcollection, qtimechoice=None, qsealtypechoice=None):
-    """
-    Retrieves a queryset of Regiondisplay objects for mapping regions,
-    filtered by the provided collection ID and optional time and seal type filters.
+	"""
+	Retrieves a queryset of Regiondisplay objects for mapping regions,
+	filtered by the provided collection ID and optional time and seal type filters.
 
-    Args:
-        qcollection: The collection ID to filter by.
-        qtimechoice: Optional time group code to filter by (defaults to None).
-        qsealtypechoice: Optional seal type to filter by (defaults to None).
+	Args:
+		qcollection: The collection ID to filter by.
+		qtimechoice: Optional time group code to filter by (defaults to None).
+		qsealtypechoice: Optional seal type to filter by (defaults to None).
 
-    Returns:
-        A queryset of Regiondisplay objects with an annotation for 'number_cases'.
-    """
-    base_filters = {
-        'region__location__locationname__locationreference__fk_locationstatus': 1,
-    }
+	Returns:
+		A queryset of Regiondisplay objects with an annotation for 'number_cases'.
+	"""
+	base_filters = {
+		'region__location__locationname__locationreference__fk_locationstatus': 1,
+	}
 
-    if qtimechoice is not None:
-        base_filters['region__location__locationname__locationreference__fk_event__part__fk_part__fk_support__fk_face__fk_seal__fk_timegroupc'] = qtimechoice
+	if qtimechoice is not None:
+		base_filters['region__location__locationname__locationreference__fk_event__part__fk_part__fk_support__fk_face__fk_seal__fk_timegroupc'] = qtimechoice
 
-    if qsealtypechoice is not None:
-        base_filters['region__location__locationname__locationreference__fk_event__part__fk_part__fk_support__fk_face__fk_seal__fk_sealtype'] = qsealtypechoice
+	if qsealtypechoice is not None:
+		base_filters['region__location__locationname__locationreference__fk_event__part__fk_part__fk_support__fk_face__fk_seal__fk_sealtype'] = qsealtypechoice
 
-    if qcollection == 30000287:
-        # Data for region map (specific collection)
-        queryset = Regiondisplay.objects.filter(**base_filters).annotate(
-            number_cases=Count('region__location__locationname__locationreference__fk_event__part__fk_part__fk_support')
-        )
-    else:
-        # Data for region map (other collections)
-        queryset = Regiondisplay.objects.filter(
-            **base_filters,
-            region__location__locationname__locationreference__fk_event__part__fk_part__fk_support__fk_face__fk_seal__fk_sealsealdescription__fk_collection=qcollection
-        ).annotate(
-            number_cases=Count('region__location__locationname__locationreference')
-        )
+	if qcollection == 30000287:
+		# Data for region map (specific collection)
+		queryset = Regiondisplay.objects.filter(**base_filters).annotate(
+			number_cases=Count('region__location__locationname__locationreference__fk_event__part__fk_part__fk_support')
+		)
+	else:
+		# Data for region map (other collections)
+		queryset = Regiondisplay.objects.filter(
+			**base_filters,
+			region__location__locationname__locationreference__fk_event__part__fk_part__fk_support__fk_face__fk_seal__fk_sealsealdescription__fk_collection=qcollection
+		).annotate(
+			number_cases=Count('region__location__locationname__locationreference')
+		)
 
-    regionset = queryset.values('number_cases', 'id_regiondisplay', 'regiondisplay_label', 'regiondisplay_long', 'regiondisplay_lat')
+	regionset = queryset.values('number_cases', 'id_regiondisplay', 'regiondisplay_label', 'regiondisplay_long', 'regiondisplay_lat')
 
-    return regionset
+	return regionset
 
 
 def mapgenerator(location_object, count_in):
@@ -2576,17 +2576,11 @@ def sealsearch3(sealentity):
 
 	return(manifestation_object)
 
-
-### this is works without running through paginator
 @sync_to_async
-def representationsetgenerate2(manifestation_object):
-
-	listofmanifestations = []
-	for m in manifestation_object:
-		listofmanifestations.append(m['id_manifestation'])
+def representationsetgenerate(manifestation_pageobject):
 
 	representation_set = Representation.objects.filter(
-		fk_manifestation__in=listofmanifestations).filter(
+		fk_manifestation__in=manifestation_pageobject.object_list).filter(
 		primacy=1).values('representation_thumbnail_hash', 
 		'representation_filename_hash', 
 		'id_representation',
@@ -2594,29 +2588,130 @@ def representationsetgenerate2(manifestation_object):
 		'fk_connection__thumb',
 		'fk_connection__medium') 
 
+	# representation_missing = Representation.objects.values(
+	# 	'representation_thumbnail_hash', 
+	# 	'representation_filename_hash', 
+	# 	'id_representation',
+	# 	'fk_manifestation').get(
+	# 	id_representation=12204474)
+
+	# representation_dic_spare = {}
+	# representation_dic_spare["representation_thumbnail_hash"] = representation_missing['representation_thumbnail_hash']
+	# representation_dic_spare["representation_filename_hash"] = representation_missing['representation_filename_hash']
+	# representation_dic_spare["id_representation"] = representation_missing['id_representation']
+
 	return(representation_set)
 
-@sync_to_async
-def seal_searchsetgenerate(digisig_entity_number):
-### maindata for manifestations
 
-	manifestation_set = Manifestation.objects.filter(
-		fk_face__fk_seal=digisig_entity_number).select_related(
-		'fk_support__fk_part__fk_item__fk_repository').select_related(
-		'fk_support__fk_number_currentposition').select_related(
-		'fk_support__fk_attachment').select_related(
-		'fk_support__fk_supportstatus').select_related(
-		'fk_support__fk_nature').select_related(
-		'fk_imagestate').select_related(
-		'fk_position').select_related(
-		'fk_support__fk_part__fk_event').select_related(
-		'fk_face__fk_seal').order_by(
-		'id_manifestation').values(
+### this is works without running through paginator
+@sync_to_async
+def representationsetgenerate2(manifestation_object, primacy=False):
+
+	listofmanifestations = []
+	for m in manifestation_object:
+		listofmanifestations.append(m['id_manifestation'])
+
+	representation_values = [
+		'representation_thumbnail_hash',
+		'representation_filename_hash',
+		'id_representation',
+		'fk_manifestation',
+		'fk_connection__thumb',
+		'fk_connection__medium',
+		'fk_representation_type'
+	]
+
+	# Build the base queryset
+	representation_queryset = Representation.objects.filter(
+		fk_manifestation__in=listofmanifestations
+	).values(*representation_values)
+
+	# Add the primacy filter if needed
+	if primacy:
+		representation_set = representation_queryset.filter(primacy=1)
+	else:
+		representation_set = representation_queryset
+
+	# Fallback if the queryset is empty
+	if not representation_set.exists():
+		try:
+			return Representation.objects.values(*representation_values).get(id_representation=12204474)
+		except Representation.DoesNotExist:
+			# Handle the case where the fallback ID also doesn't exist
+			# You might want to return an empty list, raise an exception, or log this.
+			return Representation.objects.none() # Returns an empty queryset
+
+	return representation_set
+
+	# try:
+	# 	if primacy:		
+	# 		representation_set = Representation.objects.filter(
+	# 			fk_manifestation__in=listofmanifestations).filter(
+	# 			primacy=1).values('representation_thumbnail_hash', 
+	# 			'representation_filename_hash', 
+	# 			'id_representation',
+	# 			'fk_manifestation',
+	# 			'fk_connection__thumb',
+	# 			'fk_connection__medium')
+
+	# 	else:
+	# 		representation_set = Representation.objects.filter(
+	# 			fk_manifestation__in=listofmanifestations).values('representation_thumbnail_hash', 
+	# 			'representation_filename_hash', 
+	# 			'id_representation',
+	# 			'fk_manifestation',
+	# 			'fk_connection__thumb',
+	# 			'fk_connection__medium') 
+
+	# except:
+	# 	representation_set = Representation.objects.values('representation_thumbnail_hash', 
+	# 			'representation_filename_hash', 
+	# 			'id_representation',
+	# 			'fk_manifestation',
+	# 			'fk_connection__thumb',
+	# 			'fk_connection__medium').get(id_representation=12204474)
+
+	# return(representation_set)
+
+
+	# # Define the common values to select
+	# representation_values = [
+	#     'representation_thumbnail_hash',
+	#     'representation_filename_hash',
+	#     'id_representation',
+	#     'fk_manifestation',
+	#     'fk_connection__thumb',
+	#     'fk_connection__medium'
+	# ]
+
+	# Define the common values to select
+
+
+@sync_to_async
+def seal_searchsetgenerate(digisig_entity_number, return_frommanifestation=False):
+	if return_frommanifestation:
+		manifestation_set = Manifestation.objects.filter(id_manifestation=digisig_entity_number)
+	else:
+		manifestation_set = Manifestation.objects.filter(
+			fk_face__fk_seal=digisig_entity_number
+		)
+
+	manifestation_set = manifestation_set.select_related(
+		'fk_support__fk_part__fk_item__fk_repository',
+		'fk_support__fk_number_currentposition',
+		'fk_support__fk_attachment',
+		'fk_support__fk_supportstatus',
+		'fk_support__fk_nature',
+		'fk_imagestate',
+		'fk_position',
+		'fk_support__fk_part__fk_event',
+		'fk_face__fk_seal'
+	).order_by('id_manifestation').values(
 		'id_manifestation',
 		'fk_position',
 		'fk_face',
 		'fk_face__fk_seal',
-		'fk_support__fk_part__fk_item', 
+		'fk_support__fk_part__fk_item',
 		'fk_support__fk_part__fk_item__fk_repository__repository_fulltitle',
 		'fk_support__fk_part__fk_item__shelfmark',
 		'fk_support__fk_supportstatus',
@@ -2630,9 +2725,55 @@ def seal_searchsetgenerate(digisig_entity_number):
 		'fk_support__fk_part__fk_event__repository_startdate',
 		'fk_support__fk_part__fk_event__repository_enddate',
 		'fk_support__fk_part__fk_event__startdate',
-		'fk_support__fk_part__fk_event__enddate')
+		'fk_support__fk_part__fk_event__enddate'
+	)
 
-	return(manifestation_set)
+	return (manifestation_set)
+
+# @sync_to_async
+# def seal_searchsetgenerate(digisig_entity_number, return_single=False):
+# ### maindata for manifestations
+
+# 	if return_single:
+# 		manifestation_group = Manifestation.objects.filter(
+# 		fk_face__fk_seal=digisig_entity_number)
+
+# 	else:
+# 		manifestation_group = Manifestation.objects.get(id_seal=disisig_entity_number)
+
+	# manifestation_set = Manifestation.objects.filter(
+	# 	fk_face__fk_seal=digisig_entity_number).select_related(
+	# 	'fk_support__fk_part__fk_item__fk_repository').select_related(
+	# 	'fk_support__fk_number_currentposition').select_related(
+	# 	'fk_support__fk_attachment').select_related(
+	# 	'fk_support__fk_supportstatus').select_related(
+	# 	'fk_support__fk_nature').select_related(
+	# 	'fk_imagestate').select_related(
+	# 	'fk_position').select_related(
+	# 	'fk_support__fk_part__fk_event').select_related(
+	# 	'fk_face__fk_seal').order_by(
+	# 	'id_manifestation').values(
+	# 	'id_manifestation',
+	# 	'fk_position',
+	# 	'fk_face',
+	# 	'fk_face__fk_seal',
+	# 	'fk_support__fk_part__fk_item', 
+	# 	'fk_support__fk_part__fk_item__fk_repository__repository_fulltitle',
+	# 	'fk_support__fk_part__fk_item__shelfmark',
+	# 	'fk_support__fk_supportstatus',
+	# 	'fk_support__fk_attachment',
+	# 	'fk_support__fk_number_currentposition',
+	# 	'fk_support__fk_nature',
+	# 	'label_manifestation_repository',
+	# 	'fk_imagestate',
+	# 	'fk_support__fk_part',
+	# 	'fk_support__fk_part__fk_event',
+	# 	'fk_support__fk_part__fk_event__repository_startdate',
+	# 	'fk_support__fk_part__fk_event__repository_enddate',
+	# 	'fk_support__fk_part__fk_event__startdate',
+	# 	'fk_support__fk_part__fk_event__enddate')
+
+
 
 @sync_to_async
 def seal_displaysetgenerate(manifestation_display_dic, description_set, digisig_entity_number):
@@ -2711,42 +2852,8 @@ def seal_displaysetgenerate(manifestation_display_dic, description_set, digisig_
 	seal_info['obverse'] = obverse
 	seal_info['reverse'] = reverse
 	seal_info['sealdescription'] = description_set
-
-	# for key, m in manifestation_display_dic.items():
-	# 	m["sealdescription"] = description_set[m["id_seal"]]
-		# m["locationname"] = location_set[m['fk_event']]["locationname"]
-		# m["location"] = location_set[m['fk_event']]['location']
-		# m["repository_location"] = location_set[m['fk_event']]['repository_location']
-		# m["id_location"] = location_set[m['fk_event']]['id_location']
 	
 	return (seal_info)
-
-
-@sync_to_async
-def representationsetgenerate(manifestation_pageobject):
-
-	representation_set = Representation.objects.filter(
-		fk_manifestation__in=manifestation_pageobject.object_list).filter(
-		primacy=1).values('representation_thumbnail_hash', 
-		'representation_filename_hash', 
-		'id_representation',
-		'fk_manifestation',
-		'fk_connection__thumb',
-		'fk_connection__medium') 
-
-	# representation_missing = Representation.objects.values(
-	# 	'representation_thumbnail_hash', 
-	# 	'representation_filename_hash', 
-	# 	'id_representation',
-	# 	'fk_manifestation').get(
-	# 	id_representation=12204474)
-
-	# representation_dic_spare = {}
-	# representation_dic_spare["representation_thumbnail_hash"] = representation_missing['representation_thumbnail_hash']
-	# representation_dic_spare["representation_filename_hash"] = representation_missing['representation_filename_hash']
-	# representation_dic_spare["id_representation"] = representation_missing['id_representation']
-
-	return(representation_set)
 
 
 @sync_to_async
@@ -2785,6 +2892,7 @@ def manifestation_searchsetgenerate(manifestation_pageobject):
 		'fk_support__fk_part__fk_event__enddate')
 
 	return(manifestation_set)
+
 
 @sync_to_async
 def manifestation_displaysetgenerate(manifestation_set, representation_set):
@@ -3315,6 +3423,11 @@ def sealinfo_classvalue (face_case):
 		print("level5 unassigned")			
 
 	return(classvalue)
+
+@sync_to_async
+def actorfinder(manifestation_set):
+
+	person 
 
 
 @sync_to_async
@@ -4091,31 +4204,103 @@ def partobjectforitem_define(entity_number):
 @sync_to_async
 def manifestationobject_define(digisig_entity_number):
 
-	manifestation_object = Manifestation.objects.get(id_manifestation=digisig_entity_number)
+	manifestation_case = Manifestation.objects.get(id_manifestation=digisig_entity_number).select_related(
+	'fk_face__fk_seal').select_related(
+	'fk_support__fk_part__fk_item__fk_repository').select_related(
+	'fk_support__fk_number_currentposition').select_related(
+	'fk_support__fk_attachment').select_related(
+	'fk_support__fk_supportstatus').select_related(
+	'fk_support__fk_nature').select_related(
+	'fk_imagestate').select_related(
+	'fk_position').select_related(
+	'fk_support__fk_part__fk_event')
+
+	return(manifestation_case)	
+
+
+#### this is not functional
+@sync_to_async
+def manifestation_createdic(manifestationcase):
 
 	manifestation_dic = {}
 
-	manifestation_dic['imagestate_term'] = manifestation_object['fk_imagestate__imagestate_term']
-	manifestation_dic['id_manifestation'] = manifestation_object['id_manifestation']
-	manifestation_dic['repository_fulltitle'] = manifestation_object['fk_support__fk_part__fk_item__fk_repository__repository_fulltitle']
-	manifestation_dic['fk_representation_type'] = manifestaiton_object['fk_representation_type']
+	manifestation_dic['id_manifestation'] = manifestationcase['id_manifestation']
+	manifestation_dic['ui_manifestation_repository'] = ['ui_manifestation_repository']
+	manifestation_dic['label_manifestation_repository'] = manifestationcase['label_manifestation_repository']
+
+	manifestation_dic['position'] = manifestationcase['fk_position__position']
+
+	manifestation_dic['imagestate_term'] = manifestationcase['fk_imagestate__imagestate_term']
+	manifestation_dic['supportstatus'] = manifestationcase['fk_support__fk_supportstatus__supportstatus']
+	manifestation_dic['fk_supportstatus'] = manifestationcase['fk_support__fk_supportstatus']	
+	manifestation_dic['fk_attachment'] = manifestationcase['fk_support__fk_attachment']
+	manifestation_dic['attachment'] = manifestationcase['fk_support__fk_attachment__attachment']
+	manifestation_dic['number'] = manifestationcase['fk_support__fk_number_currentposition__number']
+	manifestation_dic['fk_number_currentposition'] = manifestationcase['fk_support__fk_number_currentposition']	
+	manifestation_dic['fk_nature'] = manifestationcase['fk_support__fk_nature']
+	manifestation_dic['nature_name'] = manifestationcase['fk_support__fk_nature__nature_name']
+	manifestation_dic['fk_material'] = manifestationcase['fk_support__fk_material']
+
+	manifestation_dic['id_item'] = manifestationcase['fk_support__fk_part__fk_item']
+	manifestation_dic['shelfmark'] = manifestationcase['fk_support__fk_part__fk_item__shelfmark']
+	manifestation_dic['repository_fulltitle'] = manifestationcase['fk_support__fk_part__fk_item__fk_repository__repository_fulltitle']
+
+	manifestation_dic['startdate'] = manifestationcase['fk_support__fk_part__fk_event__startdate']
+	manifestation_dic['enddate'] = manifestationcase['fk_support__fk_part__fk_event__enddate']
+
+	manifestation_dic['fk_seal'] = manifestationcase['fk_face__fk_seal']
+	manifestation_dic['date_origin'] = manifestationcase['fk_face__fk_seal__date_origin']
+
+		
+	try:
+		#representation_case = Representation.objects.get(fk_digisig=manifestationcase['id_manifestation'], primacy=1)
+		representation_case = Representation.objects.get(fk_digisig=manifestationcase['id_manifestation'])
+	except:
+		#add graphic of generic seal 
+		representation_case = Representation.objects.get(id_representation=12132404)
+
+	for r in representation_case:
 
 
-	face_object = manifestation_object.fk_face
-	seal_object = face_object.fk_seal
-	sealdescription_set = Sealdescription.objects.filter(fk_seal=seal_object)
+
+		manifestation_dic['connection'] = representation_case.fk_connection.connection
+		manifestation_dic['fk_representation_type'] = representation_case.fk_representation_type
+		manifestation_dic['thumb'] = representation_case.fk_connection.thumb
+		manifestation_dic['representation_thumbnail_hash'] = representation_case.representation_thumbnail_hash
+		manifestation_dic['id_representation'] = representation_case.id_representation
+		manifestation_dic['medium'] = representation_case.fk_connection.medium
+		manifestation_dic['representation_filename'] = representation_case.representation_filename
+		manifestation_dic['id_representation'] = representation_case.id_representation
+		manifestation_dic['count'] = representation_case.count
+		manifestation_dic['representation_filename'] = representation_case.representation_thumbnail
+		manifestation_dic['id_representation'] = representation_case.id_representation
+		manifestation_dic['medium'] = representation_case.medium
+		manifestation_dic['representation_type'] = representation_case.representation_type
+		manifestation_dic['representation_filename'] = representation_case.represenation_datecreated
+		manifestation_dic['thumb'] = representation_case.thumb
+		manifestation_dic['name_first'] = representation_case.name_first 
+		manifestation_dic['name_middle'] = representation_case.name_middle 
+		manifestation_dic['name_last'] = representation_case.name_last
+		#manifestation_dic['totalrows'] = {{totalrows}}
+
+
+	sealdescription_set = Sealdescription.objects.filter(fk_seal=manifestationcase['id_manifestation'])
+
+
+	manifestation_dic['collection_shorttitle'] = {{description.fk_collection.collection_shorttitle}}
+	manifestation_dic['sealdescription_identifier'] = {{description.sealdescription_identifier}}
+	manifestation_dic['region'] = {{region}}
+
+
+
+	manifestation_dic['outname'] = {{outname}}
+
 	location_reference_object = Locationreference.objects.get(fk_event=manifestation_object.fk_support.fk_part.fk_event, fk_locationstatus=1)
 	
 	try:
 		region = location_reference_object.fk_locationname.fk_location.fk_region.region_label
 	except:
 		region = "Undetermined"
-		
-	try:
-		representation_object = Representation.objects.get(fk_digisig=digisig_entity_number, primacy=1)
-	except:
-		#add graphic of generic seal 
-		representation_object = Representation.objects.get(id_representation=12132404)
 
 	externallink_object = Digisiglinkview.objects.filter(fk_digisigentity=digisig_entity_number)
 
@@ -4123,7 +4308,11 @@ def manifestationobject_define(digisig_entity_number):
 	outname = namecompiler(individualtarget)
 
 
-	return(manifestationobject)	
+
+
+	return(manifestation_dic)
+
+
 
 #info for collections page
 def classdistribution(classset, facecount):
