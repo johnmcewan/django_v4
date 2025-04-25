@@ -3427,7 +3427,11 @@ def sealinfo_classvalue (face_case):
 @sync_to_async
 def actorfinder(manifestation_set):
 
-	person 
+	sealinquestion = manifestation_set['fk_face__fk_seal']
+	actortarget = Seal.objects.get(id_seal=sealinquestion)	
+	nameout = namecompiler(actortarget.fk_individual)
+
+	return(nameout) 
 
 
 @sync_to_async
