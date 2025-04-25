@@ -1698,6 +1698,11 @@ async def manifestation_page(request, digisig_entity_number):
 
 	manifestation_info = await seal_displaysetgenerate(manifestation_display_dic, description_set, digisig_entity_number)
 
+	person_actor = await actorfinder(manifestation_set)
+
+
+	def actornamegenerator(individual_object):
+
 	first_item = next(iter(manifestation_display_dic.items()))
 	first_key, manifestation_dic = first_item
 
