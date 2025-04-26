@@ -2711,6 +2711,7 @@ def seal_searchsetgenerate(digisig_entity_number, return_frommanifestation=False
 		'fk_position',
 		'fk_face',
 		'fk_face__fk_seal',
+		'fk_face__fk_seal__fk_individual_realizer',
 		'fk_support__fk_part__fk_item',
 		'fk_support__fk_part__fk_item__fk_repository__repository_fulltitle',
 		'fk_support__fk_part__fk_item__shelfmark',
@@ -2874,7 +2875,8 @@ def manifestation_searchsetgenerate(manifestation_pageobject):
 		'id_manifestation').values(
 		'id_manifestation',
 		'fk_position', 
-		'fk_face__fk_seal', 
+		'fk_face__fk_seal',
+		'fk_face__fk_seal__fk_individual_realizer' 
 		'fk_support__fk_part__fk_item', 
 		'fk_support__fk_part__fk_item__fk_repository__repository_fulltitle',
 		'fk_support__fk_part__fk_item__shelfmark',
@@ -2909,6 +2911,8 @@ def manifestation_displaysetgenerate(manifestation_set, representation_set):
 		manifestation_dic["id_manifestation"] = e['id_manifestation']
 		manifestation_dic["fk_position"] = e['fk_position']
 		manifestation_dic["id_seal"] = e['fk_face__fk_seal']
+		manifestation_dic['id_individual'] = e['fk_face__fk_seal__fk_individual_realizer']
+		manifestation_dic['outname'] = namecompiler(e['fk_face__fk_seal__fk_individual_realizer'])
 		manifestation_dic["id_item"] = e['fk_support__fk_part__fk_item']
 		manifestation_dic["fk_event"] = e['fk_support__fk_part__fk_event']
 		manifestation_dic["repository_fulltitle"] = e['fk_support__fk_part__fk_item__fk_repository__repository_fulltitle']
@@ -3427,11 +3431,12 @@ def sealinfo_classvalue (face_case):
 @sync_to_async
 def actorfinder(manifestation_set):
 
-	sealinquestion = manifestation_set['fk_face__fk_seal']
-	actortarget = Seal.objects.get(id_seal=sealinquestion)	
-	nameout = namecompiler(actortarget.fk_individual)
+	manifestation = manifestation_set[0]
+	actortarget = Seal.objects.get(id_seal=int(manifestation['fk_face__fk_seal']))
 
-	return(nameout) 
+	nameout = namecompiler(actortarget.fk_individual_realizer)
+
+	return(nameout, actortarget.fk_individual_realizer) 
 
 
 @sync_to_async

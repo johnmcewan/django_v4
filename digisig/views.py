@@ -1698,10 +1698,9 @@ async def manifestation_page(request, digisig_entity_number):
 
 	manifestation_info = await seal_displaysetgenerate(manifestation_display_dic, description_set, digisig_entity_number)
 
-	person_actor = await actorfinder(manifestation_set)
+	outname = await actorfinder(manifestation_set)
 
-
-	def actornamegenerator(individual_object):
+	# actornamegenerator(individual_object)
 
 	first_item = next(iter(manifestation_display_dic.items()))
 	first_key, manifestation_dic = first_item
@@ -1734,7 +1733,7 @@ async def manifestation_page(request, digisig_entity_number):
 			#'authenticationstatus': authenticationstatus,
 			'pagetitle': pagetitle,
 			'manifestation_info': manifestation_info,
-			'manifestation_dic': manifestation_dic
+			'manifestation_dic': manifestation_dic,
 			# 'manifestation_object': manifestation_object,
 			# 'representation_object': representation_object,
 			# 'region': region,
@@ -1742,7 +1741,7 @@ async def manifestation_page(request, digisig_entity_number):
 			# 'individualtarget': individualtarget.id_individual,
 			# 'sealdescription_object': sealdescription_set,
 			# 'externallink_object': externallink_object,
-			# 'outname': outname,
+			'outname': outname,
 			# 'rdftext': rdftext,
 	}
 
