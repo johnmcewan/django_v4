@@ -990,24 +990,24 @@ def collectiondata(collectionid, sealcount):
 # 	return(data3, labels3)
 
 
-#gets example for classification display
-def examplefinder(idterm):
-	examplesetouta = ""
-	examplesetoutb = ""
-	examplesetout = {}
+# #gets example for classification display
+# def examplefinder(idterm):
+# 	examplesetouta = ""
+# 	examplesetoutb = ""
+# 	examplesetout = {}
 
-	example1 = Terminologyexample.objects.filter(fk_terminology=idterm)
-	for e in example1:
-		representationobject= e.fk_representation
-		key = representationobject.id_representation
-		root = representationobject.fk_connection
+# 	example1 = Terminologyexample.objects.filter(fk_terminology=idterm)
+# 	for e in example1:
+# 		representationobject= e.fk_representation
+# 		key = representationobject.id_representation
+# 		root = representationobject.fk_connection
 
-		examplesetouta=root.thumb + representationobject.representation_thumbnail_hash
-		examplesetoutb=root.medium + representationobject.representation_filename_hash
+# 		examplesetouta=root.thumb + representationobject.representation_thumbnail_hash
+# 		examplesetoutb=root.medium + representationobject.representation_filename_hash
 
-		examplesetout[key] = {"small": examplesetouta, "medium": examplesetoutb}
+# 		examplesetout[key] = {"small": examplesetouta, "medium": examplesetoutb}
 
-	return (examplesetout)
+# 	return (examplesetout)
 
 
 # def eventset_data(itemnumber):

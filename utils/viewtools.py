@@ -447,7 +447,7 @@ def personsearch_prepareset(individual_object):
 def peoplesearchfilter(individual_object, form):
 
 	qname = form.cleaned_data['name']   
-	qpagination = form.cleaned_data['pagination']
+
 	qgroup = form.cleaned_data['group']
 	qclass = form.cleaned_data['personclass']
 	qorder = form.cleaned_data['personorder']
@@ -457,7 +457,7 @@ def peoplesearchfilter(individual_object, form):
 		if int(qgroup) == 2: individual_object = individual_object.filter(corporateentity=True)
 		if int(qgroup) == 1: individual_object = individual_object.filter(corporateentity=False)
 
-	if qnamelen > 0:
+	if len(qname) > 0:
 		individual_object = individual_object.filter(
 			Q(
 				fullname_modern__icontains=qname) | Q(
@@ -1980,7 +1980,6 @@ def datedistribution(qcollection):
 
 def collection_basemetricsqueries():
 
-
 	#total number cases that have NOT been assigned to a location (yet) --- 7042 = not assigned --- location status =2 is a secondary location
 	casecount = Locationname.objects.exclude(
 		pk_locationname=7042).exclude(
@@ -2025,25 +2024,50 @@ def collectiondata(collectionid, sealcount):
 	return(collectiondatapackage)
 
 
+# @sync_to_async
+# def individualsearch(digisig_entity_number=None):
+
+# 	individual_object = Individual.objects.exclude(
+# 		id_individual=10000019).select_related(
+# 		'fk_group').select_related(
+# 		'fk_descriptor_title').select_related(
+# 		'fk_descriptor_name').select_related(
+# 		'fk_descriptor_prefix1').select_related(
+# 		'fk_descriptor_descriptor1').select_related(
+# 		'fk_separator_1').select_related(
+# 		'fk_descriptor_prefix2').select_related(
+# 		'fk_descriptor_descriptor2').select_related(
+# 		'fk_descriptor_prefix3').select_related(
+# 		'fk_descriptor_descriptor3').select_related(
+# 		'fk_group__fk_group_order').select_related(
+# 		'fk_group__fk_group_class').order_by('fk_group__group_name', 'fk_descriptor_name')
+
+# 	return(individual_object)
+
+
 @sync_to_async
-def individualsearch():
+def individualsearch(digisig_entity_number=None):
 
-	individual_object = Individual.objects.exclude(
-		id_individual=10000019).select_related(
-		'fk_group').select_related(
-		'fk_descriptor_title').select_related(
-		'fk_descriptor_name').select_related(
-		'fk_descriptor_prefix1').select_related(
-		'fk_descriptor_descriptor1').select_related(
-		'fk_separator_1').select_related(
-		'fk_descriptor_prefix2').select_related(
-		'fk_descriptor_descriptor2').select_related(
-		'fk_descriptor_prefix3').select_related(
-		'fk_descriptor_descriptor3').select_related(
-		'fk_group__fk_group_order').select_related(
-		'fk_group__fk_group_class').order_by('fk_group__group_name', 'fk_descriptor_name')
+	base_queryset = Individual.objects.select_related(
+		'fk_group',
+		'fk_descriptor_title',
+		'fk_descriptor_name',
+		'fk_descriptor_prefix1',
+		'fk_descriptor_descriptor1',
+		'fk_separator_1',
+		'fk_descriptor_prefix2',
+		'fk_descriptor_descriptor2',
+		'fk_descriptor_prefix3',
+		'fk_descriptor_descriptor3',
+		'fk_group__fk_group_order',
+		'fk_group__fk_group_class'
+	).order_by('fk_group__group_name', 'fk_descriptor_name')
 
-	return(individual_object)
+	if digisig_entity_number is not None:
+		return get_object_or_404(base_queryset, id_individual=digisig_entity_number)
+	else:
+		return base_queryset.exclude(id_individual=10000019)
+
 
 
 def referencecollectindividual(reference_set):
@@ -2577,6 +2601,16 @@ def sealsearch3(sealentity):
 	return(manifestation_object)
 
 @sync_to_async
+def sealsearch_actor(seal_object, digisig_entity_number):
+	#assumes you will have run sealseal() first and now want to further limit based on the actor in question
+
+	manifestation_set = seal_object.filter(
+		Q(fk_face__fk_seal__fk_individual_realizer=digisig_entity_number) | Q(fk_face__fk_seal__fk_actor_group=digisig_entity_number)
+	). order_by('fk_face__fk_seal__fk_individual_realizer')
+
+	return(manifestation_set)
+
+@sync_to_async
 def representationsetgenerate(manifestation_pageobject):
 
 	representation_set = Representation.objects.filter(
@@ -2588,22 +2622,10 @@ def representationsetgenerate(manifestation_pageobject):
 		'fk_connection__thumb',
 		'fk_connection__medium') 
 
-	# representation_missing = Representation.objects.values(
-	# 	'representation_thumbnail_hash', 
-	# 	'representation_filename_hash', 
-	# 	'id_representation',
-	# 	'fk_manifestation').get(
-	# 	id_representation=12204474)
-
-	# representation_dic_spare = {}
-	# representation_dic_spare["representation_thumbnail_hash"] = representation_missing['representation_thumbnail_hash']
-	# representation_dic_spare["representation_filename_hash"] = representation_missing['representation_filename_hash']
-	# representation_dic_spare["id_representation"] = representation_missing['id_representation']
-
 	return(representation_set)
 
 
-### this is works without running through paginator
+### this works without running through paginator
 @sync_to_async
 def representationsetgenerate2(manifestation_object, primacy=False):
 
@@ -2730,6 +2752,20 @@ def seal_searchsetgenerate(digisig_entity_number, return_frommanifestation=False
 	)
 
 	return (manifestation_set)
+
+
+# note this does not require the synctoasync
+async def manifestation_dataassemble(manifestation_pageobject):
+
+	manifestation_set = await manifestation_searchsetgenerate(manifestation_pageobject)
+	representation_set = await representationsetgenerate(manifestation_pageobject)
+	manifestation_display_dic, description_set, listofseals, listofevents = await manifestation_displaysetgenerate(manifestation_set, representation_set)
+	description_set = await sealdescription_displaysetgenerate2(listofseals, description_set)
+	location_set = await location_displaysetgenerate(listofevents)
+	manifestation_displayset = await finalassembly_displaysetgenerate(manifestation_display_dic, location_set, description_set)
+
+	return (manifestation_displayset)
+
 
 # @sync_to_async
 # def seal_searchsetgenerate(digisig_entity_number, return_single=False):
@@ -3011,25 +3047,6 @@ def finalassembly_displaysetgenerate(manifestation_display_dic, location_set, de
 	
 	return(manifestation_display_dic)
 
-@sync_to_async
-def sealsearch_searchset(manifestation_object):
-
-	## prepare the data for each displayed seal manifestation to be displayed
-
-	manifestation_set = {}
-
-	for e in manifestation_object:
-		manifestation_dic = {}
-		manifestation_dic = manifestation_fetchrepresentations(e, manifestation_dic)
-		manifestation_dic = manifestation_fetchsealdescriptions(e, manifestation_dic)
-		manifestation_dic = manifestation_fetchlocations(e, manifestation_dic)
-		manifestation_dic = manifestation_fetchstandardvalues(e, manifestation_dic)
-
-		manifestation_set[e.id_manifestation] = manifestation_dic
-
-	return (manifestation_set)
-
-
 
 
 @sync_to_async
@@ -3137,78 +3154,78 @@ def defaultpagination(pagination_object, qpagination):
 	return(pagination_object, totalrows, totaldisplay)
 
 # information for presenting a seal manifestation {{should be defunct?}}
-def sealsearchmanifestationmetadata(manifestation_object):
+# def sealsearchmanifestationmetadata(manifestation_object):
 
-	manifestation_set = {}
+# 	manifestation_set = {}
 
-	#https://medium.com/codeptivesolutions/prefetch-related-and-select-related-in-django-90f07a2379c0
-	#manifestation_object2 = manifestation_object.prefetch_related(Prefetch('fk_manifestation', queryset=Representation.objects.filter(primacy=1))).all()
+# 	#https://medium.com/codeptivesolutions/prefetch-related-and-select-related-in-django-90f07a2379c0
+# 	#manifestation_object2 = manifestation_object.prefetch_related(Prefetch('fk_manifestation', queryset=Representation.objects.filter(primacy=1))).all()
 
-	for e in manifestation_object:
-		manifestation_dic = {}
-		facevalue = e.fk_face
-		sealvalue = facevalue.fk_seal
-		supportvalue = e.fk_support
-		numbervalue = supportvalue.fk_number_currentposition
-		partvalue = supportvalue.fk_part
-		eventvalue = partvalue.fk_event
-		itemvalue = partvalue.fk_item
-		repositoryvalue = itemvalue.fk_repository
+# 	for e in manifestation_object:
+# 		manifestation_dic = {}
+# 		facevalue = e.fk_face
+# 		sealvalue = facevalue.fk_seal
+# 		supportvalue = e.fk_support
+# 		numbervalue = supportvalue.fk_number_currentposition
+# 		partvalue = supportvalue.fk_part
+# 		eventvalue = partvalue.fk_event
+# 		itemvalue = partvalue.fk_item
+# 		repositoryvalue = itemvalue.fk_repository
 
-		try:
-			representation_set = Representation.objects.select_related('fk_connection').get(fk_manifestation=e.id_manifestation, primacy=1)
+# 		try:
+# 			representation_set = Representation.objects.select_related('fk_connection').get(fk_manifestation=e.id_manifestation, primacy=1)
 
-		except:
-			print ("no image available for:", e.id_manifestation)
-			representation_set = Representation.objects.select_related('fk_connection').get(id_representation=12204474)
+# 		except:
+# 			print ("no image available for:", e.id_manifestation)
+# 			representation_set = Representation.objects.select_related('fk_connection').get(id_representation=12204474)
 
-		connection = representation_set.fk_connection
-		manifestation_dic["thumb"] = connection.thumb
-		manifestation_dic["medium"] = connection.medium
-		manifestation_dic["representation_thumbnail_hash"] = representation_set.representation_thumbnail_hash
-		manifestation_dic["representation_filename_hash"] = representation_set.representation_filename_hash 
-		manifestation_dic["id_representation"] = representation_set.id_representation
+# 		connection = representation_set.fk_connection
+# 		manifestation_dic["thumb"] = connection.thumb
+# 		manifestation_dic["medium"] = connection.medium
+# 		manifestation_dic["representation_thumbnail_hash"] = representation_set.representation_thumbnail_hash
+# 		manifestation_dic["representation_filename_hash"] = representation_set.representation_filename_hash 
+# 		manifestation_dic["id_representation"] = representation_set.id_representation
 
-		sealdescription_set = Sealdescription.objects.filter(fk_seal=facevalue.fk_seal).select_related('fk_collection')
-		manifestation_dic["sealdescriptions"] = sealdescription_set
+# 		sealdescription_set = Sealdescription.objects.filter(fk_seal=facevalue.fk_seal).select_related('fk_collection')
+# 		manifestation_dic["sealdescriptions"] = sealdescription_set
 
-		manifestation_dic["manifestation"] = e
-		manifestation_dic["id_manifestation"] = e.id_manifestation
-		manifestation_dic["fk_position"] = e.fk_position
+# 		manifestation_dic["manifestation"] = e
+# 		manifestation_dic["id_manifestation"] = e.id_manifestation
+# 		manifestation_dic["fk_position"] = e.fk_position
 
-		manifestation_dic["id_seal"] = sealvalue.id_seal
-		manifestation_dic["id_item"] = itemvalue.id_item
-		manifestation_dic["repository_fulltitle"] = repositoryvalue.repository_fulltitle
-		manifestation_dic["shelfmark"] = itemvalue.shelfmark
-		manifestation_dic["fk_supportstatus"] = supportvalue.fk_supportstatus
-		manifestation_dic["fk_attachment"] = supportvalue.fk_attachment		
-		manifestation_dic["number"] = numbervalue.number
-		manifestation_dic["support_type"] = supportvalue.fk_nature
-		manifestation_dic["label_manifestation_repository"] = e.label_manifestation_repository
-		manifestation_dic["imagestate_term"] = e.fk_imagestate
-		manifestation_dic["partvalue"] = partvalue.id_part
+# 		manifestation_dic["id_seal"] = sealvalue.id_seal
+# 		manifestation_dic["id_item"] = itemvalue.id_item
+# 		manifestation_dic["repository_fulltitle"] = repositoryvalue.repository_fulltitle
+# 		manifestation_dic["shelfmark"] = itemvalue.shelfmark
+# 		manifestation_dic["fk_supportstatus"] = supportvalue.fk_supportstatus
+# 		manifestation_dic["fk_attachment"] = supportvalue.fk_attachment		
+# 		manifestation_dic["number"] = numbervalue.number
+# 		manifestation_dic["support_type"] = supportvalue.fk_nature
+# 		manifestation_dic["label_manifestation_repository"] = e.label_manifestation_repository
+# 		manifestation_dic["imagestate_term"] = e.fk_imagestate
+# 		manifestation_dic["partvalue"] = partvalue.id_part
 
-		#take the repository submitted date in preference to the Digisig date
-		if eventvalue.repository_startdate:
-			manifestation_dic["repository_startdate"] = eventvalue.repository_startdate
-		else:
-			manifestation_dic["repository_startdate"] = eventvalue.startdate 
+# 		#take the repository submitted date in preference to the Digisig date
+# 		if eventvalue.repository_startdate:
+# 			manifestation_dic["repository_startdate"] = eventvalue.repository_startdate
+# 		else:
+# 			manifestation_dic["repository_startdate"] = eventvalue.startdate 
 
-		if eventvalue.repository_enddate:
-			manifestation_dic["repository_enddate"] = eventvalue.repository_enddate
-		else:
-			manifestation_dic["repository_enddate"] = eventvalue.enddate
+# 		if eventvalue.repository_enddate:
+# 			manifestation_dic["repository_enddate"] = eventvalue.repository_enddate
+# 		else:
+# 			manifestation_dic["repository_enddate"] = eventvalue.enddate
 
-		locationreference = Locationreference.objects.select_related('fk_locationname__fk_location').get(fk_event=eventvalue.pk_event,fk_locationstatus=1)
+# 		locationreference = Locationreference.objects.select_related('fk_locationname__fk_location').get(fk_event=eventvalue.pk_event,fk_locationstatus=1)
 
-		locationname= locationreference.fk_locationname
-		location = locationreference.fk_locationname.fk_location
-		manifestation_dic["repository_location"] = locationreference.fk_locationname.fk_location.location
-		manifestation_dic["id_location"] = locationreference.fk_locationname.fk_location.id_location
+# 		locationname= locationreference.fk_locationname
+# 		location = locationreference.fk_locationname.fk_location
+# 		manifestation_dic["repository_location"] = locationreference.fk_locationname.fk_location.location
+# 		manifestation_dic["id_location"] = locationreference.fk_locationname.fk_location.id_location
 
-		manifestation_set[e.id_manifestation] = manifestation_dic
+# 		manifestation_set[e.id_manifestation] = manifestation_dic
 
-	return (manifestation_set)
+# 	return (manifestation_set)
 
 
 @sync_to_async
@@ -3453,22 +3470,36 @@ def actornamegenerator(individual_object):
 	return(individual_set)
 
 
-def namecompiler(individual_object):
+def namecompiler(individual_target):
+
+	if not isinstance(individual_target, Individual):
+		print(f"Warning: Expected Individual object, but received: {type(individual_target)}")
+		individual_object = Individual.objects.get(id_individual=individual_target)
+
+	else:
+		individual_object= individual_target
 
 	namevariable = ''
-	try:
-		if (individual_object.fk_group != None): namevariable = individual_object.fk_group.group_name
-		if (individual_object.fk_descriptor_title != None): namevariable = namevariable + " " + individual_object.fk_descriptor_title.descriptor_modern
-		if (individual_object.fk_descriptor_name != None): namevariable = namevariable + " " + individual_object.fk_descriptor_name.descriptor_modern
-		if (individual_object.fk_descriptor_prefix1 != None): namevariable = namevariable + " " + individual_object.fk_descriptor_prefix1.prefix_english
-		if (individual_object.fk_descriptor_descriptor1 != None): namevariable = namevariable + " " + individual_object.fk_descriptor_descriptor1.descriptor_modern
-		if (individual_object.fk_descriptor_prefix2 != None): namevariable = namevariable + " " + individual_object.fk_descriptor_prefix2.prefix_english
-		if (individual_object.fk_descriptor_descriptor2 != None): namevariable = namevariable + " " + individual_object.fk_descriptor_descriptor2.descriptor_modern
-		if (individual_object.fk_descriptor_prefix3 != None): namevariable = namevariable + " " + individual_object.fk_descriptor_prefix3.prefix_english
-		if (individual_object.fk_descriptor_descriptor3 != None): namevariable = namevariable + " " + individual_object.fk_descriptor_descriptor3.descriptor_modern
 
-	except:
-		print ("problem with name")
+	if hasattr(individual_object, 'fk_group') and individual_object.fk_group is not None: namevariable = individual_object.fk_group.group_name
+	if hasattr(individual_object, 'fk_descriptor_title') and individual_object.fk_descriptor_title is not None: namevariable = namevariable + " " + individual_object.fk_descriptor_title.descriptor_modern
+	if hasattr(individual_object, 'fk_descriptor_name') and individual_object.fk_descriptor_name is not None: namevariable = namevariable + " " + individual_object.fk_descriptor_name.descriptor_modern
+	if hasattr(individual_object, 'fk_descriptor_prefix1') and individual_object.fk_descriptor_prefix1: namevariable = namevariable + " " + individual_object.fk_descriptor_prefix1.prefix_english
+	if hasattr(individual_object, 'fk_descriptor_descriptor1') and individual_object.fk_descriptor_descriptor1 is not None: namevariable = namevariable + " " + individual_object.fk_descriptor_descriptor1.descriptor_modern
+	if hasattr(individual_object, 'fk_descriptor_prefix2')  and individual_object.fk_descriptor_prefix2: namevariable = namevariable + " " + individual_object.fk_descriptor_prefix2.prefix_english
+	if hasattr(individual_object, 'fk_descriptor_descriptor2') and individual_object.fk_descriptor_descriptor2 is not None: namevariable = namevariable + " " + individual_object.fk_descriptor_descriptor2.descriptor_modern
+	if hasattr(individual_object, 'fk_descriptor_prefix3') and individual_object.fk_descriptor_prefix3: namevariable = namevariable + " " + individual_object.fk_descriptor_prefix3.prefix_english
+	if hasattr(individual_object, 'fk_descriptor_descriptor3') and individual_object.fk_descriptor_descriptor3 is not None: namevariable = namevariable + " " + individual_object.fk_descriptor_descriptor3.descriptor_modern
+
+	# if (individual_object.fk_group != None): namevariable = individual_object.fk_group.group_name
+	# if (individual_object.fk_descriptor_title != None): namevariable = namevariable + " " + individual_object.fk_descriptor_title.descriptor_modern
+	# if (individual_object.fk_descriptor_name != None): namevariable = namevariable + " " + individual_object.fk_descriptor_name.descriptor_modern
+	# if (individual_object.fk_descriptor_prefix1 != None): namevariable = namevariable + " " + individual_object.fk_descriptor_prefix1.prefix_english
+	# if (individual_object.fk_descriptor_descriptor1 != None): namevariable = namevariable + " " + individual_object.fk_descriptor_descriptor1.descriptor_modern
+	# if (individual_object.fk_descriptor_prefix2 != None): namevariable = namevariable + " " + individual_object.fk_descriptor_prefix2.prefix_english
+	# if (individual_object.fk_descriptor_descriptor2 != None): namevariable = namevariable + " " + individual_object.fk_descriptor_descriptor2.descriptor_modern
+	# if (individual_object.fk_descriptor_prefix3 != None): namevariable = namevariable + " " + individual_object.fk_descriptor_prefix3.prefix_english
+	# if (individual_object.fk_descriptor_descriptor3 != None): namevariable = namevariable + " " + individual_object.fk_descriptor_descriptor3.descriptor_modern
 
 	nameout = namevariable.strip()
 

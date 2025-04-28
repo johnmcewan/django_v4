@@ -627,10 +627,6 @@ async def analyze(request, analysistype):
 #################### Search #########################
 async def search(request, searchtype):
 
-	# if searchtype == "parish":
-	# 	targetphrase = "parish"
-	# 	return redirect(targetphrase)
-
 ### Actor Search
 
 	if searchtype == "actors":
@@ -646,8 +642,9 @@ async def search(request, searchtype):
 
 		if request.method == 'POST':
 
-			if form.is_valid(): 
-				individual_object, qpagination = await peoplesearchfilter(individual_object, form)
+			if form.is_valid():
+				qpagination = form.cleaned_data['pagination']
+				individual_object = await peoplesearchfilter(individual_object, form)
 
 		individual_object, totalrows, totaldisplay = await defaultpagination(individual_object, qpagination)
 
@@ -933,13 +930,10 @@ async def search(request, searchtype):
 
 		representation_set = await representationsetgenerate(manifestation_pageobject)
 		manifestation_set = await manifestation_searchsetgenerate(manifestation_pageobject)
-
 		manifestation_display_dic, description_set, listofseals, listofevents = await manifestation_displaysetgenerate(manifestation_set, representation_set)
 		description_set = await sealdescription_displaysetgenerate2(listofseals, description_set)
 		location_set = await location_displaysetgenerate(listofevents)
 		manifestation_displayset = await finalassembly_displaysetgenerate(manifestation_display_dic, location_set, description_set)
-
-
 
 		context = {
 			'pagetitle': pagetitle, 
@@ -1213,7 +1207,7 @@ async def information(request, infotype):
 
 ################################ ML ######################################
 
-	#### 4/23/2024 -- removed hyper link to this page
+	#### 4/23/2025 -- removed hyper link to this page
 	if infotype == "machinelearning":
 
 		pagetitle = 'ML'
@@ -1404,42 +1398,47 @@ def entity_fail(request, entity_phrase):
 
 ############################## Actor #############################
 
-def actor_page(request, digisig_entity_number):
-
-	starttime = time()
-
-	individual_object = individualsearch()
-	individual_object = individual_object.get(id_individual=digisig_entity_number)
-
-	pagetitle= namecompiler(individual_object)
+async def actor_page(request, digisig_entity_number):
 
 	template = loader.get_template('digisig/actor.html')
 
-	manifestation_object = sealsearch().filter(
-		Q(fk_face__fk_seal__fk_individual_realizer=digisig_entity_number) | Q(fk_face__fk_seal__fk_actor_group=digisig_entity_number)
-	). order_by('fk_face__fk_seal__fk_individual_realizer')
+	individual_object = await individualsearch(digisig_entity_number)
+	pagetitle= namecompiler(individual_object)
 
-	#hack to deal with cases where there are too many seals for the form to handle
+	manifestation_set = await sealsearch()
+	manifestation_object = await sealsearch_actor(manifestation_set, digisig_entity_number)
+
+	# #hack to deal with cases where there are too many seals for the form to handle
 	qpagination = 1
-	manifestation_object, totalrows, totaldisplay = defaultpagination(manifestation_object, qpagination)
+	manifestation_pageobject, totalrows, totaldisplay = await defaultpagination(manifestation_object, qpagination)
 
-	manifestation_set={}
+	representation_set = await representationsetgenerate(manifestation_pageobject)
+	manifestation_set = await manifestation_searchsetgenerate(manifestation_pageobject)
+	manifestation_display_dic, description_set, listofseals, listofevents = await manifestation_displaysetgenerate(manifestation_set, representation_set)
+	description_set = await sealdescription_displaysetgenerate2(listofseals, description_set)
+	location_set = await location_displaysetgenerate(listofevents)
+	manifestation_set = await finalassembly_displaysetgenerate(manifestation_display_dic, location_set, description_set)
 
-	for e in manifestation_object:
-		manifestation_dic = {}
-		manifestation_dic = manifestation_fetchrepresentations(e, manifestation_dic)
-		manifestation_dic = manifestation_fetchsealdescriptions(e, manifestation_dic)
-		manifestation_dic = manifestation_fetchstandardvalues (e, manifestation_dic)
-		manifestation_set[e.id_manifestation] = manifestation_dic
+	# manifestation_set={}
+
+	# for e in manifestation_object:
+	# 	manifestation_dic = {}
+	# 	manifestation_dic = await manifestation_fetchrepresentations(e, manifestation_dic)
+	# 	manifestation_dic = await manifestation_fetchsealdescriptions(e, manifestation_dic)
+	# 	manifestation_dic = await manifestation_fetchstandardvalues (e, manifestation_dic)
+	# 	manifestation_set[e.id_manifestation] = manifestation_dic
 
 	# list of relationships for each actor
-	relationship_object = []			
-	relationship_object = Digisigrelationshipview.objects.filter(fk_individual = digisig_entity_number)
-	relationshipnumber = len(relationship_object)
+	# relationship_object = []			
+	# relationship_object = Digisigrelationshipview.objects.filter(fk_individual = digisig_entity_number)
+	# relationshipnumber = len(relationship_object)
+
+	relationship_object, relationshipnumber = await relationship_dataset(digisig_entity_number)
 
 	# list of references to the actor
-	reference_set = {}
-	reference_set = referenceset_references(individual_object, reference_set)
+	reference_set = await referenceset_references(digisig_entity_number)
+
+	print ("Here are the references", reference_set)
 
 	context = {
 		'pagetitle': pagetitle,
