@@ -2252,6 +2252,7 @@ def itemsearch():
 @sync_to_async
 def itemsearchfilter(item_object, form):
 
+	print (form)
 	qrepository = int(form.cleaned_data['repository'])
 	qseries = int(form.cleaned_data['series'])
 	qshelfmark = form.cleaned_data['shelfmark']

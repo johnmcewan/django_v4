@@ -131,8 +131,6 @@ function tbtoggle2(id, button) {
 //Handling the modal images on pages 
 function image(id){
 
-  console.log(id);
-
   // Get the modal
   searchstr1 = 'myModal' + id;
   var modal = document.getElementById(searchstr1);
@@ -154,8 +152,6 @@ function modalclose(id) {
 
 //An alternate image handler for pages with many modal images on page 
 function image2(id, phrase) {
-
-  console.log(id, phrase);
 
   // Get the modal
   searchstr1 = 'myModal' + phrase + id;
@@ -181,6 +177,7 @@ function serieslistupdate() {
     //check to see if form has a value
     var statusrepository = document.getElementById('id_repository').value;
 
+    console.log("updating series");
     if (statusrepository = "") {
         document.getElementById('series_label').style="opacity:0.6";
     } else {

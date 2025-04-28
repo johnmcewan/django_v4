@@ -64,10 +64,10 @@
 					</div>
 					<div class="fieldWrapper">
 				    	<input class="submit" type="submit" value="Submit">
-			    	</div>
-			    	<div class="fieldWrapper">
-			    		<button id="filterclear_button" onclick="myFunction()">Clear filter</button>
-			    	</div>
+			    </div>
+			    <div class="fieldWrapper">
+			    		<button id="filterclear_button" onclick="clearfilterFunction()">Clear filter</button>
+			    </div>
 				</form>
 			</div>
 			
@@ -152,7 +152,7 @@
 	}
 
 // clear all user inputs from the select boxes in the form 
-	function myFunction() {
+	function clearfilterFunction() {
 		document.getElementById("id_pagination").value = 1; 
 		document.getElementById("id_repository").value = '';
 		document.getElementById("id_series").value = '';
@@ -180,10 +180,6 @@
     if (statusrepository = "") {
         document.getElementById('series_label').style="opacity:0.6";
     } else {
-      // as a repository has been selected, enable the series form
-      // document.getElementById("series_label").style="opacity:1";
-      // document.getElementById("series_options").style="opacity:1";
-      // document.getElementById("series_options").disabled = false;      
 
       //find number of options and limit series list
       var seriesoptionslength = document.getElementById('id_series').options.length;
@@ -211,7 +207,6 @@
           if (repositorynumber2 == statusrepository) {
             document.getElementById("id_series").options[j].hidden = false;
           }
-
       }             
     }
     } 
