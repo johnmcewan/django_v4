@@ -2876,7 +2876,7 @@ def manifestation_searchsetgenerate(manifestation_pageobject):
 		'id_manifestation',
 		'fk_position', 
 		'fk_face__fk_seal',
-		'fk_face__fk_seal__fk_individual_realizer' 
+		'fk_face__fk_seal__fk_individual_realizer', 
 		'fk_support__fk_part__fk_item', 
 		'fk_support__fk_part__fk_item__fk_repository__repository_fulltitle',
 		'fk_support__fk_part__fk_item__shelfmark',

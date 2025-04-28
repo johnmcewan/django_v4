@@ -210,30 +210,6 @@
 	</div>
 	{% endif %}
 
-
-	<div class="entity_rdf">
-		<div hidden id="rdfajax">{% url 'ajax' digisig_entity_number=manifestation_dic.id_manifestation %}</div>
-		<div class="div-caption">
-			RDF 
-			<button id="entitybutton4" onclick="tbtoggle2('entity4', 'entitybutton4')" class="entity">+</button>
-			<button class="RDF-download"><a href="{% url 'data' digisig_entity_number=manifestation_dic.id_manifestation %}">Download</a></button> 
-		</div>
-
-		<div>
-		<table id="entity4" style="display:none;">
-			<tr>
-				<th id="rdfelement">
-<!-- 					{% for line in rdftext %}
-					{{line}}<br>
-					{% endfor %} -->
-				</th>
-			</tr>
-		</table>
-		</div>
-	</div>
-
-
-
 {% endblock %}
 
 

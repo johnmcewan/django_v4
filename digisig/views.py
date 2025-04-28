@@ -1698,7 +1698,7 @@ async def manifestation_page(request, digisig_entity_number):
 
 	manifestation_info = await seal_displaysetgenerate(manifestation_display_dic, description_set, digisig_entity_number)
 
-	outname = await actorfinder(manifestation_set)
+	outname, actor_id = await actorfinder(manifestation_set)
 
 	# actornamegenerator(individual_object)
 
