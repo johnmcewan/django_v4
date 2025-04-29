@@ -774,18 +774,14 @@ async def search(request, searchtype):
 		pagecounternextnext = qpagination +2
 
 		item_displayset = await item_displaysetgenerate(item_pageobject)
- 
+
 		context = {
 			'pagetitle': pagetitle,
 			'itemset': item_displayset,
 			'totalrows': totalrows,
 			'totaldisplay': totaldisplay,
 			'form': form,
-			# 'Repositorycases': Repositorycases,
-			# 'Seriescases': Seriescases,
-			# 'Shelfmarkcases': Shelfmarkcases,
 			'series_object': series_object,
-			# 'Phrasecases': Phrasecases,
 			'pagecountercurrent': pagecountercurrent,
 			'pagecounternext': pagecounternext,
 			'pagecounternextnext': pagecounternextnext,

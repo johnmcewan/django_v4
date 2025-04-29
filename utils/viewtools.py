@@ -2227,13 +2227,31 @@ def itemform_options(form):
 	series_all_options = [('', 'None')]
 	repositories_all_options = [('', 'None')]
 
-	for e in Series.objects.exclude(series_name__istartswith="z").order_by('fk_repository'):
-		repository = e.fk_repository
-		appendvalue = repository.repository + " : " + e.series_name
-		series_all_options.append((e.pk_series, appendvalue))
+	series_set = Series.objects.exclude(
+		series_name__istartswith="z").order_by(
+		'fk_repository').select_related('fk_repository_id').values(
+		'pk_series', 
+		'series_name', 
+		'fk_repository', 
+		'fk_repository_id__repository_fulltitle',
+		'fk_repository_id__repository')
 
-	for e in Repository.objects.order_by('repository_fulltitle'):
-		repositories_all_options.append((e.fk_repository, e.repository_fulltitle))
+	for s in series_set:
+		appendvalue = s['fk_repository_id__repository'] + " : " + s['series_name']
+		series_all_options.append((s['pk_series'], appendvalue))
+		entry = (s['fk_repository'], s['fk_repository_id__repository_fulltitle'])
+		if entry not in repositories_all_options:
+			repositories_all_options.append(entry)	
+				
+	#repositories_all_options.append((s['fk_repository'], s['fk_repository_id__repository_fulltitle']))
+
+	# for e in Series.objects.exclude(series_name__istartswith="z").order_by('fk_repository'):
+	# 	repository = e.fk_repository
+	# 	appendvalue = repository.repository + " : " + e.series_name
+	# 	series_all_options.append((e.pk_series, appendvalue))
+
+	# for e in Repository.objects.order_by('repository_fulltitle'):
+	# 	repositories_all_options.append((e.fk_repository, e.repository_fulltitle))
 
 	form.fields['series'].choices = series_all_options
 	form.fields['repository'].choices = repositories_all_options
@@ -2252,27 +2270,38 @@ def itemsearch():
 @sync_to_async
 def itemsearchfilter(item_object, form):
 
-	print (form)
-	qrepository = int(form.cleaned_data['repository'])
-	qseries = int(form.cleaned_data['series'])
-	qshelfmark = form.cleaned_data['shelfmark']
-	qsearchphrase = form.cleaned_data['searchphrase']
-	qpagination = int(form.cleaned_data['pagination'])
+	try:
+		qrepository = int(form.cleaned_data['repository'])
+		if qrepository > 0:
+			item_object = item_object.filter(fk_repository=qrepository)
+	except:	
+		pass
+	
+	try:		
+		qseries = int(form.cleaned_data['series'])
+		if qseries > 0:
+			item_object = item_object.filter(fk_series=qseries)
+	except:	
+		pass
+	
+	try:
+		qshelfmark = form.cleaned_data['shelfmark']
+		if len(qshelfmark) > 0:
+			item_object = item_object.filter(shelfmark__icontains=qshelfmark)
+	except:	
+		pass
 
-	if series > 0:
-		item_object = item_object.filter(fk_series=series)
+	try:
+		qsearchphrase = form.cleaned_data['searchphrase']
+		if len(searchphrase) > 0:
+			item_object = item_object.filter(part_description__icontains=searchphrase)
+	except:	
+		pass
 
-	elif repository > 0:
-		item_object = item_object.filter(fk_repository=repository)
-
-	else:
-		print ("No repository or series specified")
-
-	if len(shelfmark) > 0:
-		item_object = item_object.filter(shelfmark__icontains=shelfmark)
-
-	# if len(searchphrase) > 0:
-	# 	item_object = item_object.filter(part_description__icontains=searchphrase)
+	try:
+		qpagination = int(form.cleaned_data['pagination'])
+	except:	
+		qpagination = 1
 
 	return (item_object, qpagination)
 
@@ -2280,21 +2309,55 @@ def itemsearchfilter(item_object, form):
 @sync_to_async
 def item_displaysetgenerate(item_pageobject):
 
-	## not implemented yet
+	# Items can have multiple parts and each part can have a photograph
+	
+	listofitems = [] # for finding related records
+	item_set = {}
 
-	# listofitems = []
+	for i in item_pageobject:
+		item_dic = {}
+		item_dic["id_item"] = i.id_item
+		item_dic["shelfmark"] = i.shelfmark
+		item_dic["repository"] = i.fk_repository.repository_fulltitle
+		item_dic["part"] = {}
 
-	# for i in item_pageobject:
-	# 	listofitems.append(i.id_item)
+		item_set.update({i.id_item: item_dic})
+		listofitems.append(i.id_item)
 
-	# part_object = Part.objects.filter(fk_item__in=listofitems)
+	part_object = Part.objects.filter(fk_item__in=listofitems).select_related('fk_item')
+
+	for p in part_object:
+		part_dic = {}
+		part_dic['id_part'] = p.id_part
+
+		item_set[p.fk_item.id_item]["part"].update({p.id_part: part_dic})
+
+	representation_part = Representation.objects.filter(
+		fk_part__fk_item__in=listofitems).select_related(
+		'fk_connection').values(
+		'representation_thumbnail_hash',
+		'id_representation',
+		'representation_filename',
+		'fk_connection__thumb',
+		'fk_part',
+		'fk_part__fk_item',
+		'id_representation')
+
+	for r in representation_part:
+		representation_dic = {}
+		targetpart = r['fk_part']
+		targetitem = r['fk_part__fk_item']
+
+		representation_dic["connection"] = r['fk_connection__thumb']
+		representation_dic["medium"] = r['representation_filename']
+		representation_dic["thumb"] = r['representation_thumbnail_hash']
+		representation_dic["id_representation"] = r['id_representation'] 
+		item_set[targetitem]["part"][targetpart].update({"representation": representation_dic})
 
 	# partset = []
 
 	# for p in part_object.object_list:
 	# 	partset.append(p.id_part)
-
-	# representation_part = Representation.objects.filter(fk_digisig__in=partset).select_related('fk_connection')
 
 	# for i in part_object:
 	# 	part_dic = {}
@@ -2310,7 +2373,7 @@ def item_displaysetgenerate(item_pageobject):
 	# 	itemset[r.fk_digisig]["thumb"] = r.representation_thumbnail_hash
 	# 	itemset[r.fk_digisig]["id_representation"] = r.id_representation 
 
-	return(item_pageobject)
+	return(item_set)
 
 @sync_to_async
 def placeform_options(form):
