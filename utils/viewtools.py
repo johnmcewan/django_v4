@@ -2701,7 +2701,10 @@ def representationsetgenerate2(manifestation_object, primacy=False):
 		'representation_thumbnail_hash',
 		'representation_filename_hash',
 		'id_representation',
+		'fk_digisig',
 		'fk_manifestation',
+		'fk_part',
+		'fk_sealdescription',
 		'fk_connection__thumb',
 		'fk_connection__medium',
 		'fk_representation_type'
@@ -2720,58 +2723,9 @@ def representationsetgenerate2(manifestation_object, primacy=False):
 
 	# Fallback if the queryset is empty
 	if not representation_set.exists():
-		try:
-			return Representation.objects.values(*representation_values).get(id_representation=12204474)
-		except Representation.DoesNotExist:
-			# Handle the case where the fallback ID also doesn't exist
-			# You might want to return an empty list, raise an exception, or log this.
-			return Representation.objects.none() # Returns an empty queryset
+		return Representation.objects.none() # Returns an empty queryset
 
 	return representation_set
-
-	# try:
-	# 	if primacy:		
-	# 		representation_set = Representation.objects.filter(
-	# 			fk_manifestation__in=listofmanifestations).filter(
-	# 			primacy=1).values('representation_thumbnail_hash', 
-	# 			'representation_filename_hash', 
-	# 			'id_representation',
-	# 			'fk_manifestation',
-	# 			'fk_connection__thumb',
-	# 			'fk_connection__medium')
-
-	# 	else:
-	# 		representation_set = Representation.objects.filter(
-	# 			fk_manifestation__in=listofmanifestations).values('representation_thumbnail_hash', 
-	# 			'representation_filename_hash', 
-	# 			'id_representation',
-	# 			'fk_manifestation',
-	# 			'fk_connection__thumb',
-	# 			'fk_connection__medium') 
-
-	# except:
-	# 	representation_set = Representation.objects.values('representation_thumbnail_hash', 
-	# 			'representation_filename_hash', 
-	# 			'id_representation',
-	# 			'fk_manifestation',
-	# 			'fk_connection__thumb',
-	# 			'fk_connection__medium').get(id_representation=12204474)
-
-	# return(representation_set)
-
-
-	# # Define the common values to select
-	# representation_values = [
-	#     'representation_thumbnail_hash',
-	#     'representation_filename_hash',
-	#     'id_representation',
-	#     'fk_manifestation',
-	#     'fk_connection__thumb',
-	#     'fk_connection__medium'
-	# ]
-
-	# Define the common values to select
-
 
 @sync_to_async
 def seal_searchsetgenerate(digisig_entity_number, return_frommanifestation=False):
@@ -3005,6 +2959,13 @@ def manifestation_displaysetgenerate(manifestation_set, representation_set):
 	listofevents = []
 	description_set = {}
 
+	#the default fallback
+	r_set = Representation.objects.values('fk_connection__thumb',
+		'fk_connection__medium',
+		'representation_thumbnail_hash',
+		'representation_filename_hash',
+		'id_representation').get(id_representation=12204474)
+
 	for e in manifestation_set:
 
 		manifestation_dic = {}
@@ -3035,6 +2996,14 @@ def manifestation_displaysetgenerate(manifestation_set, representation_set):
 		manifestation_dic["startdate"] = e['fk_support__fk_part__fk_event__startdate']
 		manifestation_dic["enddate"] = e['fk_support__fk_part__fk_event__enddate']
 
+		## installing default imnage details
+		manifestation_dic["thumb"] = r_set['fk_connection__thumb']
+		manifestation_dic["medium"] = r_set['fk_connection__medium']
+		manifestation_dic["representation_thumbnail_hash"] = r_set['representation_thumbnail_hash']
+		manifestation_dic["representation_filename_hash"] = r_set['representation_filename_hash']
+		manifestation_dic["id_representation"] = r_set['id_representation']
+
+		#test to see if a better image available
 		for r in representation_set:
 			if r['fk_manifestation'] == manifestation_dic["id_manifestation"]:
 				manifestation_dic["thumb"] = r['fk_connection__thumb']
@@ -3042,8 +3011,7 @@ def manifestation_displaysetgenerate(manifestation_set, representation_set):
 				manifestation_dic["representation_thumbnail_hash"] = r['representation_thumbnail_hash']
 				manifestation_dic["representation_filename_hash"] = r['representation_filename_hash']
 				manifestation_dic["id_representation"] = r['id_representation']
-				pass
-
+					
 		manifestation_display_dic[e['id_manifestation']] = manifestation_dic
 		description_set[e['fk_face__fk_seal']] = {}
 		listofseals.append(e['fk_face__fk_seal'])
