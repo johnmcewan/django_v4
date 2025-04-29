@@ -62,13 +62,19 @@
 						<label for="{{ form.searchphrase.id_for_label }}">Phrase</label>
 						{{ form.searchphrase }}
 					</div>
-					<div class="fieldWrapper">
-				    	<input class="submit" type="submit" value="Submit">
-			    </div>
-			    <div class="fieldWrapper">
-			    		<button id="filterclear_button" onclick="clearfilterFunction()">Clear filter</button>
-			    </div>
+
+				<div class="fieldWrapper">
+			    	<input class="submit" type="submit" value="Submit">
+		    	</div>
+		<button id="filterclear_button" onclick="clearfilterFunction(); return false;">Clear filter!!!</button>
+
 				</form>
+		    	<div class="fieldWrapper">
+
+
+		    	</div>
+
+			    </div>
 			</div>
 			
 			<div>
@@ -152,13 +158,20 @@
 	}
 
 // clear all user inputs from the select boxes in the form 
-	function clearfilterFunction() {
-		document.getElementById("id_pagination").value = 1; 
-		document.getElementById("id_repository").value = '';
-		document.getElementById("id_series").value = '';
-		document.getElementById("id_shelfmark").value = '';
-		document.getElementById("id_searchphrase").value = ''; 
+	function clearfilterFunction(event) {
+
+    event.preventDefault(); // Prevent form submission
+    console.log("Hello");
+
+    document.getElementById("id_pagination").value = 1;
+    document.getElementById("id_repository").value = '';
+    document.getElementById("id_series").value = '';
+    document.getElementById("id_shelfmark").value = '';
+    document.getElementById("id_searchphrase").value = '';
 	}
+
+
+
 
 // allow the user to progress to the subsequent page 
 	function page_button(numberofpages) {
