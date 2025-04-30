@@ -56,15 +56,17 @@
 			</tr>
 			{% endif %}
 
-			{% for description in seal_info.sealdescription_set %}
+			{% for k, value in seal_info.sealdescription.items %}
+			<tr>
 			<tr>
 				{% if forloop.first %}<th>Described in <a class="help" href="{% url 'entity' digisig_entity_number=10001527 %}" target="_blank"><i class="fas fa-question-circle"></i></a></th>
 {% else %}<th></th>{% endif %}
-				<td> 
-					<a href="{% url 'entity' description.id_sealdescription %}">{{description.fk_collection.collection_shorttitle}}
-						{% if description.sealdescription_identifier != null %} ({{description.sealdescription_identifier}}){% endif %}
+				<td>
+					<a href="{% url 'entity' value.sealdescription_id %}">{{value.collection}}
+						{% if value.identifier != null %} ({{value.identifier}}){% endif %}
 					</a>
 				</td>
+			</tr>
 			</tr>
 			{% endfor%}
 		</table>

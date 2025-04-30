@@ -911,7 +911,7 @@ async def search(request, searchtype):
 
 		qpagination = 1
 
-		manifestation_object = await sealsearch2()
+		manifestation_object = await manifestation_search_all()
 
 		if request.method == 'POST':
 
@@ -1401,7 +1401,7 @@ async def actor_page(request, digisig_entity_number):
 	individual_object = await individualsearch(digisig_entity_number)
 	pagetitle= namecompiler(individual_object)
 
-	manifestation_set = await sealsearch()
+	manifestation_set = await manifestation_search()
 	manifestation_object = await sealsearch_actor(manifestation_set, digisig_entity_number)
 
 	# #hack to deal with cases where there are too many seals for the form to handle
@@ -1686,7 +1686,7 @@ async def manifestation_page(request, digisig_entity_number):
 
 	# manifestation_object = await manifestationobject_define(digisig_entity_number)
 
-	manifestation_set = await seal_searchsetgenerate(digisig_entity_number, return_frommanifestation=True)
+	manifestation_set = await manifestation_searchsetgenerate(digisig_entity_number, searchtype="manifestation")
 	representation_set = await representationsetgenerate2(manifestation_set, primacy=True)
 	manifestation_display_dic, description_set, listofseals, listofevents = await manifestation_displaysetgenerate(manifestation_set, representation_set)
 	description_set = await sealdescription_displaysetgenerate2(listofseals, description_set)
@@ -1751,22 +1751,10 @@ async def manifestation_page(request, digisig_entity_number):
 ############################## Place #############################
 
 
-def place_page(request, digisig_entity_number):
+async def place_page(request, digisig_entity_number):
 
-	starttime = time()
-
-	place_object = get_object_or_404(Location, id_location=digisig_entity_number)
-	pagetitle = place_object.location
-	mapdic = mapgenerator(place_object, 0)
 	template = loader.get_template('digisig/place.html')  
-
-	displaystatus = 1
-
-	manifestation_object = sealsearch()
-
-	#note that is should pick up cases where manifestations are associated with secondary places?
-	manifestation_object = manifestation_object.filter(
-			fk_support__fk_part__fk_event__fk_event_locationreference__fk_locationname__fk_location__id_location=digisig_entity_number).distinct()
+	# displaystatus = 1
 
 	qpagination = 1
 
@@ -1776,37 +1764,56 @@ def place_page(request, digisig_entity_number):
 		if form.is_valid():
 			qpagination = form.cleaned_data['pagination']
 			form = PageCycleForm(request.POST)
-			displaystatus = 0		
+			# displaystatus = 0		
 
 	else:
 		form = PageCycleForm()
 
+	# place_object = get_object_or_404(Location, id_location=digisig_entity_number)
+	place_object, pagetitle = await place_information(digisig_entity_number)
+
+	# mapdic = await mapgenerator(place_object, 0)
+	mapdic = await mapgenerator(place_object)
+
+	placecall = True
+	manifestation_object = await manifestation_search(digisig_entity_number, placecall)
+
+	# #note that is should pick up cases where manifestations are associated with secondary places?
+	# manifestation_object = manifestation_object.filter(
+	# 		fk_support__fk_part__fk_event__fk_event_locationreference__fk_locationname__fk_location__id_location=digisig_entity_number).distinct()
+
 	## these pagecounters are going to break on pages that are small lists
-	manifestation_object, totalrows, totaldisplay = defaultpagination(manifestation_object, qpagination)
+	manifestation_pageobject, totalrows, totaldisplay = await defaultpagination(manifestation_object, qpagination)
 	pagecountercurrent = qpagination 
 	pagecounternext = qpagination + 1
 	pagecounternextnext = qpagination +2
 
-	manifestation_set = {}
+	representation_set = await representationsetgenerate(manifestation_pageobject)
+	manifestation_set = await manifestation_searchsetgenerate(manifestation_pageobject)
+	manifestation_display_dic, description_set, listofseals, listofevents = await manifestation_displaysetgenerate(manifestation_set, representation_set)
+	description_set = await sealdescription_displaysetgenerate2(listofseals, description_set)
+	location_set = await location_displaysetgenerate(listofevents)
+	manifestation_set = await finalassembly_displaysetgenerate(manifestation_display_dic, location_set, description_set)
 
-	for e in manifestation_object:
-		manifestation_dic = {}
+	# manifestation_set = {}
 
-		manifestation_dic = manifestation_fetchrepresentations(e, manifestation_dic)
+	# for e in manifestation_object:
+	# 	manifestation_dic = {}
 
-		manifestation_dic["repository_location"] = place_object.location
-		manifestation_dic["id_location"] = place_object.id_location
+	# 	manifestation_dic = await manifestation_fetchrepresentations(e, manifestation_dic)
 
-		manifestation_dic = manifestation_fetchstandardvalues (e, manifestation_dic)
+	# 	manifestation_dic["repository_location"] = place_object.location
+	# 	manifestation_dic["id_location"] = place_object.id_location
 
-		manifestation_set[e.id_manifestation] = manifestation_dic
+	# 	manifestation_dic = await manifestation_fetchstandardvalues (e, manifestation_dic)
+
+	# 	manifestation_set[e.id_manifestation] = manifestation_dic
 
 	context = {
 		'pagetitle': pagetitle,
 		'place_object': place_object,
 		'mapdic': mapdic, 
 		'manifestation_set': manifestation_set,
-		'displaystatus': displaystatus,
 		'totalrows': totalrows,
 		'totaldisplay': totaldisplay,
 		'form': form,
@@ -1821,53 +1828,12 @@ def place_page(request, digisig_entity_number):
 ############################## Representation #############################
 
 
-def representation_page(request, digisig_entity_number):
+async def representation_page(request, digisig_entity_number):
 
-	starttime = time()
 	pagetitle = 'Representation'
 	template = loader.get_template('digisig/representation.html')
 
-	representation_object = Representation.objects.select_related(
-		'fk_manifestation').select_related(
-		'fk_representation_type').select_related(
-		'fk_connection').select_related(
-		'fk_contributor_creator').select_related(
-		'fk_manifestation__fk_support__fk_part__fk_item__fk_repository').select_related(
-		'fk_manifestation__fk_support__fk_part__fk_event').select_related(
-		'fk_manifestation__fk_face__fk_seal__fk_individual_realizer').select_related(
-		'fk_manifestation__fk_face__fk_seal__fk_individual_realizer__fk_group').select_related(
-		'fk_manifestation__fk_face__fk_seal__fk_individual_realizer__fk_descriptor_title').select_related(
-		'fk_manifestation__fk_face__fk_seal__fk_individual_realizer__fk_descriptor_name').select_related(
-		'fk_manifestation__fk_face__fk_seal__fk_individual_realizer__fk_descriptor_prefix1').select_related(
-		'fk_manifestation__fk_face__fk_seal__fk_individual_realizer__fk_descriptor_descriptor1').select_related(
-		'fk_manifestation__fk_face__fk_seal__fk_individual_realizer__fk_separator_1').select_related(
-		'fk_manifestation__fk_face__fk_seal__fk_individual_realizer__fk_descriptor_prefix2').select_related(
-		'fk_manifestation__fk_face__fk_seal__fk_individual_realizer__fk_descriptor_descriptor2').select_related(
-		'fk_manifestation__fk_face__fk_seal__fk_individual_realizer__fk_descriptor_prefix3').select_related(
-		'fk_manifestation__fk_face__fk_seal__fk_individual_realizer__fk_descriptor_descriptor3').get(
-		id_representation=digisig_entity_number)
-
-	representation_dic = {}
-
-	#what type of entity is depicted? (Manifestation, Document....)
-	digisigentity = str(representation_object.fk_digisig)
-	representation_dic["entity_type"] = int(digisigentity[7:])
-
-	#defaults to stop some forms from breaking
-	representation_dic["main_title"] = "Title"
-	# representation_dic["manifestation_object"] = get_object_or_404(Manifestation, id_manifestation=10000002)
-	# representation_dic["item"] = get_object_or_404(Item, id_item=10545090)
-
-	representation_dic = representationmetadata(representation_object, representation_dic)
-
-	if representation_dic["entity_type"] == 2:
-		representation_dic = representationmetadata_manifestation(representation_object, representation_dic)
-
-	if representation_dic["entity_type"] == 3:
-		representation_dic = representationmetadata_sealdescription(representation_object, representation_dic)
-
-	if representation_dic["entity_type"] == 8:
-		representation_dic = representationmetadata_part(representation_object, representation_dic)
+	representation_dic = await representation_information(digisig_entity_number)
 
 	context = {
 		'pagetitle': pagetitle,
@@ -1884,7 +1850,7 @@ async def seal_page(request, digisig_entity_number):
 	pagetitle = 'title'
 	template = loader.get_template('digisig/seal.html')
 
-	manifestation_set = await seal_searchsetgenerate(digisig_entity_number)
+	manifestation_set = await manifestation_searchsetgenerate(digisig_entity_number, searchtype="seal")
 	representation_set = await representationsetgenerate2(manifestation_set)
 	manifestation_display_dic, description_set, listofseals, listofevents = await manifestation_displaysetgenerate(manifestation_set, representation_set)
 	description_set = await sealdescription_displaysetgenerate2(listofseals, description_set)
@@ -1892,27 +1858,7 @@ async def seal_page(request, digisig_entity_number):
 
 	seal_info = await seal_displaysetgenerate(manifestation_display_dic, description_set, digisig_entity_number)
 
-	#manifestation_displayset = await finalassembly_displaysetgenerate(manifestation_display_dic, location_set, description_set)
-
-	#manifestation_object = await sealsearch3(digisig_entity_number)
-
-	# seal_info, face_set, face_obverse = await sealmetadata(digisig_entity_number)
-
-	# seal_info["actor_label"] = namecompiler(face_obverse.fk_seal.fk_individual_realizer)
-	# seal_info["obverse"] = await sealinfo_classvalue(face_obverse)
-
-	# try: 
-	# 	face_reverse = face_set.get(fk_faceterm=2)
-	# 	seal_info["reverse"] = sealinfo_classvalue(face_reverse)
-
-	# except:
-	# 	print ("no reverse")
-
-	# manifestation_object = await sealsearch()
-
-	# seal_info["manifestation_set"] = sealsearchmanifestationmetadata(manifestation_object.filter(fk_face__fk_seal=digisig_entity_number))
-
-	# seal_info["totalrows"] = len(seal_info["manifestation_set"])
+	print (seal_info)
 
 	context = {
 		'pagetitle': pagetitle,
@@ -1932,7 +1878,6 @@ async def sealdescription_page(request, digisig_entity_number):
 	sealdescription_object = await sealdescription_fetchobject(digisig_entity_number)
 	
 	pagetitle = sealdescription_object.fk_collection.collection_title
-
 
 	sealdescription_dic= await sealdescription_fetchrepresentation(sealdescription_object)
 	sealdescription_dic = await sealdescription_contributorgenerate(sealdescription_object.fk_collection, sealdescription_dic)

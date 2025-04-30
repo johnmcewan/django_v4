@@ -710,88 +710,6 @@ def mapparishesdata3(witness_entity_number):
 
 	return mapparishes, reference_list
 
-
-# def mapparishesdata3(witness_entity_number):
-
-# 	reference_set = Referenceindividual.objects.filter(
-# 		fk_individual=witness_entity_number).select_related(
-# 			'fk_referencerole', 'fk_event', 'fk_individual',
-# 			'fk_event__part__fk_item', 'fk_event__fk_event_locationreference__fk_locationname__fk_location'
-# 		).values(
-# 			'fk_event', 'fk_individual', 'pk_referenceindividual',
-# 			'fk_event__startdate', 'fk_event__enddate', 
-# 			'fk_event__repository_startdate', 'fk_event__repository_enddate',
-# 			'fk_referencerole__referencerole', 'fk_event__part__fk_item__shelfmark',
-# 			'fk_event__part__fk_item__id_item', 'fk_event__part__id_part',
-# 			'fk_event__fk_event_locationreference__fk_locationname__fk_location__fk_region',
-# 			'fk_event__fk_event_locationreference__fk_locationname__fk_location__id_location',
-# 			'fk_event__fk_event_locationreference__fk_locationname__fk_location__pk_location',
-# 			'fk_event__fk_event_locationreference__fk_locationname__fk_location__location'
-# 		)
-
-# 	parishstats = {}
-# 	parishnamevalues = {}
-# 	ref_list = []
-
-# 	# Prepare reference list
-# 	reference_list = []
-
-# 	for r in reference_set:
-# 		parisholdid = r['fk_event__fk_event_locationreference__fk_locationname__fk_location__pk_location']
-# 		parishname = r['fk_event__fk_event_locationreference__fk_locationname__fk_location__location']
-# 		if parisholdid in parishstats:
-# 			parishstats[parisholdid] += 1
-# 		else:
-# 			parishstats[parisholdid] = 1
-# 			parishnamevalues[parisholdid] = parishname
-
-# 		reference_row = {}
-# 		reference_row["role"] = r['fk_referencerole__referencerole']
-# 		reference_row["item_shelfmark"] = r['fk_event__part__fk_item__shelfmark']
-# 		reference_row["item_id"] = r['fk_event__part__fk_item__id_item']
-# 		reference_row["part_id"] = r['fk_event__part__id_part']
-# 		reference_row["region"] = r['fk_event__fk_event_locationreference__fk_locationname__fk_location__fk_region']
-# 		reference_row["location_id"] = r['fk_event__fk_event_locationreference__fk_locationname__fk_location__id_location']
-# 		reference_row["location"] = r['fk_event__fk_event_locationreference__fk_locationname__fk_location__location']
-# 		reference_row["location_pk"] = r['fk_event__fk_event_locationreference__fk_locationname__fk_location__pk_location']
-# 		reference_row["part_url"] = reverse('entity', kwargs={'witness_entity_number': r['fk_event__part__id_part']})
-# 		reference_list.append(reference_row)
-
-# 		# Handle date formatting
-# 		if r['fk_event__startdate']:
-# 			startyear = int(str(r['fk_event__startdate'])[:4])
-# 			endyear = int(str(r['fk_event__enddate'])[:4])
-# 			reference_row['date'] = f"{startyear} - {endyear}" if endyear > startyear else str(startyear)
-# 		elif r['fk_event__repository_startdate']:
-# 			startyear = int(str(r['fk_event__repository_startdate'])[:4])
-# 			endyear = int(str(r['fk_event__repository_enddate'])[:4])
-# 			reference_row['date'] = f"{startyear} - {endyear}" if endyear > startyear else str(startyear)
-# 		else:
-# 			reference_row['date'] = "20000"
-
-# 	# Sort the reference list by date
-# 	reference_list = sorted(reference_list, key=lambda x: x["date"])
-
-# 	mapparishes = []
-# 	mapparishes1 = get_object_or_404(Jsonstorage, id_jsonfile=2)
-# 	mapparishes = json.loads(mapparishes1.jsonfiletxt)
-
-# 	for i in mapparishes:
-# 		if i == "features":
-# 			for b in mapparishes[i]:
-# 				j = b["properties"]
-
-# 				parishvalue = j["fk_locatio"]
-# 				try:
-# 					j["cases"] = parishstats[parishvalue]
-# 					j["parishname"] = parishnamevalues[parishvalue]
-# 					#print ("found", parishvalue)
-# 				except:
-# 					pass
-# 					#print ("can't find", parishvalue)
-
-# 	return(mapparishes)
-
 @sync_to_async
 def mapparishesdata(reference_set):
 
@@ -1769,20 +1687,21 @@ def map_regionset(qcollection, qtimechoice=None, qsealtypechoice=None):
 
 	return regionset
 
-
-def mapgenerator(location_object, count_in):
+@sync_to_async
+def mapgenerator(location_object, count_in=0):
 	#Establishing the Map data
-	longitude=""
-	latitude=""
-	location=""
-	location_dict = ""
-	additionalformat = ""
 
 	mapdic = {"type": "FeatureCollection"}
 	properties = {}
 	geometry = {}
 	location = {}
 	placelist = []
+
+	longitude=""
+	latitude=""
+	# location=""
+	location_dict = ""
+	additionalformat = ""
 
 	value1 = location_object.id_location
 	value2 = location_object.location
@@ -1847,11 +1766,6 @@ def mapgenerator2(location_object):
 
 	return(mapdic, center_long, center_lat)
 
-@sync_to_async
-def seriesset():
-	series_object = serializers.serialize('json', Series.objects.all(), fields=('pk_series','fk_repository'))
-
-	return (series_object)
 
 @sync_to_async
 def collection_loadmaplayer(selectedlayer):
@@ -1859,6 +1773,13 @@ def collection_loadmaplayer(selectedlayer):
 	maplayer = json.loads(maplayer1.jsonfiletxt)
 
 	return(maplayer)
+
+@sync_to_async
+def seriesset():
+	series_object = serializers.serialize('json', Series.objects.all(), fields=('pk_series','fk_repository'))
+
+	return (series_object)
+
 
 @sync_to_async
 def collection_printgroup(qcollection, collection_dic):
@@ -2394,12 +2315,23 @@ def placeform_options(form):
 
 @sync_to_async
 def place_search():
-
+## many places
 	place_object = Location.objects.filter(
 		locationname__locationreference__fk_locationstatus=1, longitude__isnull=False, latitude__isnull=False).order_by(
 		'location').annotate(count=Count('locationname__locationreference'))
 
 	return (place_object)
+
+## Information about one place
+@sync_to_async
+def place_information(entity):
+
+	place_object = get_object_or_404(Location, id_location=entity)
+
+	place_name = str(place_object.location)
+
+	return (place_object, place_name)
+
 
 @sync_to_async
 def placesearchfilter(placeset):
@@ -2635,25 +2567,53 @@ def sealdescription_displaysetgenerate(sealdescription_object):
 	return (sealdescription_displayset)
 
 
-@sync_to_async
-def sealsearch():
-	manifestation_object = Manifestation.objects.all().select_related(
-	'fk_face__fk_seal').select_related(
-	'fk_support__fk_part__fk_item__fk_repository').select_related(
-	'fk_support__fk_number_currentposition').select_related(
-	'fk_support__fk_attachment').select_related(
-	'fk_support__fk_supportstatus').select_related(
-	'fk_support__fk_nature').select_related(
-	'fk_imagestate').select_related(
-	'fk_position').select_related(
-	'fk_support__fk_part__fk_event').order_by(
-	'id_manifestation').prefetch_related(
-	Prefetch('fk_manifestation', queryset=Representation.objects.filter(primacy=1)))
+# @sync_to_async
+# def manifestation_search():
+# 	manifestation_object = Manifestation.objects.all().select_related(
+# 	'fk_face__fk_seal').select_related(
+# 	'fk_support__fk_part__fk_item__fk_repository').select_related(
+# 	'fk_support__fk_number_currentposition').select_related(
+# 	'fk_support__fk_attachment').select_related(
+# 	'fk_support__fk_supportstatus').select_related(
+# 	'fk_support__fk_nature').select_related(
+# 	'fk_imagestate').select_related(
+# 	'fk_position').select_related(
+# 	'fk_support__fk_part__fk_event').order_by(
+# 	'id_manifestation').prefetch_related(
+# 	Prefetch('fk_manifestation', queryset=Representation.objects.filter(primacy=1)))
 
-	return(manifestation_object)
+# 	return(manifestation_object)
+
+
+## find seal manifestations and optionally limit to those associated with a particular place
+@sync_to_async
+def manifestation_search(digisig_entity_number=None, placecall=False):
+    manifestation_object = Manifestation.objects.all().select_related(
+        'fk_face__fk_seal',
+        'fk_support__fk_part__fk_item__fk_repository',
+        'fk_support__fk_number_currentposition',
+        'fk_support__fk_attachment',
+        'fk_support__fk_supportstatus',
+        'fk_support__fk_nature',
+        'fk_imagestate',
+        'fk_position',
+        'fk_support__fk_part__fk_event'
+    ).order_by('id_manifestation').prefetch_related(
+        Prefetch('fk_manifestation', queryset=Representation.objects.filter(primacy=1))
+    )
+
+    if placecall is True:
+        manifestation_object = manifestation_object.filter(
+            fk_support__fk_part__fk_event__fk_event_locationreference__fk_locationname__fk_location__id_location=digisig_entity_number
+        ).distinct()
+
+    return (manifestation_object)
+
+
+
 
 @sync_to_async
-def sealsearch2():
+def manifestation_search_all():
 	manifestation_object = Manifestation.objects.all().values('id_manifestation').order_by('id_manifestation')
 
 	return(manifestation_object)
@@ -2666,13 +2626,61 @@ def sealsearch3(sealentity):
 
 @sync_to_async
 def sealsearch_actor(seal_object, digisig_entity_number):
-	#assumes you will have run sealseal() first and now want to further limit based on the actor in question
+	#assumes you will have run manifestation_search() first and now want to further limit based on the actor in question
 
 	manifestation_set = seal_object.filter(
 		Q(fk_face__fk_seal__fk_individual_realizer=digisig_entity_number) | Q(fk_face__fk_seal__fk_actor_group=digisig_entity_number)
 	). order_by('fk_face__fk_seal__fk_individual_realizer')
 
 	return(manifestation_set)
+
+@sync_to_async
+def representation_information(digisig_entity_number):
+
+	representation_object = Representation.objects.select_related(
+		'fk_manifestation').select_related(
+		'fk_representation_type').select_related(
+		'fk_connection').select_related(
+		'fk_contributor_creator').select_related(
+		'fk_manifestation__fk_support__fk_part__fk_item__fk_repository').select_related(
+		'fk_manifestation__fk_support__fk_part__fk_event').select_related(
+		'fk_manifestation__fk_face__fk_seal__fk_individual_realizer').select_related(
+		'fk_manifestation__fk_face__fk_seal__fk_individual_realizer__fk_group').select_related(
+		'fk_manifestation__fk_face__fk_seal__fk_individual_realizer__fk_descriptor_title').select_related(
+		'fk_manifestation__fk_face__fk_seal__fk_individual_realizer__fk_descriptor_name').select_related(
+		'fk_manifestation__fk_face__fk_seal__fk_individual_realizer__fk_descriptor_prefix1').select_related(
+		'fk_manifestation__fk_face__fk_seal__fk_individual_realizer__fk_descriptor_descriptor1').select_related(
+		'fk_manifestation__fk_face__fk_seal__fk_individual_realizer__fk_separator_1').select_related(
+		'fk_manifestation__fk_face__fk_seal__fk_individual_realizer__fk_descriptor_prefix2').select_related(
+		'fk_manifestation__fk_face__fk_seal__fk_individual_realizer__fk_descriptor_descriptor2').select_related(
+		'fk_manifestation__fk_face__fk_seal__fk_individual_realizer__fk_descriptor_prefix3').select_related(
+		'fk_manifestation__fk_face__fk_seal__fk_individual_realizer__fk_descriptor_descriptor3').get(
+		id_representation=digisig_entity_number)
+
+	representation_dic = {}
+
+	#what type of entity is depicted? (Manifestation, Document....)
+	digisigentity = str(representation_object.fk_digisig)
+	representation_dic["entity_type"] = int(digisigentity[7:])
+
+	#defaults to stop some forms from breaking
+	representation_dic["main_title"] = "Title"
+	# representation_dic["manifestation_object"] = get_object_or_404(Manifestation, id_manifestation=10000002)
+	# representation_dic["item"] = get_object_or_404(Item, id_item=10545090)
+
+	representation_dic = representationmetadata(representation_object, representation_dic)
+
+	if representation_dic["entity_type"] == 2:
+		representation_dic = representationmetadata_manifestation(representation_object, representation_dic)
+
+	if representation_dic["entity_type"] == 3:
+		representation_dic = representationmetadata_sealdescription(representation_object, representation_dic)
+
+	if representation_dic["entity_type"] == 8:
+		representation_dic = representationmetadata_part(representation_object, representation_dic)
+
+	return (representation_dic)
+
 
 @sync_to_async
 def representationsetgenerate(manifestation_pageobject):
@@ -2727,49 +2735,7 @@ def representationsetgenerate2(manifestation_object, primacy=False):
 
 	return representation_set
 
-@sync_to_async
-def seal_searchsetgenerate(digisig_entity_number, return_frommanifestation=False):
-	if return_frommanifestation:
-		manifestation_set = Manifestation.objects.filter(id_manifestation=digisig_entity_number)
-	else:
-		manifestation_set = Manifestation.objects.filter(
-			fk_face__fk_seal=digisig_entity_number
-		)
 
-	manifestation_set = manifestation_set.select_related(
-		'fk_support__fk_part__fk_item__fk_repository',
-		'fk_support__fk_number_currentposition',
-		'fk_support__fk_attachment',
-		'fk_support__fk_supportstatus',
-		'fk_support__fk_nature',
-		'fk_imagestate',
-		'fk_position',
-		'fk_support__fk_part__fk_event',
-		'fk_face__fk_seal'
-	).order_by('id_manifestation').values(
-		'id_manifestation',
-		'fk_position',
-		'fk_face',
-		'fk_face__fk_seal',
-		'fk_face__fk_seal__fk_individual_realizer',
-		'fk_support__fk_part__fk_item',
-		'fk_support__fk_part__fk_item__fk_repository__repository_fulltitle',
-		'fk_support__fk_part__fk_item__shelfmark',
-		'fk_support__fk_supportstatus',
-		'fk_support__fk_attachment',
-		'fk_support__fk_number_currentposition',
-		'fk_support__fk_nature',
-		'label_manifestation_repository',
-		'fk_imagestate',
-		'fk_support__fk_part',
-		'fk_support__fk_part__fk_event',
-		'fk_support__fk_part__fk_event__repository_startdate',
-		'fk_support__fk_part__fk_event__repository_enddate',
-		'fk_support__fk_part__fk_event__startdate',
-		'fk_support__fk_part__fk_event__enddate'
-	)
-
-	return (manifestation_set)
 
 
 # note this does not require the synctoasync
@@ -2912,26 +2878,35 @@ def seal_displaysetgenerate(manifestation_display_dic, description_set, digisig_
 
 
 @sync_to_async
-def manifestation_searchsetgenerate(manifestation_pageobject):
-### maindata for manifestations
+def manifestation_searchsetgenerate(searchvalue, searchtype=None):
+	# a single manifestation
+	if searchtype == "manifestation":
+		manifestation_set = Manifestation.objects.filter(id_manifestation=searchvalue)
 
-	manifestation_set = Manifestation.objects.filter(
-		id_manifestation__in=manifestation_pageobject.object_list).select_related(
-		'fk_face__fk_seal').select_related(
-		'fk_support__fk_part__fk_item__fk_repository').select_related(
-		'fk_support__fk_number_currentposition').select_related(
-		'fk_support__fk_attachment').select_related(
-		'fk_support__fk_supportstatus').select_related(
-		'fk_support__fk_nature').select_related(
-		'fk_imagestate').select_related(
-		'fk_position').select_related(
-		'fk_support__fk_part__fk_event').order_by(
-		'id_manifestation').values(
+	# a group of seal manifestations (either based on seal or manifestation set)
+	elif searchtype == "seal":
+	 	manifestation_set = Manifestation.objects.filter(fk_face__fk_seal=searchvalue)	 	
+	
+	else:
+		manifestation_set = Manifestation.objects.filter(id_manifestation__in=searchvalue)
+
+	manifestation_set = manifestation_set.select_related(
+		'fk_support__fk_part__fk_item__fk_repository',
+		'fk_support__fk_number_currentposition',
+		'fk_support__fk_attachment',
+		'fk_support__fk_supportstatus',
+		'fk_support__fk_nature',
+		'fk_imagestate',
+		'fk_position',
+		'fk_support__fk_part__fk_event',
+		'fk_face__fk_seal'
+	).order_by('id_manifestation').values(
 		'id_manifestation',
-		'fk_position', 
+		'fk_position',
+		'fk_face',
 		'fk_face__fk_seal',
-		'fk_face__fk_seal__fk_individual_realizer', 
-		'fk_support__fk_part__fk_item', 
+		'fk_face__fk_seal__fk_individual_realizer',
+		'fk_support__fk_part__fk_item',
 		'fk_support__fk_part__fk_item__fk_repository__repository_fulltitle',
 		'fk_support__fk_part__fk_item__shelfmark',
 		'fk_support__fk_supportstatus',
@@ -2945,9 +2920,49 @@ def manifestation_searchsetgenerate(manifestation_pageobject):
 		'fk_support__fk_part__fk_event__repository_startdate',
 		'fk_support__fk_part__fk_event__repository_enddate',
 		'fk_support__fk_part__fk_event__startdate',
-		'fk_support__fk_part__fk_event__enddate')
+		'fk_support__fk_part__fk_event__enddate'
+	)
 
-	return(manifestation_set)
+	return (manifestation_set)
+
+
+# @sync_to_async
+# def manifestation_searchsetgenerate(manifestation_pageobject):
+# ### maindata for manifestations
+
+# 	manifestation_set = Manifestation.objects.filter(
+# 		id_manifestation__in=manifestation_pageobject.object_list).select_related(
+# 		'fk_face__fk_seal').select_related(
+# 		'fk_support__fk_part__fk_item__fk_repository').select_related(
+# 		'fk_support__fk_number_currentposition').select_related(
+# 		'fk_support__fk_attachment').select_related(
+# 		'fk_support__fk_supportstatus').select_related(
+# 		'fk_support__fk_nature').select_related(
+# 		'fk_imagestate').select_related(
+# 		'fk_position').select_related(
+# 		'fk_support__fk_part__fk_event').order_by(
+# 		'id_manifestation').values(
+# 		'id_manifestation',
+# 		'fk_position', 
+# 		'fk_face__fk_seal',
+# 		'fk_face__fk_seal__fk_individual_realizer', 
+# 		'fk_support__fk_part__fk_item', 
+# 		'fk_support__fk_part__fk_item__fk_repository__repository_fulltitle',
+# 		'fk_support__fk_part__fk_item__shelfmark',
+# 		'fk_support__fk_supportstatus',
+# 		'fk_support__fk_attachment',
+# 		'fk_support__fk_number_currentposition',
+# 		'fk_support__fk_nature',
+# 		'label_manifestation_repository',
+# 		'fk_imagestate',
+# 		'fk_support__fk_part',
+# 		'fk_support__fk_part__fk_event',
+# 		'fk_support__fk_part__fk_event__repository_startdate',
+# 		'fk_support__fk_part__fk_event__repository_enddate',
+# 		'fk_support__fk_part__fk_event__startdate',
+# 		'fk_support__fk_part__fk_event__enddate')
+
+# 	return(manifestation_set)
 
 
 @sync_to_async
@@ -3031,13 +3046,21 @@ def sealdescription_displaysetgenerate2(listofseals, description_set):
 		'sealdescription_identifier',
 		'fk_seal')
 
+	description_set = {}
+
 	for s in sealdescription_set:
 		description = {}
 		description["sealdescription_id"] = s['id_sealdescription']
 		description["collection"] = s['fk_collection__collection_shorttitle']
 		description["identifier"] = s['sealdescription_identifier']
-		description["fk_seal"] = s['fk_seal']  
-		description_set[description["fk_seal"]][s['id_sealdescription']] = description
+		description["fk_seal"] = s['fk_seal']
+
+		### if we only have descriptions for one seal....
+		if len(sealdescription_set) == 1:
+			description_set[s['id_sealdescription']] = description
+	
+		else:  
+			description_set[description["fk_seal"]][s['id_sealdescription']] = description
 
 	return(description_set)
 
@@ -3304,7 +3327,7 @@ def sealdescription_contributorgenerate(collection, contributor_dic):
 @sync_to_async
 def	sealdescription_fetchrepresentation(sealdescription_object):
 
-	sealdescription_dic = {}
+	description_dic = {}
 
 	try:
 		representation_set = Representation.objects.select_related(
@@ -3315,13 +3338,20 @@ def	sealdescription_fetchrepresentation(sealdescription_object):
 		print ("no image available for:", sealdescription_object)
 		representation_set = Representation.objects.select_related('fk_connection').get(id_representation=12204474)
 
-	sealdescription_dic["thumb"] = representation_set.fk_connection.thumb
-	sealdescription_dic["medium"] = representation_set.fk_connection.medium
-	sealdescription_dic["representation_thumbnail_hash"] = representation_set.representation_thumbnail_hash
-	sealdescription_dic["representation_filename_hash"] = representation_set.representation_filename_hash 
-	sealdescription_dic["id_representation"] = representation_set.id_representation
+	sealdescription_dic = representation_fetchinfo(description_dic, representation_set)
 
 	return(sealdescription_dic)
+
+def representation_fetchinfo(description_dic, representation_set):
+
+	description_dic["thumb"] = representation_set.fk_connection.thumb
+	description_dic["medium"] = representation_set.fk_connection.medium
+	description_dic["representation_thumbnail_hash"] = representation_set.representation_thumbnail_hash
+	description_dic["representation_filename_hash"] = representation_set.representation_filename_hash 
+	description_dic["id_representation"] = representation_set.id_representation
+
+	return(description_dic)
+
 
 @sync_to_async
 def	manifestation_fetchrepresentations(e, manifestation_dic):
@@ -3332,6 +3362,7 @@ def	manifestation_fetchrepresentations(e, manifestation_dic):
 	except:
 		print ("no image available for:", e.id_manifestation)
 		representation_set = Representation.objects.select_related('fk_connection').get(id_representation=12204474)
+
 
 	manifestation_dic["thumb"] = representation_set.fk_connection.thumb
 	manifestation_dic["medium"] = representation_set.fk_connection.medium
