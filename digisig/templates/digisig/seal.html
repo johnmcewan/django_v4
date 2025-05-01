@@ -61,14 +61,16 @@
 			<tr>
 				{% if forloop.first %}<th>Described in <a class="help" href="{% url 'entity' digisig_entity_number=10001527 %}" target="_blank"><i class="fas fa-question-circle"></i></a></th>
 {% else %}<th></th>{% endif %}
+				{% for k2, value2 in value.items %}
 				<td>
-					<a href="{% url 'entity' value.sealdescription_id %}">{{value.collection}}
-						{% if value.identifier != null %} ({{value.identifier}}){% endif %}
+					<a href="{% url 'entity' digisig_entity_number=value2.sealdescription_id %}">{{value2.collection}}
+						{% if value2.identifier != null %} ({{value2.identifier}}){% endif %}
 					</a>
 				</td>
+				{% endfor %}
 			</tr>
 			</tr>
-			{% endfor%}
+			{% endfor %}
 		</table>
 	</div>
 
@@ -91,17 +93,19 @@
 		<div>
 			<table id="entity1" style="display:none;">
 				<tr class="info">
-					<td class="totalrows" colspan="3">Showing {{seal_info.totalrows}} of {{seal_info.totalrows}}</td>
+					<td class="totalrows" colspan="3">Showing {{seal_info.manifestation_set.totalrows}}</td>
 				</tr>
 
 
-				{% for manifestation in seal_info.manifestation_set.values %}
+				{% for key, manifestation in seal_info.manifestation_set.items %}
 
-					{% ifchanged manifestation.manifestation.fk_support %}
+					{% ifchanged manifestation.fk_support %}
 	
+					{{manifestation.id_manifestation}}
+
 					{% if forloop.counter|divisibleby:2 %}<tr class="even">{% else %}<tr class="odd">{% endif %}
 
-						<th colspan="2"><h4><a class="headingbtn" href="{% url 'entity' digisig_entity_number=manifestation.id_manifestation %}">Manifestation details</a></h4></th>
+						<th colspan="2"><h4><a class="headingbtn" href="">Manifestation details</a></h4></th>
 							<td rowspan="4" style="text-align:center;">
 								{% if manifestation.representation_filename_hash != null %}
 								<figure>
@@ -127,7 +131,7 @@
 
 					{% if forloop.counter|divisibleby:2 %}<tr class="even">{% else %}<tr class="odd">{% endif %}
 						<th class="indent">Part of item</th>
-						<td><a href="{% url 'entity' digisig_entity_number=manifestation.id_item %}">{{manifestation.shelfmark}}</a>
+						<td><a href="{% url 'entity' digisig_entity_number=10001527 %}">{{manifestation.shelfmark}}</a>
 							{% if manifestation.number != null %}
 								{% if fk_number_currentposition < 100 %}, support {{manifestation.number}} {% endif %}{% endif %}
 						</td>
@@ -139,7 +143,9 @@
 					</tr>
 
 					{% endifchanged %}
+
 				{% endfor %}
+
 			</table>
 		</div>
 	</div>

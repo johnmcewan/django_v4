@@ -743,12 +743,7 @@ async def search(request, searchtype):
 		pagecounternext = qpagination + 1
 		pagecounternextnext = qpagination +2
 
-		representation_set = await representationsetgenerate(manifestation_pageobject)
-		manifestation_set = await manifestation_searchsetgenerate(manifestation_pageobject)
-		manifestation_display_dic, description_set, listofseals, listofevents = await manifestation_displaysetgenerate(manifestation_set, representation_set)
-		description_set = await sealdescription_displaysetgenerate2(listofseals, description_set)
-		location_set = await location_displaysetgenerate(listofevents)
-		manifestation_displayset = await finalassembly_displaysetgenerate(manifestation_display_dic, location_set, description_set)
+		manifestation_displayset = await manifestation_construction(manifestation_pageobject)
 
 		context = {
 			'pagetitle': pagetitle, 
@@ -1419,8 +1414,8 @@ async def manifestation_page(request, digisig_entity_number):
 
 	manifestation_set = await manifestation_searchsetgenerate(digisig_entity_number, searchtype="manifestation")
 	representation_set = await representationsetgenerate2(manifestation_set, primacy=True)
-	manifestation_display_dic, description_set, listofseals, listofevents = await manifestation_displaysetgenerate(manifestation_set, representation_set)
-	description_set = await sealdescription_displaysetgenerate2(listofseals, description_set)
+	manifestation_display_dic, listofseals, listofevents = await manifestation_displaysetgenerate(manifestation_set, representation_set)
+	description_set = await sealdescription_displaysetgenerate2(listofseals)
 
 	manifestation_info = await seal_displaysetgenerate(manifestation_display_dic, description_set, digisig_entity_number)
 
@@ -1574,10 +1569,6 @@ async def representation_page(request, digisig_entity_number):
 	if representation_dic["entity_type"] == 8:
 		representation_dic = await representationmetadata_part(representation_object, representation_dic)
 
-	return (representation_dic)
-
-	# print(representation_dic) 
-
 	context = {
 		'pagetitle': pagetitle,
 		'representation_dic': representation_dic,
@@ -1595,8 +1586,8 @@ async def seal_page(request, digisig_entity_number):
 
 	manifestation_set = await manifestation_searchsetgenerate(digisig_entity_number, searchtype="seal")
 	representation_set = await representationsetgenerate2(manifestation_set)
-	manifestation_display_dic, description_set, listofseals, listofevents = await manifestation_displaysetgenerate(manifestation_set, representation_set)
-	description_set = await sealdescription_displaysetgenerate2(listofseals, description_set)
+	manifestation_display_dic, listofseals, listofevents = await manifestation_displaysetgenerate(manifestation_set, representation_set)
+	description_set = await sealdescription_displaysetgenerate2(listofseals)
 	# location_set = await location_displaysetgenerate(listofevents)
 
 	seal_info = await seal_displaysetgenerate(manifestation_display_dic, description_set, digisig_entity_number)

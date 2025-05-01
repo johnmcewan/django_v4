@@ -39,13 +39,13 @@
 
 				<td rowspan="4">
 					<figure>
-						<img class="modalimage" id="modalimagebase1" src="{{representation_dic.thumb}}{{representation_dic.representation_thumbnail}}" alt="{{representation_dic.id_representation}}" onclick="image(1)">
+						<img class="modalimage" id="modalimagebase1" src="{{representation_dic.thumb}}{{representation_dic.representation_thumbnail_hash}}" alt="{{representation_dic.id_representation}}" onclick="image(1)">
 					</figure>
 
 						<!-- The Modal -->
 						<div id="myModal1" class="modal" style="display: none;">
 						  <span class="close" onclick="modalclose(1)">&times;</span>
-						  <img class="modal-content" id="modalimg1" src="{{representation_dic.medium}}{{representation_dic.representation_filename}}" alt="{{representation_dic.id_representation}}">
+						  <img class="modal-content" id="modalimg1" src="{{representation_dic.medium}}{{representation_dic.representation_filename_hash}}" alt="{{representation_dic.id_representation}}">
 						  <div class="modal-caption" id="caption1"><a href="{% url 'entity' representation_dic.id_representation %}">Representation details</a></div>
 						</div>
 				</td>
@@ -72,17 +72,17 @@
 			</tr>
 			{% endif %}
 
-			{% if representation_dic.collection_object != null %}
+			{% if representation_dic.collection_fulltitle != null %}
 			<tr>
 				<th>Source</th>
-				<td>{{representation_dic.collection_object.collection_fulltitle}}</td>
+				<td>{{representation_dic.collection_fulltitle}}</td>
 			</tr>
 			{% endif %}
 
-			{% if representation_dic.rights_object != null %}
+			{% if representation_dic.rightsholder != null %}
 			<tr>
 				<th>Rights Holder</th>
-				<td>{{representation_dic.rights_object}}</td>
+				<td>{{representation_dic.rightsholder}}</td>
 			</tr>
 			{% endif %}
 
@@ -147,49 +147,49 @@
 		<div>
 			<table id="entity2" style="display:none;">
 				<tr>
-					<th colspan="2"><h4><a class="headingbtn" href="{% url 'entity' representation_dic.item.id_item %}">Item details</a></h4></td>
+					<th colspan="2"><h4><a class="headingbtn" href="{% url 'entity' representation_dic.id_item %}">Item details</a></h4></td>
 				</tr>
 				<tr>
 					<th class="indent">Reference <a class="help" href="{% url 'entity' digisig_entity_number=10001567 %}" target="_blank"><i class="fas fa-question-circle"></i></a></th>
-					<td>{{representation_dic.item.fk_repository}} {{representation_dic.item.shelfmark}}</td>
+					<td>{{representation_dic.repository_fulltitle}} {{representation_dic.shelfmark}}</td>
 				</tr>
 
-				{% if representation_dic.event.repository_startdate != null %}
+				{% if representation_dic.object_startdate_repository != null %}
 				<tr>
 					<th class="indent">Date (Repository)</th>
 					<td>
-						{% if representation_dic.event.fk_dateapprox_repository_start != null %}
-							{{representation_dic.event.fk_dateapprox_repository_start}}
+						{% if representation_dic.object_startdate_repository_approx != null %}
+							{{representation_dic.object_startdate_repository_approx}}
 						{% endif %}
 
-						{{representation_dic.event.repository_startdate}}
+						{{representation_dic.object_startdate_repository}}
 						
-						{% if representation_dic.event.repository_enddate != null %}
+						{% if representation_dic.object_enddate_repository != null %}
 							- 
-							{% if representation_dic.event.fk_dateapprox_repository_end != null %}
-								{{representation_dic.event.fk_dateapprox_repository_end}}
+							{% if representation_dic.object_enddate_repository_approx != null %}
+								{{representation_dic.object_enddate_repository_approx}}
 							{% endif %}
-						{{representation_dic.event.repository_enddate}}
+						{{representation_dic.object_enddate_repository}}
 						{% endif %}
 					</td>
 				</tr>
 				{% endif %}
 
-				{% if representation_dic.event.startdate != null %}
+				{% if representation_dic.object_startdate != null %}
 				<tr>
 					<th class="indent">Date (Digisig)</th>
 					<td>
-						{{representation_dic.event.startdate}}{% if representation_dic.event.enddate != null %} - {{representation_dic.event.enddate}}{% endif %}
+						{{representation_dic.object_startdate}}{% if representation_dic.object_enddate != null %} - {{representation_dic.object_enddate}}{% endif %}
 					</td>
 				</tr>
 				{% endif %}
 
-				{% for region in representation_dic.region_objectset %}
+				{% if representation_dic.region_label %}
 				<tr>
 					<th class="indent">Region</th>
-					<td>{{region.region_label}}</td>
+					<td>{{representation_dic.region_label}}</td>
 				</tr>
-				{% endfor %}
+				{% endif %}
 			</table>
 		</div>
 	</div>
@@ -213,14 +213,14 @@
 					<th class="indent">Type</th>
 					<td>{{representation.fk_representation_type}}</td>
 					<td rowspan="3"> 
-					{% if representation.representation_thumbnail != null %}
+					{% if representation.representation_thumbnail_hash != null %}
 						<figure>
-							<img class="modalimage" id="modalimagebase{{forloop.counter}}" src="{{representation.fk_connection}}{{representation.representation_thumbnail}}" alt="{{representation.id_representation}}" onclick="image({{forloop.counter}})">
+							<img class="modalimage" id="modalimagebase{{forloop.counter}}" src="{{representation.fk_connection}}{{representation.representation_thumbnail_hash}}" alt="{{representation.id_representation}}" onclick="image({{forloop.counter}})">
 						</figure>
 						<!-- The Modal -->
 						<div id="myModal1" class="modal" style="display: none;">
 						  <span class="close" onclick="modalclose({{forloop.counter}})">&times;</span>
-						  <img class="modal-content" id="modalimg1" src="{{representation.fk_connection}}{{representation.representation_filename}}" alt="{{representation.id_representation}}">
+						  <img class="modal-content" id="modalimg1" src="{{representation.fk_connection}}{{representation.representation_filename_hash}}" alt="{{representation.id_representation}}">
 						  <div class="modal-caption" id="caption1"><a href="{% url 'entity' representation.id_representation %}">{{representation.id_representation}}</a></div>
 						</div>
 					{% endif %}

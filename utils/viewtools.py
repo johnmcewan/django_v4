@@ -2029,11 +2029,11 @@ def representationmetadata(representation_case):
 	representation_dic["entity_type"] = int(digisigentity[7:])
 
 	#what type of image? (Photograph, RTI....)
-	representation_dic["representation_type"] = representation_case.fk_representation_type
+	representation_dic["representation_type"] = representation_case.fk_representation_type.representation_type
 
 	#where is the image stored?
 	connection = representation_case.fk_connection
-	representation_dic["connection_object"] = representation_case.fk_connection
+	#representation_dic["connection_object"] = representation_case.fk_connection
 
 	if representation_case.fk_representation_type.pk_representation_type == 2:
 		print ("found RTI:", representation_case.id_representation)
@@ -2045,10 +2045,13 @@ def representationmetadata(representation_case):
 		except:
 			print ("An exception occurred in fetching representation case for the thumbnail of the RTI", representation_dic)
 
-	representation_dic["thumb"] = connection.thumb
-	representation_dic["representation_thumbnail"] = representation_case.representation_thumbnail_hash 
-	representation_dic["medium"] = connection.medium
-	representation_dic["representation_filename"] = representation_case.representation_filename_hash 
+	#basic info for displaying image
+	representation_dic = representation_fetchinfo(representation_dic, representation_case)
+
+	# representation_dic["thumb"] = connection.thumb
+	# representation_dic["representation_thumbnail"] = representation_case.representation_thumbnail_hash 
+	# representation_dic["medium"] = connection.medium
+	# representation_dic["representation_filename"] = representation_case.representation_filename_hash 
 
 	#image dimensions
 	representation_dic["width"] = representation_case.width
@@ -2072,11 +2075,17 @@ def representationmetadata(representation_case):
 	#when was it made?
 	representation_dic["datecreated"] = representation_case.representation_datecreated
 
-	#where does it come from?
-	#representation_dic["collection_object"] = representation_case.fk_collection
+	try:
+		#where does it come from?
+		representation_dic["collection_fulltitle"] = representation_case.fk_collection.collection_fulltitle
+	except:
+		print ("no collection")
 
-	#what rights?
-	#representation_dic["rights_object"] = representation_case.fk_rightsholder
+	try:
+		#what rights?
+		representation_dic["rightsholder"] = representation_case.fk_rightsholder.rightsholder
+	except:
+		print ("no rights")
 
 	#what other representations are there of the targetobject?
 	representation_objectset = Representation.objects.filter(
@@ -2087,7 +2096,9 @@ def representationmetadata(representation_case):
 		representation_dic["totalrows"] = representation_objectset.count()
 		representation_dic["representation_objectset"] = {} # Initialize the dictionary
 		for r_extra in representation_objectset:
-			representation_dic["representation_objectset"][r_extra.id_representation] = [r_extra.id_representation]
+			extra_dic = {}
+			extra_dic = representation_fetchinfo(extra_dic, r_extra)
+			representation_dic["representation_objectset"][r_extra.id_representation] = extra_dic
 
 	return (representation_dic)
 
@@ -2125,27 +2136,40 @@ def representationmetadata_part(representation_case, representation_dic):
 	try:
 		part = get_object_or_404(Part, id_part=representation_case.fk_digisig)
 
+		try:			
+			item = part.fk_item
+			representation_dic["id_item"] = item.id_item
+			representation_dic["main_title"] = str(item.fk_repository.repository_fulltitle) + " " + str(item.shelfmark)
+			representation_dic["repository_fulltitle"] = str(item.fk_repository.repository_fulltitle)
+			representation_dic["shelfmark"] = str (item.shelfmark)
+		except:
+			print ("An exception occurred in item")
+
+		try:
+			event = part.fk_event
+			representation_dic["object_startdate"] = event.startdate
+			representation_dic["object_enddate"] = event.enddate
+			representation_dic["object_startdate_repository"] = event.repository_startdate
+			representation_dic["object_enddate_repository"] = event.repository_enddate
+			representation_dic["object_startdate_repository_approx"] = event.fk_dateapprox_repository_start.approximation_temporal
+			representation_dic["object_enddate_repository_approx"] = event.fk_dateapprox_repository_end.approximation_temporal
+
+			try:
+				region_objectset = Region.objects.filter( 
+					location__locationname__locationreference__fk_locationstatus=1, 
+					location__locationname__locationreference__fk_event=part.fk_event)
+				## not actually taking into account the possibility of multiple regions.... 5/1/2025
+				for r in region_objectset:
+					representation_dic["region_label"] = region_objectset.region_label
+			except:
+				print ("An exception occurred in region information")
+
+		except:
+			print ("An exception occurred in event")
+
 	except:
 		print ("An exception occurred in the part record")
 
-	try:			
-		item = part.fk_item
-		representation_dic["item"] = item
-		representation_dic["event"] = part.fk_event
-		representation_dic["main_title"] = str(item.fk_repository) + " " + str (item.shelfmark)
-		representation_dic["repository"] = str(item.fk_repository)
-		representation_dic["shelfmark"] = str (item.shelfmark)
-
-	except:
-		print ("An exception occurred in item and event")
-
-	try:
-		region_objectset = Region.objects.filter( 
-			location__locationname__locationreference__fk_locationstatus=1, 
-			location__locationname__locationreference__fk_event=part.fk_event)
-		representation_dic["region_objectset"] = region_objectset
-	except:
-		print ("An exception occurred in region information")
 
 	return(representation_dic)
 
@@ -2587,26 +2611,26 @@ def sealdescription_displaysetgenerate(sealdescription_object):
 ## find seal manifestations and optionally limit to those associated with a particular place
 @sync_to_async
 def manifestation_search(digisig_entity_number=None, placecall=False):
-    manifestation_object = Manifestation.objects.all().select_related(
-        'fk_face__fk_seal',
-        'fk_support__fk_part__fk_item__fk_repository',
-        'fk_support__fk_number_currentposition',
-        'fk_support__fk_attachment',
-        'fk_support__fk_supportstatus',
-        'fk_support__fk_nature',
-        'fk_imagestate',
-        'fk_position',
-        'fk_support__fk_part__fk_event'
-    ).order_by('id_manifestation').prefetch_related(
-        Prefetch('fk_manifestation', queryset=Representation.objects.filter(primacy=1))
-    )
+	manifestation_object = Manifestation.objects.all().select_related(
+		'fk_face__fk_seal',
+		'fk_support__fk_part__fk_item__fk_repository',
+		'fk_support__fk_number_currentposition',
+		'fk_support__fk_attachment',
+		'fk_support__fk_supportstatus',
+		'fk_support__fk_nature',
+		'fk_imagestate',
+		'fk_position',
+		'fk_support__fk_part__fk_event'
+	).order_by('id_manifestation').prefetch_related(
+		Prefetch('fk_manifestation', queryset=Representation.objects.filter(primacy=1))
+	)
 
-    if placecall is True:
-        manifestation_object = manifestation_object.filter(
-            fk_support__fk_part__fk_event__fk_event_locationreference__fk_locationname__fk_location__id_location=digisig_entity_number
-        ).distinct()
+	if placecall is True:
+		manifestation_object = manifestation_object.filter(
+			fk_support__fk_part__fk_event__fk_event_locationreference__fk_locationname__fk_location__id_location=digisig_entity_number
+		).distinct()
 
-    return (manifestation_object)
+	return (manifestation_object)
 
 
 
@@ -2778,6 +2802,12 @@ async def manifestation_dataassemble(manifestation_pageobject):
 @sync_to_async
 def seal_displaysetgenerate(manifestation_display_dic, description_set, digisig_entity_number):
 
+	seal_info = {}
+	seal_info['sealdescription'] = description_set
+
+	obverse = {}
+	reverse = {}
+
 	face_set = Face.objects.filter(
 		fk_seal=digisig_entity_number).select_related(
 		'fk_seal__fk_individual_realizer').select_related(
@@ -2805,11 +2835,6 @@ def seal_displaysetgenerate(manifestation_display_dic, description_set, digisig_
 		'fk_seal__fk_individual_realizer__fk_descriptor_descriptor3__descriptor_modern',
 		'fk_seal__date_origin',
 		'fk_class')
-
-	seal_info = {}
-	obverse = {}
-	reverse = {}
-
 
 	for f in face_set:
 		if f['fk_faceterm__faceterm'] == "Obverse":			
@@ -2851,7 +2876,6 @@ def seal_displaysetgenerate(manifestation_display_dic, description_set, digisig_
 	seal_info['manifestation_set'] = manifestation_display_dic
 	seal_info['obverse'] = obverse
 	seal_info['reverse'] = reverse
-	seal_info['sealdescription'] = description_set
 	
 	return (seal_info)
 
@@ -2864,10 +2888,10 @@ def manifestation_searchsetgenerate(searchvalue, searchtype=None):
 
 	# a group of seal manifestations (either based on seal or manifestation set)
 	elif searchtype == "seal":
-	 	manifestation_set = Manifestation.objects.filter(fk_face__fk_seal=searchvalue)	 	
+		manifestation_set = Manifestation.objects.filter(fk_face__fk_seal=searchvalue)	 	
 	
 	else:
-		manifestation_set = Manifestation.objects.filter(id_manifestation__in=searchvalue)
+		manifestation_set = Manifestation.objects.filter(id_manifestation__in=searchvalue.object_list)
 
 	manifestation_set = manifestation_set.select_related(
 		'fk_support__fk_part__fk_item__fk_repository',
@@ -2881,6 +2905,7 @@ def manifestation_searchsetgenerate(searchvalue, searchtype=None):
 		'fk_face__fk_seal'
 	).order_by('id_manifestation').values(
 		'id_manifestation',
+		'fk_support',
 		'fk_position',
 		'fk_face',
 		'fk_face__fk_seal',
@@ -2953,6 +2978,7 @@ def manifestation_displaysetgenerate(manifestation_set, representation_set):
 	listofevents = []
 	description_set = {}
 
+
 	#the default fallback
 	r_set = Representation.objects.values('fk_connection__thumb',
 		'fk_connection__medium',
@@ -2961,9 +2987,9 @@ def manifestation_displaysetgenerate(manifestation_set, representation_set):
 		'id_representation').get(id_representation=12204474)
 
 	for e in manifestation_set:
-
 		manifestation_dic = {}
 		manifestation_dic["id_manifestation"] = e['id_manifestation']
+		manifestation_dic["fk_support"] = e['fk_support']
 		manifestation_dic["fk_position"] = e['fk_position']
 		manifestation_dic["id_seal"] = e['fk_face__fk_seal']
 		manifestation_dic['id_individual'] = e['fk_face__fk_seal__fk_individual_realizer']
@@ -3007,15 +3033,17 @@ def manifestation_displaysetgenerate(manifestation_set, representation_set):
 				manifestation_dic["id_representation"] = r['id_representation']
 					
 		manifestation_display_dic[e['id_manifestation']] = manifestation_dic
-		description_set[e['fk_face__fk_seal']] = {}
+		#description_set[e['fk_face__fk_seal']] = {}
 		listofseals.append(e['fk_face__fk_seal'])
 		listofevents.append(e['fk_support__fk_part__fk_event'])
 
-	return(manifestation_display_dic, description_set, listofseals, listofevents)
+	manifestation_display_dic['totalrows'] = manifestation_set.count()
+
+	return(manifestation_display_dic, listofseals, listofevents)
 
 
 @sync_to_async
-def sealdescription_displaysetgenerate2(listofseals, description_set):
+def sealdescription_displaysetgenerate2(listofseals):
 
 ## gather the sealdescription references
 	sealdescription_set = Sealdescription.objects.filter(
@@ -3025,23 +3053,22 @@ def sealdescription_displaysetgenerate2(listofseals, description_set):
 		'sealdescription_identifier',
 		'fk_seal')
 
-	description_set = {}
+	seal_set = {}
+
+	for l in listofseals:
+		seal_set[l] = {}
 
 	for s in sealdescription_set:
 		description = {}
 		description["sealdescription_id"] = s['id_sealdescription']
 		description["collection"] = s['fk_collection__collection_shorttitle']
 		description["identifier"] = s['sealdescription_identifier']
-		description["fk_seal"] = s['fk_seal']
+		sealvalue = s['fk_seal']
+		description["fk_seal"] = sealvalue
 
-		### if we only have descriptions for one seal....
-		if len(sealdescription_set) == 1:
-			description_set[s['id_sealdescription']] = description
-	
-		else:  
-			description_set[description["fk_seal"]][s['id_sealdescription']] = description
+		seal_set[sealvalue][s['id_sealdescription']] = description
 
-	return(description_set)
+	return(seal_set)
 
 @sync_to_async
 def location_displaysetgenerate(listofevents):
@@ -3081,6 +3108,19 @@ def finalassembly_displaysetgenerate(manifestation_display_dic, location_set, de
 	
 	return(manifestation_display_dic)
 
+
+async def manifestation_construction(manifestation_pageobject):
+	"""
+	Function prepares the data for the seal search (manifestation) page
+	"""
+	representation_set = await representationsetgenerate(manifestation_pageobject)
+	manifestation_set = await manifestation_searchsetgenerate(manifestation_pageobject)
+	manifestation_display_dic, listofseals, listofevents = await manifestation_displaysetgenerate(manifestation_set, representation_set)
+	description_set = await sealdescription_displaysetgenerate2(listofseals)
+	location_set = await location_displaysetgenerate(listofevents)
+	manifestation_displayset = await finalassembly_displaysetgenerate(manifestation_display_dic, location_set, description_set)
+
+	return manifestation_displayset
 
 
 @sync_to_async
@@ -3311,7 +3351,7 @@ def	sealdescription_fetchrepresentation(sealdescription_object):
 	try:
 		representation_set = Representation.objects.select_related(
 			'fk_connection').get(
-			fk_digisig=sealdescription_object.id_sealdescription, primacy=1)
+			fk_sealdescription=sealdescription_object.id_sealdescription, primacy=1)
 
 	except:
 		print ("no image available for:", sealdescription_object)
