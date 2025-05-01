@@ -2014,10 +2014,19 @@ def referencecollectindividual(reference_set):
 	return(reference_set)
 
 ## function to collect all the possible information you would need to present a representation
-def representationmetadata(representation_case, representation_dic):
+@sync_to_async
+def representationmetadata(representation_case):
 
+	representation_dic = {}
+
+	#defaults to stop some forms from breaking
+	representation_dic["main_title"] = "Title"
 	representation_dic["representation_object"] = representation_case
 	representation_dic["id_representation"] = representation_case.id_representation
+
+	#what type of entity is depicted? (Manifestation, Document....)
+	digisigentity = str(representation_case.fk_digisig)
+	representation_dic["entity_type"] = int(digisigentity[7:])
 
 	#what type of image? (Photograph, RTI....)
 	representation_dic["representation_type"] = representation_case.fk_representation_type
@@ -2047,7 +2056,7 @@ def representationmetadata(representation_case, representation_dic):
 
 	#who made it?
 	creator_object = representation_case.fk_contributor_creator
-	representation_dic["contributorcreator_object"] = creator_object
+	# representation_dic["contributorcreator_object"] = creator_object
 	try:
 		creator_phrase = creator_object.name_first + " " + creator_object.name_middle + " " + creator_object.name_last
 	except:
@@ -2064,19 +2073,25 @@ def representationmetadata(representation_case, representation_dic):
 	representation_dic["datecreated"] = representation_case.representation_datecreated
 
 	#where does it come from?
-	representation_dic["collection_object"] = representation_case.fk_collection
+	#representation_dic["collection_object"] = representation_case.fk_collection
 
 	#what rights?
-	representation_dic["rights_object"] = representation_case.fk_rightsholder
+	#representation_dic["rights_object"] = representation_case.fk_rightsholder
 
 	#what other representations are there of the targetobject?
-	representation_objectset = Representation.objects.filter(fk_digisig=representation_case.fk_digisig).exclude(id_representation=representation_case.id_representation)
-	representation_dic["representation_objectset"] = representation_objectset
-	representation_dic["totalrows"] = representation_objectset.count
+	representation_objectset = Representation.objects.filter(
+		fk_digisig=representation_case.fk_digisig).exclude(
+		id_representation=representation_case.id_representation)
+
+	if representation_objectset.count() > 0:
+		representation_dic["totalrows"] = representation_objectset.count()
+		representation_dic["representation_objectset"] = {} # Initialize the dictionary
+		for r_extra in representation_objectset:
+			representation_dic["representation_objectset"][r_extra.id_representation] = [r_extra.id_representation]
 
 	return (representation_dic)
 
-
+@sync_to_async
 def representationmetadata_manifestation(representation_case, representation_dic):
 
 	manifestation = representation_case.fk_manifestation
@@ -2104,6 +2119,7 @@ def representationmetadata_manifestation(representation_case, representation_dic
 
 	return(representation_dic)
 
+@sync_to_async
 def representationmetadata_part(representation_case, representation_dic):
 
 	try:
@@ -2133,6 +2149,7 @@ def representationmetadata_part(representation_case, representation_dic):
 
 	return(representation_dic)
 
+@sync_to_async
 def representationmetadata_sealdescription(representation_case, representation_dic):
 
 	#Seal Description
@@ -2275,24 +2292,6 @@ def item_displaysetgenerate(item_pageobject):
 		representation_dic["id_representation"] = r['id_representation'] 
 		item_set[targetitem]["part"][targetpart].update({"representation": representation_dic})
 
-	# partset = []
-
-	# for p in part_object.object_list:
-	# 	partset.append(p.id_part)
-
-	# for i in part_object:
-	# 	part_dic = {}
-	# 	part_dic["id_item"] = i.fk_item.id_item
-	# 	part_dic["shelfmark"] = i.fk_item.shelfmark
-	# 	part_dic["repository"] = i.fk_item.fk_repository.repository_fulltitle
-	# 	itemset[i.id_part] = part_dic
-
-	# for r in representation_part:
-	# 	connection = r.fk_connection
-	# 	itemset[r.fk_digisig]["connection"] = connection.thumb
-	# 	itemset[r.fk_digisig]["medium"] = r.representation_filename
-	# 	itemset[r.fk_digisig]["thumb"] = r.representation_thumbnail_hash
-	# 	itemset[r.fk_digisig]["id_representation"] = r.id_representation 
 
 	return(item_set)
 
@@ -2635,7 +2634,7 @@ def sealsearch_actor(seal_object, digisig_entity_number):
 	return(manifestation_set)
 
 @sync_to_async
-def representation_information(digisig_entity_number):
+def representation_queryformulate(digisig_entity_number):
 
 	representation_object = Representation.objects.select_related(
 		'fk_manifestation').select_related(
@@ -2657,29 +2656,9 @@ def representation_information(digisig_entity_number):
 		'fk_manifestation__fk_face__fk_seal__fk_individual_realizer__fk_descriptor_descriptor3').get(
 		id_representation=digisig_entity_number)
 
-	representation_dic = {}
+	return (representation_object)
 
-	#what type of entity is depicted? (Manifestation, Document....)
-	digisigentity = str(representation_object.fk_digisig)
-	representation_dic["entity_type"] = int(digisigentity[7:])
 
-	#defaults to stop some forms from breaking
-	representation_dic["main_title"] = "Title"
-	# representation_dic["manifestation_object"] = get_object_or_404(Manifestation, id_manifestation=10000002)
-	# representation_dic["item"] = get_object_or_404(Item, id_item=10545090)
-
-	representation_dic = representationmetadata(representation_object, representation_dic)
-
-	if representation_dic["entity_type"] == 2:
-		representation_dic = representationmetadata_manifestation(representation_object, representation_dic)
-
-	if representation_dic["entity_type"] == 3:
-		representation_dic = representationmetadata_sealdescription(representation_object, representation_dic)
-
-	if representation_dic["entity_type"] == 8:
-		representation_dic = representationmetadata_part(representation_object, representation_dic)
-
-	return (representation_dic)
 
 
 @sync_to_async

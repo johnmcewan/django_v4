@@ -671,81 +671,6 @@ async def search(request, searchtype):
 
 
 
-		# if request.method == "POST":
-		# 	form = PeopleForm(request.POST)
-		# 	if form.is_valid():
-		# 		# challengeurl(request, searchtype, form)
-		# 		qname = form.cleaned_data['name']   
-		# 		qpagination = form.cleaned_data['pagination']
-		# 		qgroup = form.cleaned_data['group']
-		# 		qclass = form.cleaned_data['personclass']
-		# 		qorder = form.cleaned_data['personorder']
-
-		# 		if qgroup.isdigit():
-		# 			qgroup = int(qgroup)
-		# 			if int(qgroup) == 2: individual_object = individual_object.filter(corporateentity=True)
-		# 			if int(qgroup) == 1: individual_object = individual_object.filter(corporateentity=False)
-
-		# 		if len(qname) > 0:
-		# 			individual_object = individual_object.filter(
-		# 				Q(group_name__icontains=qname) | Q(descriptor_name__icontains=qname) | Q(descriptor1__icontains=qname) | Q(descriptor2__icontains=qname) | Q(descriptor3__icontains=qname)
-		# 				)
-
-		# 		if qclass.isdigit():
-		# 			if int(qclass) > 0:
-		# 				qclass = int(qclass)
-		# 				individual_object = individual_object.filter(fk_group_class=qclass)
-
-		# 		if qorder.isdigit():
-		# 			if int(qorder) > 0:
-		# 				qorder = int(qorder)
-		# 				individual_object = individual_object.filter(fk_group_order=qorder)
-
-		# 		form = PeopleForm(request.POST)
-
-		# else:
-		# 	form = PeopleForm()
-		# 	qpagination = 1
-
-		# individual_object, totalrows, totaldisplay, qpagination = defaultpagination(individual_object, qpagination) 
-
-		# pagecountercurrent = qpagination
-		# pagecounternext = qpagination + 1
-		# pagecounternextnext = qpagination +2		
-
-
-		# individual_set = {}
-
-		# for i in individual_object:
-		# 	individual_info = {}
-		# 	individual_info['actor_name'] = namecompiler(i)
-		# 	individual_info['id_individual'] = i.id_individual
-
-		# 	individual_set[i.id_individual] = individual_info
-
-
-
-		# individual_object = individual_object.annotate(fullname=Concat('fk_group','fk_descriptor_title','fk_descriptor_name','fk_descriptor_prefix1','fk_descriptor_descriptor1',
-		# 	,'fk_separator_1','fk_descriptor_prefix2','fk_descriptor_descriptor2','fk_descriptor_prefix3','fk_descriptor_descriptor3'))
-
-		# print (individual_set)
-
-	# this code prepares the list of links to associated seals for each individual
-		# individualtestlist = individual_object.values_list("id_individual", flat=True)
-		# Seal
-
-		# sealindividual = []
-		# for e in individual_object:
-		# 	testvalue = e.id_individual
-		# 	testseal = Seal.objects.filter(
-		# 		fk_individual_realizer=testvalue)
-
-		# 	for f in testseal:
-		# 		current_id_seal = f.id_seal
-		# 		sealindividual.append((testvalue, current_id_seal))
-
-
-
 ### Search Item
 
 	if searchtype == "items":
@@ -790,112 +715,6 @@ async def search(request, searchtype):
 		template = loader.get_template('digisig/search_item.html')
 		return HttpResponse(template.render(context, request))
 
-
-
-
-
-
-		# #default values in case there is nothing specific in form or in else clause
-		# repository = 0
-		# series = 0
-		# shelfmark = ""
-		# searchphrase = ""
-		# qpagination = 1
-
-		# if request.method == "POST":
-		# 	form = ItemForm(request.POST)
-
-		# 	if form.is_valid():
-		# 		# challengeurl(request, searchtype, form)
-		# 		if form.cleaned_data['repository'].isdigit(): repository = int(form.cleaned_data['repository']) 
-		# 		if form.cleaned_data['series'].isdigit(): series = int(form.cleaned_data['series'])
-		# 		if len(form.cleaned_data['shelfmark']) > 0: shelfmark = form.cleaned_data['shelfmark']
-		# 		if len(form.cleaned_data['searchphrase']) > 0: searchphrase = form.cleaned_data['searchphrase']
-		# 		qpagination = int(form.cleaned_data['pagination'])
-
-		# else:
-		# 	form = ItemForm()
-		# 	repository = 26
-		# 	series = 347
-		# 	form.initial["repository"] = 26
-		# 	form.initial["series"] = 347
-
-		# # code prepares the array of series and repositories to pass to the frontend
-		# series_object= seriesset()
-
-		# # itemset, Repositorycases, Seriescases, Shelfmarkcases, Phrasecases, pagecountercurrent, pagecounternext, pagecounternextnext, totaldisplay, totalrows \
-		# # = itemsearch(repository, series, shelfmark, searchphrase, pagination)
-
-		# itemset = {}
-		# Repositorycases = 0
-		# Seriescases = 0
-		# Shelfmarkcases = 0
-		# Phrasecases = 0
-
-		# part_object = Part.objects.all().order_by(
-		# 	"fk_item__fk_repository", "fk_item__fk_series", "fk_item__classmark_number3", "fk_item__classmark_number2", "fk_item__classmark_number1").select_related(
-		# 	'fk_item__fk_repository')
-
-		# # take the series in preference to the repository
-
-		# if series > 0:
-		# 	part_object = part_object.filter(fk_item__fk_series=series)
-
-		# elif repository > 0:
-		# 	part_object = part_object.filter(fk_item__fk_repository=repository)
-
-		# else:
-		# 	print ("No repository or series specified")
-
-		# if len(shelfmark) > 0:
-		# 	part_object = part_object.filter(fk_item__shelfmark__icontains=shelfmark)
-
-		# if len(searchphrase) > 0:
-		# 	part_object = part_object.filter(part_description__icontains=searchphrase)
-
-		# part_object, totalrows, totaldisplay, qpagination = defaultpagination(part_object, qpagination)
-		# pagecountercurrent = qpagination 
-		# pagecounternext = qpagination + 1
-		# pagecounternextnext = qpagination +2
-
-		# partset = []
-		# for p in part_object.object_list:
-		# 	partset.append(p.id_part)
-
-		# representation_part = Representation.objects.filter(fk_digisig__in=partset).select_related('fk_connection')
-
-		# for i in part_object:
-		# 	part_dic = {}
-		# 	part_dic["id_item"] = i.fk_item.id_item
-		# 	part_dic["shelfmark"] = i.fk_item.shelfmark
-		# 	part_dic["repository"] = i.fk_item.fk_repository.repository_fulltitle
-		# 	itemset[i.id_part] = part_dic
-
-		# for r in representation_part:
-		# 	connection = r.fk_connection
-		# 	itemset[r.fk_digisig]["connection"] = connection.thumb
-		# 	itemset[r.fk_digisig]["medium"] = r.representation_filename
-		# 	itemset[r.fk_digisig]["thumb"] = r.representation_thumbnail_hash
-		# 	itemset[r.fk_digisig]["id_representation"] = r.id_representation 
-
-		# context = {
-		# 	'pagetitle': pagetitle,
-		# 	'itemset': itemset,
-		# 	'totalrows': totalrows,
-		# 	'totaldisplay': totaldisplay,
-		# 	'form': form,
-		# 	# 'Repositorycases': Repositorycases,
-		# 	# 'Seriescases': Seriescases,
-		# 	# 'Shelfmarkcases': Shelfmarkcases,
-		# 	'series_object': series_object,
-		# 	# 'Phrasecases': Phrasecases,
-		# 	'pagecountercurrent': pagecountercurrent,
-		# 	'pagecounternext': pagecounternext,
-		# 	'pagecounternextnext': pagecounternextnext,
-		# 	}
-
-		# template = loader.get_template('digisig/search_item.html')
-		# return HttpResponse(template.render(context, request))
 
 ### Search Seals
 
@@ -1114,7 +933,6 @@ async def information(request, infotype):
 
 		change_object = await information_changes() 
 
-		# Changes.objects.all().order_by('-change_date')
 		context = {
 			'pagetitle': pagetitle,
 			'change_object': change_object,
@@ -1280,91 +1098,6 @@ async def information(request, infotype):
 
 
 
-	##### not sure what this is -- but an experiment and probably defunct
-	# if infotype == "machinelearning_info":
-
-	# 	pagetitle = 'ML'
-
-	# 	time1 = gettime(start_time)
-
-	# 	url = os.path.join(settings.STATIC_ROOT, 'ml/ml_faceobjectset')
-	# 	with open(url, 'rb') as file:	
-	# 		face_objectset = pickle.load(file)
-
-	# 	time1b = gettime(start_time)
-
-	# 	facecount= face_objectset.count()
-
-	# 	time1c = gettime(start_time)
-
-	# 	## data for class distribution
-	# 	data2, labels2 = classdistributionv2(face_objectset)
-
-	# 	time2 = gettime(start_time)
-
-	# 	## data for temporal distribution
-	# 	seallist = face_objectset.values_list("fk_seal", flat=True)
-	# 	time2a = gettime(start_time)
-	# 	sealset = Seal.objects.filter(id_seal__in=seallist)
-	# 	time2b = gettime(start_time)
-	# 	data3, labels3 = datedistribution(sealset)
-
-	# 	data3 = data3[:6]
-	# 	labels3 = labels3[:6]
-
-	# 	time3 = gettime(start_time)
-
-	# 	## data for spatial distribution
-	# 	regiondisplayset = Regiondisplay.objects.filter(
-	# 		region__location__locationname__locationreference__fk_locationstatus=1,
-	# 		region__location__locationname__locationreference__fk_event__part__fk_part__fk_support__fk_face__in=face_objectset
-	# 		).annotate(numregions=Count('region__location__locationname__locationreference'))
-
-	# 	region_dict = mapgenerator3(regiondisplayset)
-
-	# 	time4 = gettime(start_time)
-
-	# 	## data for actor distribution
-	# 	printgroupset = Printgroup.objects.annotate(numcases=Count('fk_printgroup', filter=Q(fk_printgroup__face__in=face_objectset))).order_by('printgroup_order')
-	# 	data5 = []
-	# 	labels5 = []
-
-
-	# 	for g in printgroupset:
-	# 		if (g.numcases > 0):
-	# 			percentagedata = (g.numcases/facecount)*100 
-	# 			# if percentagedata > 1:
-	# 			data5.append(percentagedata)
-	# 			labels5.append(g.printgroup)
-
-
-	# 	time5 = gettime(start_time)
-
-	# 	template = loader.get_template('digisig/machinelearning_info.html')
-
-	# 	loadtime = gettime(start_time)
-
-	# 	context = {
-	# 		'pagetitle': pagetitle,
-	# 		'face_objectset': face_objectset,
-	# 		'facenumbercount': facecount,
-	# 		'labels2': labels2,
-	# 		'data2': data2,
-	# 		'data3': data3,
-	# 		'labels3': labels3,
-	# 		'region_dict': region_dict,
-	# 		'data5': data5,
-	# 		'labels5': labels5,
-	# 		'loadtime': loadtime,
-	# 		}
-
-	# 	return HttpResponse(template.render(context, request))
-
-
-
-
-
-
 
 
 ############################## ENTITY #########################
@@ -1433,8 +1166,6 @@ async def actor_page(request, digisig_entity_number):
 
 	# list of references to the actor
 	reference_set = await referenceset_references(digisig_entity_number)
-
-	print ("Here are the references", reference_set)
 
 	context = {
 		'pagetitle': pagetitle,
@@ -1750,7 +1481,6 @@ async def manifestation_page(request, digisig_entity_number):
 
 ############################## Place #############################
 
-
 async def place_page(request, digisig_entity_number):
 
 	template = loader.get_template('digisig/place.html')  
@@ -1769,10 +1499,8 @@ async def place_page(request, digisig_entity_number):
 	else:
 		form = PageCycleForm()
 
-	# place_object = get_object_or_404(Location, id_location=digisig_entity_number)
 	place_object, pagetitle = await place_information(digisig_entity_number)
 
-	# mapdic = await mapgenerator(place_object, 0)
 	mapdic = await mapgenerator(place_object)
 
 	placecall = True
@@ -1833,7 +1561,22 @@ async def representation_page(request, digisig_entity_number):
 	pagetitle = 'Representation'
 	template = loader.get_template('digisig/representation.html')
 
-	representation_dic = await representation_information(digisig_entity_number)
+	representation_object = await representation_queryformulate(digisig_entity_number)
+
+	representation_dic = await representationmetadata(representation_object)
+
+	if representation_dic["entity_type"] == 2:
+		representation_dic = await representationmetadata_manifestation(representation_object, representation_dic)
+
+	if representation_dic["entity_type"] == 3:
+		representation_dic = await representationmetadata_sealdescription(representation_object, representation_dic)
+
+	if representation_dic["entity_type"] == 8:
+		representation_dic = await representationmetadata_part(representation_object, representation_dic)
+
+	return (representation_dic)
+
+	# print(representation_dic) 
 
 	context = {
 		'pagetitle': pagetitle,

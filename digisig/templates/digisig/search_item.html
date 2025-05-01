@@ -108,20 +108,25 @@
 				<a href="{% url 'item_page' digisig_entity_number=item.id_item %}">{{item.repository}}, {{item.shelfmark}}</a>
 			</div>
 			<div>
-				{% if item.connection != null %}
+				{% for key, value in item.part.items %}
+
+				{% if value.representation.connection != null %}
 				<figure>
-					<img class="modalimage" id="modalimagebaseitem{{forloop.counter}}" src="{{item.connection}}{{item.thumb}}" alt="{{item.id_representation}}" onclick="image2({{forloop.counter}}, 'item')">
+					<img class="modalimage" id="modalimagebaseitem{{forloop.counter}}" src="{{value.representation.connection}}{{value.representation.thumb}}" alt="{{value.representation.id_representation}}" onclick="image2({{forloop.counter}}, 'item')">
 				</figure>
 
 				<!-- The Modal -->
 				<div id="myModalitem{{forloop.counter}}" class="modal" style="display: none;">
 				  <span class="close" onclick="modalclose2({{forloop.counter}}, 'item')">&times;</span>
-				  <img class="modal-content" id="modalimgitem{{forloop.counter}}" src="{{item.connection}}{{item.thumb}}" alt="{{item.id_representation}}" loading="lazy">
+				  <img class="modal-content" id="modalimgitem{{forloop.counter}}" src="{{value.representation.connection}}{{value.representation.thumb}}" alt="{{value.representation.id_representation}}" loading="lazy">
 				  <div class="modal-caption" id="captionitem{{forloop.counter}}">
-				  		<a href="{% url 'representation_page' digisig_entity_number=item.id_representation %}">Representation details</a>
+				  		<a href="{% url 'representation_page' digisig_entity_number=value.representation.id_representation %}">Representation details</a>
 				  </div>
 				</div>
 				{% endif %}
+				
+				{% endfor %}
+
 			</div>
 			{% endfor %}
 
