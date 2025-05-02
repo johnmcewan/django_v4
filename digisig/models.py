@@ -445,7 +445,7 @@ class Event(models.Model):
     schoyen = models.SmallIntegerField(blank=True, null=True)
     temp_ranger = models.SmallIntegerField(blank=True, null=True)
     fk_dateapprox_repository_start = models.ForeignKey('Approximation', models.DO_NOTHING, related_name="fk_dateapprox_repository_start", db_column='fk_dateapprox_repository_start', blank=True, null=True)
-    fk_dateapprox_repository_start = models.ForeignKey('Approximation', models.DO_NOTHING, related_name="fk_dateapprox_repository_end", db_column='fk_dateapprox_repository_end', blank=True, null=True)
+    fk_dateapprox_repository_end = models.ForeignKey('Approximation', models.DO_NOTHING, related_name="fk_dateapprox_repository_end", db_column='fk_dateapprox_repository_end', blank=True, null=True)
     class Meta:
         managed = False
         db_table = 'event'

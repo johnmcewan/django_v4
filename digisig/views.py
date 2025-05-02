@@ -320,234 +320,6 @@ async def analyze(request, analysistype):
 		return HttpResponse(template.render(context, request))
 
 
-
-# async def analyze(request, analysistype):
-
-# 	if analysistype == "time":
-
-# 		pagetitle = 'Time'
-
-# 		#default
-# 		qcollection= 30000287
-# 		qmapchoice = None
-# 		qtimechoice = None
-# 		qclasschoice = None
-# 		qsealtypechoice = None
-# 		totalcases = 0
-# 		totalcasesfromperiod = 0
-# 		representedcases = 0
-# 		percenttotal = 0
-# 		mapdic = []
-# 		regiondisplayset = []
-# 		region_dict = []
-# 		mapcounties = []
-# 		location_dict = []
-
-
-# 		form = CollectionForm(request.POST or None)
-# 		form = await collectionform_options(form)
-
-# 		#adjust values if form submitted
-# 		if request.method == 'POST':
-
-# 			if form.is_valid():
-# 			    collection_value = form.cleaned_data.get('collection')
-# 			    qcollection = None
-# 			    if collection_value:
-# 			        try:
-# 			            qcollection = int(collection_value)
-# 			        except ValueError:
-# 			            print(f"Error: '{collection_value}' is not a valid integer for collection.")
-
-# 			    mapchoice_value = form.cleaned_data.get('mapchoice')
-# 			    qmapchoice = None
-# 			    if mapchoice_value:
-# 			        try:
-# 			            qmapchoice = int(mapchoice_value)
-# 			        except ValueError:
-# 			            print(f"Error: '{mapchoice_value}' is not a valid integer for map choice.")
-
-# 			    timechoice_value = form.cleaned_data.get('timechoice')
-# 			    qtimechoice = None
-# 			    if timechoice_value:
-# 			        try:
-# 			            qtimechoice = int(timechoice_value)
-# 			        except ValueError:
-# 			            print(f"Error: '{timechoice_value}' is not a valid integer for time choice.")
-
-# 			    sealtypechoice_value = form.cleaned_data.get('sealtypechoice')
-# 			    qsealtypechoice = None
-# 			    if sealtypechoice_value:
-# 			        try:
-# 			            qsealtypechoice = int(sealtypechoice_value)
-# 			        except ValueError:
-# 			            print(f"Error: '{sealtypechoice_value}' is not a valid integer for seal type choice.")
-
-# 			totalcases, totalcasesfromperiod, totalcollectioncases = await analyzetime_manifestations(qcollection, qtimechoice, qsealtypechoice)
-
-# 			if (qmapchoice == 1):
-
-# 				locationset = await map_locationset(qcollection, qtimechoice, qsealtypechoice)
-# 				if (totalcases > 0):	
-# 					location_dict, center_long, center_lat = await mapgenerator2(locationset)
-# 				representedcases = totalcases
-
-# 			#map counties
-# 			elif (qmapchoice == 2):
-
-# 				placeset = await map_placeset(qcollection, qtimechoice, qsealtypechoice)
-# 				representedcases = await map_placecases(placeset)
-# 				mapcounties = await map_counties(placeset)
-
-# 			else:
-# 				regiondisplayset = await map_regionset(qcollection, qtimechoice, qsealtypechoice)
-# 				region_dict = await mapgenerator3(regiondisplayset)
-# 				representedcases = await map_placecases(regiondisplayset)
-
-# 			if totalcases > 0:
-# 				percenttotal = (representedcases/totalcases)
-# 			else:
-# 				percenttotal = "n/a" 
-
-# 		context = {
-# 			'pagetitle': pagetitle,
-# 			'location_dict': location_dict,
-# 			'counties_dict': mapcounties,
-# 			'region_dict': region_dict,
-# 			'totalcases': totalcases,
-# 			'totalcasesfromperiod': totalcasesfromperiod,
-# 			'representedcases': representedcases,
-# 			'percenttotal': percenttotal,
-# 			'form': form,
-# 			}
-
-# 		template = loader.get_template('digisig/analysis_time.html')
-# 		return HttpResponse(template.render(context, request))
-
-
-		# form = CollectionForm(initial={'collection': qcollection, 'mapchoice': qmapchoice, 'timechoice': qtimechoice, 'sealtypechoice': qsealtypechoice})
-
-		# totalcases, totalcasesfromperiod = await analyzetime_manifestations(qcollection, qtimechoice, qsealtypechoice)
-
-		# if (qmapchoice == 1):
-
-		# 	locationset = await map_locationset(qcollection, qtimechoice, qsealtypechoice)
-
-			# if (qcollection == 30000287):
-			# 	locationset = Location.objects.filter(
-			# 		Q(locationname__locationreference__fk_locationstatus=1),
-			# 		Q(locationname__locationreference__fk_event__part__fk_part__fk_support__fk_face__fk_seal__fk_timegroupc=qtimechoice),
-			# 		Q(locationname__locationreference__fk_event__part__fk_part__fk_support__fk_face__fk_seal__fk_sealtype=qsealtypechoice)
-			# 		).annotate(count=Count('locationname__locationreference__fk_event__part__fk_part__fk_support'))
-
-			# else:
-			# 	locationset = Location.objects.filter(
-			# 		Q(locationname__locationreference__fk_event__part__fk_part__fk_support__fk_face__fk_seal__sealdescription__fk_collection=qcollection),
-			# 		Q(locationname__locationreference__fk_locationstatus=1),
-			# 		Q(locationname__locationreference__fk_event__part__fk_part__fk_support__fk_face__fk_seal__fk_timegroupc=qtimechoice),
-			# 		Q(locationname__locationreference__fk_event__part__fk_part__fk_support__fk_face__fk_seal__fk_sealtype=qsealtypechoice)
-			# 		).annotate(count=Count('locationname__locationreference__fk_event__part__fk_part__fk_support'))
-
-		# 	if (totalcases > 0):	
-		# 		location_dict, center_long, center_lat = await mapgenerator2(locationset)
-
-		# 	representedcases = totalcases
-
-		# #map counties
-		# elif (qmapchoice == 2):
-
-		# 	placeset = await map_placeset(qcollection, qtimechoice, qsealtypechoice)
-
-			# #if collection is set then limit the scope of the dataset
-			# if (qcollection == 30000287):
-			# 	#data for map counties
-			# 	placeset = Region.objects.filter(fk_locationtype=4, 
-			# 		location__locationname__locationreference__fk_locationstatus=1,
-			# 		location__locationname__locationreference__fk_event__part__fk_part__fk_support__fk_face__fk_seal__fk_timegroupc=qtimechoice,
-			# 		location__locationname__locationreference__fk_event__part__fk_part__fk_support__fk_face__fk_seal__fk_sealtype=qsealtypechoice
-			# 		).annotate(numplaces=Count('location__locationname__locationreference__fk_event__part__fk_part__fk_support')) 
-
-			# else:
-			# 	#data for map counties
-			# 	placeset = Region.objects.filter(fk_locationtype=4, 
-			# 		location__locationname__locationreference__fk_locationstatus=1,
-			# 		location__locationname__locationreference__fk_event__part__fk_part__fk_support__fk_face__fk_seal__fk_timegroupc=qtimechoice,
-			# 		location__locationname__locationreference__fk_event__part__fk_part__fk_support__fk_face__fk_seal__fk_sealtype=qsealtypechoice, 
-			# 		location__locationname__locationreference__fk_event__part__fk_part__fk_support__fk_face__fk_seal__sealdescription__fk_collection=qcollection
-			# 		).annotate(numplaces=Count('location__locationname__locationreference'))
-
-			# representedcases = await map_placecases(placeset)
-
-			# placecases = 0
-			# for p in placeset:
-			# 	placecases = placecases + p.numplaces
-
-			# representedcases = placecases
-
-			# mapcounties = await map_counties(placeset)
-
-			# ## data for colorpeth map
-			# mapcounties1 = get_object_or_404(Jsonstorage, id_jsonfile=1)
-			# mapcounties = json.loads(mapcounties1.jsonfiletxt)
-
-			# for i in mapcounties:
-			# 	if i == "features":
-			# 		for b in mapcounties[i]:
-			# 			j = b["properties"]
-			# 			countyvalue = j["HCS_NUMBER"]
-			# 			countyname = j["NAME"]
-			# 			numberofcases = placeset.filter(fk_his_countylist=countyvalue)
-			# 			for i in numberofcases:
-			# 				j["cases"] = i.numplaces
-
-		#map regions
-		# else:
-		# 	regiondisplayset = await map_regionset(qcollection, qtimechoice, qsealtypechoice)
-		# 	# if (qcollection == 30000287):
-		# 	# 	regiondisplayset = Regiondisplay.objects.filter(region__location__locationname__locationreference__fk_locationstatus=1,
-		# 	# 		region__location__locationname__locationreference__fk_event__part__fk_part__fk_support__fk_face__fk_seal__fk_timegroupc=qtimechoice,
-		# 	# 		region__location__locationname__locationreference__fk_event__part__fk_part__fk_support__fk_face__fk_seal__fk_sealtype=qsealtypechoice
-		# 	# 		).annotate(numregions=Count('region__location__locationname__locationreference__fk_event__part__fk_part__fk_support')) 
-
-		# 	# else:
-		# 	# 	#data for region map 
-		# 	# 	regiondisplayset = Regiondisplay.objects.filter( 
-		# 	# 		region__location__locationname__locationreference__fk_locationstatus=1,
-		# 	# 		region__location__locationname__locationreference__fk_event__part__fk_part__fk_support__fk_face__fk_seal__fk_timegroupc=qtimechoice,
-		# 	# 		region__location__locationname__locationreference__fk_event__part__fk_part__fk_support__fk_face__fk_seal__fk_sealtype=qsealtypechoice, 
-		# 	# 		region__location__locationname__locationreference__fk_event__part__fk_part__fk_support__fk_face__fk_seal__sealdescription__fk_collection=qcollection
-		# 	# 		).annotate(numregions=Count('region__location__locationname__locationreference'))
-
-		# 	region_dict = await mapgenerator3(regiondisplayset)
-
-		# 	representedcases = await map_placecases(regiondisplayset)
-
-		# 	# regioncases = 0
-		# 	# for r in regiondisplayset:
-		# 	# 	regioncases = regioncases + r.numregions
-
-		# 	# representedcases = regioncases
-
-		# if totalcases > 0:
-		# 	percenttotal = (representedcases/totalcases)
-		# else:
-		# 	percenttotal = "n/a" 
-
-		# context = {
-		# 	'pagetitle': pagetitle,
-		# 	'location_dict': location_dict,
-		# 	'counties_dict': mapcounties,
-		# 	'region_dict': region_dict,
-		# 	'totalcases': totalcases,
-		# 	'totalcasesfromperiod': totalcasesfromperiod,
-		# 	'representedcases': representedcases,
-		# 	'percenttotal': percenttotal,
-		# 	'form': form,
-		# 	}
-
-		# template = loader.get_template('digisig/analysis_time.html')
-		# return HttpResponse(template.render(context, request))
-
 ###### Dates ##########
 	if analysistype == "dates":
 
@@ -744,6 +516,8 @@ async def search(request, searchtype):
 		pagecounternextnext = qpagination +2
 
 		manifestation_displayset = await manifestation_construction(manifestation_pageobject)
+
+		print (manifestation_displayset)
 
 		context = {
 			'pagetitle': pagetitle, 
@@ -1560,15 +1334,26 @@ async def representation_page(request, digisig_entity_number):
 
 	representation_dic = await representationmetadata(representation_object)
 
-	if representation_dic["entity_type"] == 2:
-		representation_dic = await representationmetadata_part(representation_object, representation_dic)
-		representation_dic = await representationmetadata_manifestation(representation_object, representation_dic)
+	# Entity type is determined by the final digit in the DIGISIG ID number (manifestation=2, sealdescription=3, part=8)
+	entitytype = representation_dic["entity_type"]
+	searchvalue = representation_dic['entity_link']
 
-	if representation_dic["entity_type"] == 3:
+	if entitytype == 2:
+		manifestation_case, totalmanifestation_count = await manifestation_searchsetgenerate(searchvalue, searchtype="manifestation")
+		representation_dic = await representationmetadata_manifestation(manifestation_case, representation_dic)
+		representation_dic = await representationmetadata_part(manifestation_case, representation_dic)
+		representation_dic['outname'], actor_id = await actorfinder(manifestation_case)
+
+		# representation_dic = await representationmetadata_part(representation_object, representation_dic)
+		#representation_dic = await representationmetadata_manifestation(representation_object, representation_dic)
+
+	if entitytype == 3:
 		representation_dic = await representationmetadata_sealdescription(representation_object, representation_dic)
 
-	if representation_dic["entity_type"] == 8:
-		representation_dic = await representationmetadata_part(representation_object, representation_dic)
+	if entitytype == 8:
+		representation_dic = await representationmetadata_partquery(searchvalue, representation_dic)
+		
+		#representation_dic = await representationmetadata_part(representation_object, representation_dic)
 
 	context = {
 		'pagetitle': pagetitle,
