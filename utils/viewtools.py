@@ -2149,7 +2149,15 @@ def representationmetadata_part(manifestation_case, representation_dic):
 	region_objectset = Region.objects.filter( 
 		location__locationname__locationreference__fk_locationstatus=1, 
 		location__locationname__locationreference__fk_event=event).values('region_label').first()
-	representation_dic["region_label"] = region_objectset['region_label']
+	if region_objectset is not None:
+		representation_dic["region_label"] = region_objectset['region_label']
+	else:
+		# Handle the case where region_objectset is None
+		representation_dic["region_label"] = None  # Or some other default value
+		print("Warning: region_objectset is None, setting region_label to None.")
+
+
+	# representation_dic["region_label"] = region_objectset['region_label']
 
 	return(representation_dic)
 

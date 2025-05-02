@@ -129,7 +129,7 @@
 
 					{% if forloop.counter|divisibleby:2 %}<tr class="even">{% else %}<tr class="odd">{% endif %}
 						<th class="indent">Part of item</th>
-						<td><a href="{% url 'entity' digisig_entity_number=10001527 %}">{{manifestation.shelfmark}}</a>
+						<td><a href="{% url 'entity' digisig_entity_number=manifestation.id_item %}">{{manifestation.shelfmark}}</a>
 							{% if manifestation.number != null %}
 								{% if fk_number_currentposition < 100 %}, support {{manifestation.number}} {% endif %}{% endif %}
 						</td>
