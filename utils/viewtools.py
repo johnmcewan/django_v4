@@ -2075,14 +2075,14 @@ def representationmetadata(representation_case):
 	#when was it made?
 	representation_dic["datecreated"] = representation_case.representation_datecreated
 
+	#where does it come from?
 	try:
-		#where does it come from?
 		representation_dic["collection_fulltitle"] = representation_case.fk_collection.collection_fulltitle
 	except:
 		print ("no collection")
 
+	#what rights?
 	try:
-		#what rights?
 		representation_dic["rightsholder"] = representation_case.fk_rightsholder.rightsholder
 	except:
 		print ("no rights")
@@ -2105,28 +2105,27 @@ def representationmetadata(representation_case):
 @sync_to_async
 def representationmetadata_manifestation(representation_case, representation_dic):
 
-	manifestation = representation_case.fk_manifestation
-	representation_dic["manifestation_object"] = manifestation
+	manifestation_set = Manifestation.objects.values(
+		'fk_support',
+		'fk_support__fk_part',
+		'fk_support__fk_part__fk_event',
+		'fk_support__fk_part__fk_item__fk_repository__repository_fulltitle',
+		'fk_face',
+		'fk_face__fk_seal',
+		'fk_face__fk_seal__fk_individual_realizer',
+		'fk_face__fk_seal__date_origin').get(
+		id_manifestation=representation_case.fk_manifestation)
 
-	support = manifestation.fk_support
-	representation_dic["support_object"] = support
+	representation_dic["id_seal"] = manifestation_set['fk_support__fk_part__fk_item']
+	representation_dic["date_origin"] = manifestation_set['fk_face__fk_seal__date_origin']
 
-	part = support.fk_part
-	item = part.fk_item
-	representation_dic["item"] = item
-	event = part.fk_event
-	representation_dic["event"] = event
+	representation_dic['repository_fulltitle'] = ['fk_support__fk_part__fk_item__fk_repository__repository_fulltitle']
 
-	face = manifestation.fk_face
-	seal = face.fk_seal
-	representation_dic["seal"] = seal
+	# representation_dic["id_individual"] = seal.fk_individual_realizer
+	# representation_dic["outname"] = namecompiler(individual_object)
 
-	individual_object = seal.fk_individual_realizer
-	representation_dic["outname"] = namecompiler(individual_object)
-	representation_dic["individual_object"] = individual_object
-
-	sealdescription_objectset = Sealdescription.objects.select_related('fk_collection').filter(fk_seal = seal.id_seal)
-	representation_dic["sealdescription_objectset"] = sealdescription_objectset
+	# sealdescription_objectset = Sealdescription.objects.select_related('fk_collection').filter(fk_seal = seal.id_seal)
+	# representation_dic["sealdescription_objectset"] = sealdescription_objectset
 
 	return(representation_dic)
 
@@ -2930,45 +2929,6 @@ def manifestation_searchsetgenerate(searchvalue, searchtype=None):
 	return (manifestation_set)
 
 
-# @sync_to_async
-# def manifestation_searchsetgenerate(manifestation_pageobject):
-# ### maindata for manifestations
-
-# 	manifestation_set = Manifestation.objects.filter(
-# 		id_manifestation__in=manifestation_pageobject.object_list).select_related(
-# 		'fk_face__fk_seal').select_related(
-# 		'fk_support__fk_part__fk_item__fk_repository').select_related(
-# 		'fk_support__fk_number_currentposition').select_related(
-# 		'fk_support__fk_attachment').select_related(
-# 		'fk_support__fk_supportstatus').select_related(
-# 		'fk_support__fk_nature').select_related(
-# 		'fk_imagestate').select_related(
-# 		'fk_position').select_related(
-# 		'fk_support__fk_part__fk_event').order_by(
-# 		'id_manifestation').values(
-# 		'id_manifestation',
-# 		'fk_position', 
-# 		'fk_face__fk_seal',
-# 		'fk_face__fk_seal__fk_individual_realizer', 
-# 		'fk_support__fk_part__fk_item', 
-# 		'fk_support__fk_part__fk_item__fk_repository__repository_fulltitle',
-# 		'fk_support__fk_part__fk_item__shelfmark',
-# 		'fk_support__fk_supportstatus',
-# 		'fk_support__fk_attachment',
-# 		'fk_support__fk_number_currentposition',
-# 		'fk_support__fk_nature',
-# 		'label_manifestation_repository',
-# 		'fk_imagestate',
-# 		'fk_support__fk_part',
-# 		'fk_support__fk_part__fk_event',
-# 		'fk_support__fk_part__fk_event__repository_startdate',
-# 		'fk_support__fk_part__fk_event__repository_enddate',
-# 		'fk_support__fk_part__fk_event__startdate',
-# 		'fk_support__fk_part__fk_event__enddate')
-
-# 	return(manifestation_set)
-
-
 @sync_to_async
 def manifestation_displaysetgenerate(manifestation_set, representation_set):
 ### maindata for manifestations
@@ -3033,7 +2993,6 @@ def manifestation_displaysetgenerate(manifestation_set, representation_set):
 				manifestation_dic["id_representation"] = r['id_representation']
 					
 		manifestation_display_dic[e['id_manifestation']] = manifestation_dic
-		#description_set[e['fk_face__fk_seal']] = {}
 		listofseals.append(e['fk_face__fk_seal'])
 		listofevents.append(e['fk_support__fk_part__fk_event'])
 
@@ -3226,81 +3185,6 @@ def defaultpagination(pagination_object, qpagination):
 	totaldisplay = str(pagination_object.start_index()) + "-" + str(pagination_object.end_index())
 
 	return(pagination_object, totalrows, totaldisplay)
-
-# information for presenting a seal manifestation {{should be defunct?}}
-# def sealsearchmanifestationmetadata(manifestation_object):
-
-# 	manifestation_set = {}
-
-# 	#https://medium.com/codeptivesolutions/prefetch-related-and-select-related-in-django-90f07a2379c0
-# 	#manifestation_object2 = manifestation_object.prefetch_related(Prefetch('fk_manifestation', queryset=Representation.objects.filter(primacy=1))).all()
-
-# 	for e in manifestation_object:
-# 		manifestation_dic = {}
-# 		facevalue = e.fk_face
-# 		sealvalue = facevalue.fk_seal
-# 		supportvalue = e.fk_support
-# 		numbervalue = supportvalue.fk_number_currentposition
-# 		partvalue = supportvalue.fk_part
-# 		eventvalue = partvalue.fk_event
-# 		itemvalue = partvalue.fk_item
-# 		repositoryvalue = itemvalue.fk_repository
-
-# 		try:
-# 			representation_set = Representation.objects.select_related('fk_connection').get(fk_manifestation=e.id_manifestation, primacy=1)
-
-# 		except:
-# 			print ("no image available for:", e.id_manifestation)
-# 			representation_set = Representation.objects.select_related('fk_connection').get(id_representation=12204474)
-
-# 		connection = representation_set.fk_connection
-# 		manifestation_dic["thumb"] = connection.thumb
-# 		manifestation_dic["medium"] = connection.medium
-# 		manifestation_dic["representation_thumbnail_hash"] = representation_set.representation_thumbnail_hash
-# 		manifestation_dic["representation_filename_hash"] = representation_set.representation_filename_hash 
-# 		manifestation_dic["id_representation"] = representation_set.id_representation
-
-# 		sealdescription_set = Sealdescription.objects.filter(fk_seal=facevalue.fk_seal).select_related('fk_collection')
-# 		manifestation_dic["sealdescriptions"] = sealdescription_set
-
-# 		manifestation_dic["manifestation"] = e
-# 		manifestation_dic["id_manifestation"] = e.id_manifestation
-# 		manifestation_dic["fk_position"] = e.fk_position
-
-# 		manifestation_dic["id_seal"] = sealvalue.id_seal
-# 		manifestation_dic["id_item"] = itemvalue.id_item
-# 		manifestation_dic["repository_fulltitle"] = repositoryvalue.repository_fulltitle
-# 		manifestation_dic["shelfmark"] = itemvalue.shelfmark
-# 		manifestation_dic["fk_supportstatus"] = supportvalue.fk_supportstatus
-# 		manifestation_dic["fk_attachment"] = supportvalue.fk_attachment		
-# 		manifestation_dic["number"] = numbervalue.number
-# 		manifestation_dic["support_type"] = supportvalue.fk_nature
-# 		manifestation_dic["label_manifestation_repository"] = e.label_manifestation_repository
-# 		manifestation_dic["imagestate_term"] = e.fk_imagestate
-# 		manifestation_dic["partvalue"] = partvalue.id_part
-
-# 		#take the repository submitted date in preference to the Digisig date
-# 		if eventvalue.repository_startdate:
-# 			manifestation_dic["repository_startdate"] = eventvalue.repository_startdate
-# 		else:
-# 			manifestation_dic["repository_startdate"] = eventvalue.startdate 
-
-# 		if eventvalue.repository_enddate:
-# 			manifestation_dic["repository_enddate"] = eventvalue.repository_enddate
-# 		else:
-# 			manifestation_dic["repository_enddate"] = eventvalue.enddate
-
-# 		locationreference = Locationreference.objects.select_related('fk_locationname__fk_location').get(fk_event=eventvalue.pk_event,fk_locationstatus=1)
-
-# 		locationname= locationreference.fk_locationname
-# 		location = locationreference.fk_locationname.fk_location
-# 		manifestation_dic["repository_location"] = locationreference.fk_locationname.fk_location.location
-# 		manifestation_dic["id_location"] = locationreference.fk_locationname.fk_location.id_location
-
-# 		manifestation_set[e.id_manifestation] = manifestation_dic
-
-# 	return (manifestation_set)
-
 
 @sync_to_async
 def sealdescription_fetchobject(digisig_entity_number):

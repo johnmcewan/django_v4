@@ -1561,6 +1561,7 @@ async def representation_page(request, digisig_entity_number):
 	representation_dic = await representationmetadata(representation_object)
 
 	if representation_dic["entity_type"] == 2:
+		representation_dic = await representationmetadata_part(representation_object, representation_dic)
 		representation_dic = await representationmetadata_manifestation(representation_object, representation_dic)
 
 	if representation_dic["entity_type"] == 3:
