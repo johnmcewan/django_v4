@@ -227,7 +227,7 @@ def information_terminology():
 		examplesetgeneral = examplefinder(generalterm)
 		generalset[namegeneral] = {"id_term": generalterm, "examples":examplesetgeneral, "tooltip": tooltip}
 
-	return (generalset, natureset, topset, shapeset, term_object)		
+	return (generalset, natureset, topset, shapeset, term_object)       
 
 #gets example for classification display
 def examplefinder(idterm):
@@ -251,31 +251,31 @@ def examplefinder(idterm):
 ### analysis
 # @sync_to_async
 # def analyzetime_manifestations(qcollection, qtimechoice=None, qsealtypechoice=None):
-# 	#map points
-# 	totalcases = 0
+#   #map points
+#   totalcases = 0
 
-# 	#the queries deal with variations in the data differently -- undetermined locations, or ones to regions, 
-# 	#won't show on all maps
-# 	#to post correct totals, need to run query separately (which is inefficient)
+#   #the queries deal with variations in the data differently -- undetermined locations, or ones to regions, 
+#   #won't show on all maps
+#   #to post correct totals, need to run query separately (which is inefficient)
 
-# 	if (qcollection == 30000287):
-# 		manifestationset = Manifestation.objects.all()
-# 	else:
-# 		manifestationset = Manifestation.objects.filter(fk_face__fk_seal__fk_sealsealdescription__fk_collection=qcollection)
+#   if (qcollection == 30000287):
+#       manifestationset = Manifestation.objects.all()
+#   else:
+#       manifestationset = Manifestation.objects.filter(fk_face__fk_seal__fk_sealsealdescription__fk_collection=qcollection)
 
-# 	totalcollectioncases = manifestationset.count()
+#   totalcollectioncases = manifestationset.count()
 
-# 	if (qtimechoice > 0):
-# 		manifestationset = manifestationset.filter(fk_face__fk_seal__fk_timegroupc=qtimechoice)
+#   if (qtimechoice > 0):
+#       manifestationset = manifestationset.filter(fk_face__fk_seal__fk_timegroupc=qtimechoice)
 
-# 	totalcasesfromperiod = manifestationset.count()
+#   totalcasesfromperiod = manifestationset.count()
 
-# 	if (qsealtypechoice > 0):
-# 		manifestationset = manifestationset.filter(fk_face__fk_seal__fk_sealtype=qsealtypechoice)
+#   if (qsealtypechoice > 0):
+#       manifestationset = manifestationset.filter(fk_face__fk_seal__fk_sealtype=qsealtypechoice)
 
-# 	totalcases = manifestationset.count()
+#   totalcases = manifestationset.count()
 
-# 	return(totalcases, totalcasesfromperiod, totalcollectioncases)
+#   return(totalcases, totalcasesfromperiod, totalcollectioncases)
 
 # from django.db.models import Count
 # from asgiref.sync import sync_to_async
@@ -406,7 +406,7 @@ def personsearch_events():
 def personsearch_people(qnamelen, qname, qpagination, londonevents, individual_object):
 	
 	# individual_set1 = individual_object.filter(
-	# 	fk_individual_event__in=londonevents)
+	#   fk_individual_event__in=londonevents)
 
 	individual_object = individual_object.filter(
 		fk_individual_event__in=londonevents).distinct('id_individual').order_by('id_individual')
@@ -557,43 +557,43 @@ def parish_individuallistfetch(individual_object):
 # @sync_to_async
 # def mapparishesdata2(witness_entity_number):
 
-# 	reference_set = Referenceindividual.objects.filter(
-# 		fk_individual=witness_entity_number).values(
-# 	'fk_event__fk_event_locationreference__fk_locationname__fk_location__pk_location',
-# 	'fk_event__fk_event_locationreference__fk_locationname__fk_location__location',
-# 	'pk_referenceindividual')
+#   reference_set = Referenceindividual.objects.filter(
+#       fk_individual=witness_entity_number).values(
+#   'fk_event__fk_event_locationreference__fk_locationname__fk_location__pk_location',
+#   'fk_event__fk_event_locationreference__fk_locationname__fk_location__location',
+#   'pk_referenceindividual')
 
-# 	parishstats = {}
-# 	parishnamevalues = {}
-# 	ref_list = []
+#   parishstats = {}
+#   parishnamevalues = {}
+#   ref_list = []
 
-# 	for r in reference_set:
-# 		parisholdid = r['fk_event__fk_event_locationreference__fk_locationname__fk_location__pk_location']
-# 		parishname = r['fk_event__fk_event_locationreference__fk_locationname__fk_location__location']
-# 		if parisholdid in parishstats:
-# 			parishstats[parisholdid] += 1
-# 		else:
-# 			parishstats[parisholdid] = 1
-# 			parishnamevalues[parisholdid] = parishname
-# 		ref_list.append({r['pk_referenceindividual']: parishname})
+#   for r in reference_set:
+#       parisholdid = r['fk_event__fk_event_locationreference__fk_locationname__fk_location__pk_location']
+#       parishname = r['fk_event__fk_event_locationreference__fk_locationname__fk_location__location']
+#       if parisholdid in parishstats:
+#           parishstats[parisholdid] += 1
+#       else:
+#           parishstats[parisholdid] = 1
+#           parishnamevalues[parisholdid] = parishname
+#       ref_list.append({r['pk_referenceindividual']: parishname})
 
-# 	mapparishes = []
-# 	mapparishes1 = get_object_or_404(Jsonstorage, id_jsonfile=2)
-# 	mapparishes = json.loads(mapparishes1.jsonfiletxt)
+#   mapparishes = []
+#   mapparishes1 = get_object_or_404(Jsonstorage, id_jsonfile=2)
+#   mapparishes = json.loads(mapparishes1.jsonfiletxt)
 
-# 	for i in mapparishes:
-# 		if i == "features":
-# 			for b in mapparishes[i]:
-# 				j = b["properties"]
+#   for i in mapparishes:
+#       if i == "features":
+#           for b in mapparishes[i]:
+#               j = b["properties"]
 
-# 				parishvalue = j["fk_locatio"]
-# 				try:
-# 					j["cases"] = parishstats[parishvalue]
-# 					j["parishname"] = parishnamevalues[parishvalue]
-# 				except:
-# 					pass
+#               parishvalue = j["fk_locatio"]
+#               try:
+#                   j["cases"] = parishstats[parishvalue]
+#                   j["parishname"] = parishnamevalues[parishvalue]
+#               except:
+#                   pass
 
-# 	return(mapparishes, ref_list)
+#   return(mapparishes, ref_list)
 
 #chatgpt refinement
 @sync_to_async
@@ -827,7 +827,7 @@ def relationship_dataset(witness_entity_number):
 
 		relationship_dic[r['person2__id_individual']] = relationshipvalues
 
-	return(relationship_dic, relationshipnumber)	
+	return(relationship_dic, relationshipnumber)    
 
 
 def referencenamegenerator(r):
@@ -873,17 +873,17 @@ def networkgenerator(reference_set):
 		# nameoriginal = ""
 
 		# if r['fk_individual__fk_descriptor_name__descriptor_modern'] != None:
-		# 	nameoriginal =  r['fk_individual__fk_descriptor_name__descriptor_modern']
+		#   nameoriginal =  r['fk_individual__fk_descriptor_name__descriptor_modern']
 		# if r['fk_individual__fk_descriptor_prefix1__prefix_english'] != None:
-		# 	nameoriginal = nameoriginal + " " + r['fk_individual__fk_descriptor_prefix1__prefix_english']
+		#   nameoriginal = nameoriginal + " " + r['fk_individual__fk_descriptor_prefix1__prefix_english']
 		# if r['fk_individual__fk_descriptor_descriptor1__descriptor_modern'] != None:
-		# 	nameoriginal = nameoriginal + " " + r['fk_individual__fk_descriptor_descriptor1__descriptor_modern']
+		#   nameoriginal = nameoriginal + " " + r['fk_individual__fk_descriptor_descriptor1__descriptor_modern']
 		# if r['fk_individual__fk_descriptor_prefix2__prefix_english'] != None:
-		# 	nameoriginal = nameoriginal + " " + r['fk_individual__fk_descriptor_prefix2__prefix_english']
+		#   nameoriginal = nameoriginal + " " + r['fk_individual__fk_descriptor_prefix2__prefix_english']
 		# if r['fk_individual__fk_descriptor_descriptor2__descriptor_modern'] != None:
-		# 	nameoriginal = nameoriginal + " " + r['fk_individual__fk_descriptor_descriptor2__descriptor_modern']
+		#   nameoriginal = nameoriginal + " " + r['fk_individual__fk_descriptor_descriptor2__descriptor_modern']
 		# if r['fk_individual__fk_descriptor_prefix3__prefix_english'] != None:
-		# 	nameoriginal = nameoriginal + " " + r['fk_individual__fk_descriptor_prefix3__prefix_english']
+		#   nameoriginal = nameoriginal + " " + r['fk_individual__fk_descriptor_prefix3__prefix_english']
 
 		valuetarget = 1
 		person = r['fk_individual']
@@ -930,7 +930,7 @@ def redirectgenerator(digisig_entity_number, operation, application):
 	if (operation == 3): 
 		root = "/discover/exhibit/"
 		targetphrase = root + str(digisig_entity_number)
-		return (targetphrase)		
+		return (targetphrase)       
 
 	finalcharacter = (str(digisig_entity_number))[7:] 
 
@@ -942,7 +942,7 @@ def redirectgenerator(digisig_entity_number, operation, application):
 	if finalcharacter == '5': stem = "support/"
 	if finalcharacter == '6': stem = "face/"
 
-	#term=7 (10000007-29999997) collection=7(30000007-49999997) and place=7(higher than 49999997...)	
+	#term=7 (10000007-29999997) collection=7(30000007-49999997) and place=7(higher than 49999997...)    
 	if finalcharacter == '7':
 		if (entitynumber < 29999997): stem = "term/"
 		elif (entitynumber < 49999997): stem = "collection/"
@@ -1154,20 +1154,20 @@ def mldatacase(class_object, shape_object, resultarea):
 
 
 # def mlmodelget():
-# 	#url = os.path.join(settings.STATIC_ROOT, 'ml/2023_feb20_ml_tree')
-# 	#url = os.path.join(settings.STATIC_ROOT, 'ml/ml_tree')
+#   #url = os.path.join(settings.STATIC_ROOT, 'ml/2023_feb20_ml_tree')
+#   #url = os.path.join(settings.STATIC_ROOT, 'ml/ml_tree')
 
 
-# 	url = os.path.join(settings.STATIC_ROOT, 'ml/ml_faceobjectset')
-# 	url = os.path.join(settings.STATIC_URL, 'ml/ml_tree')
+#   url = os.path.join(settings.STATIC_ROOT, 'ml/ml_faceobjectset')
+#   url = os.path.join(settings.STATIC_URL, 'ml/ml_tree')
 
-# 	print (url)
-# 	print (os.listdir(settings.STATIC_URL))
+#   print (url)
+#   print (os.listdir(settings.STATIC_URL))
 
-# 	with open(url, 'rb') as file:	
-# 		mlmodel = pickle.load(file)
+#   with open(url, 'rb') as file:   
+#       mlmodel = pickle.load(file)
 
-# 	return(mlmodel)
+#   return(mlmodel)
 
 @sync_to_async
 def finalnodevalue_set(finalnodevalue, shape_object, class_object):
@@ -1213,7 +1213,7 @@ def mlmanifestation_set(seal_set):
 		manifestation_dic["medium"] = connection.medium
 		manifestation_dic["representation_thumbnail_hash"] = s.representation_thumbnail_hash
 		manifestation_dic["representation_filename_hash"] = s.representation_filename_hash 
-		manifestation_dic["id_representation"] = s.id_representation	
+		manifestation_dic["id_representation"] = s.id_representation    
 		manifestation_dic["id_item"] = s.fk_manifestation.fk_support.fk_part.fk_item.id_item
 		manifestation_dic["id_manifestation"] = s.fk_manifestation.id_manifestation
 		manifestation_dic["id_seal"] = s.fk_manifestation.fk_face.fk_seal.id_seal
@@ -1396,7 +1396,7 @@ def faceupdater(shapecode, height, width):
 def roundedoval(height, width):
 	radius1 = height/2
 	width1 = width/2
-	returnarea = math.pi * radius1 * width1	
+	returnarea = math.pi * radius1 * width1 
 
 	return(returnarea)
 
@@ -1455,7 +1455,7 @@ def collection_chart2():
 		'term_sortorder').annotate(
 		num_cases=Count("fk_term_interchange__fk_class__fk_class_face"))
 
-	totalcases = sum([r.num_cases for r in result])	
+	totalcases = sum([r.num_cases for r in result]) 
 
 	data2 = []
 	labels2 = []
@@ -1472,16 +1472,16 @@ def collection_chart2():
 
 @sync_to_async
 # def map_locationset(qcollection):
-# 	if (qcollection == 30000287):
-# 		locationset = Location.objects.filter(
-# 			Q(locationname__locationreference__fk_locationstatus=1)).annotate(
-# 			count=Count('locationname__locationreference__fk_event__part__fk_part__fk_support'))
+#   if (qcollection == 30000287):
+#       locationset = Location.objects.filter(
+#           Q(locationname__locationreference__fk_locationstatus=1)).annotate(
+#           count=Count('locationname__locationreference__fk_event__part__fk_part__fk_support'))
 
-# 	else:
-# 		#data for location map
-# 		locationset = Location.objects.filter(
-# 			Q(locationname__locationreference__fk_event__part__fk_part__fk_support__fk_face__fk_seal__fk_sealsealdescription__fk_collection=qcollection)).annotate(
-# 			count=Count('locationname__locationreference__fk_event__part__fk_part__fk_support'))
+#   else:
+#       #data for location map
+#       locationset = Location.objects.filter(
+#           Q(locationname__locationreference__fk_event__part__fk_part__fk_support__fk_face__fk_seal__fk_sealsealdescription__fk_collection=qcollection)).annotate(
+#           count=Count('locationname__locationreference__fk_event__part__fk_part__fk_support'))
 def map_locationset(qcollection, qtimechoice=None, qsealtypechoice=None):
 	"""
 	Retrieves a queryset of Location objects based on the provided criteria.
@@ -1515,23 +1515,23 @@ def map_locationset(qcollection, qtimechoice=None, qsealtypechoice=None):
 
 # @sync_to_async
 # def map_placeset(qcollection):
-# 	if (qcollection == 30000287):
-# 		#data for map counties
-# 		placeset = Region.objects.filter(fk_locationtype=4, 
-# 			location__locationname__locationreference__fk_locationstatus=1
-# 			).annotate(numplaces=Count('location__locationname__locationreference__fk_event__part__fk_part__fk_support')).values(
-# 			'numplaces', 
-# 			'fk_his_countylist') 
-# 	else:
-# 		#data for map counties
-# 		placeset = Region.objects.filter(fk_locationtype=4, 
-# 			location__locationname__locationreference__fk_locationstatus=1, 
-# 			location__locationname__locationreference__fk_event__part__fk_part__fk_support__fk_face__fk_seal__fk_sealsealdescription__fk_collection=qcollection
-# 			).annotate(numplaces=Count('location__locationname__locationreference')).values(
-# 			'numplaces', 
-# 			'fk_his_countylist')
+#   if (qcollection == 30000287):
+#       #data for map counties
+#       placeset = Region.objects.filter(fk_locationtype=4, 
+#           location__locationname__locationreference__fk_locationstatus=1
+#           ).annotate(numplaces=Count('location__locationname__locationreference__fk_event__part__fk_part__fk_support')).values(
+#           'numplaces', 
+#           'fk_his_countylist') 
+#   else:
+#       #data for map counties
+#       placeset = Region.objects.filter(fk_locationtype=4, 
+#           location__locationname__locationreference__fk_locationstatus=1, 
+#           location__locationname__locationreference__fk_event__part__fk_part__fk_support__fk_face__fk_seal__fk_sealsealdescription__fk_collection=qcollection
+#           ).annotate(numplaces=Count('location__locationname__locationreference')).values(
+#           'numplaces', 
+#           'fk_his_countylist')
 
-# 	return(placeset)
+#   return(placeset)
 
 @sync_to_async
 def map_placeset(qcollection, qtimechoice=None, qsealtypechoice=None):
@@ -1596,14 +1596,14 @@ def map_counties(placeset):
 	mapcounties = json.loads(mapcounties1.jsonfiletxt)
 
 	# for i in mapcounties:
-	# 	if i == "features":
-	# 		for b in mapcounties[i]:
-	# 			j = b["properties"]
-	# 			countyvalue = j["HCS_NUMBER"]
-	# 			countyname = j["NAME"]
-	# 			numberofcases = placeset.filter(fk_his_countylist=countyvalue)
-	# 			for t in numberofcases:
-	# 				j["cases"] = t['numplaces']
+	#   if i == "features":
+	#       for b in mapcounties[i]:
+	#           j = b["properties"]
+	#           countyvalue = j["HCS_NUMBER"]
+	#           countyname = j["NAME"]
+	#           numberofcases = placeset.filter(fk_his_countylist=countyvalue)
+	#           for t in numberofcases:
+	#               j["cases"] = t['numplaces']
 
 	# return(mapcounties)
 
@@ -1632,18 +1632,18 @@ def map_counties(placeset):
 
 # @sync_to_async
 # def map_regionset(qcollection):
-# 	if (qcollection == 30000287):
-# 		regiondisplayset = Regiondisplay.objects.filter(region__location__locationname__locationreference__fk_locationstatus=1
-# 			).annotate(numregions=Count('region__location__locationname__locationreference__fk_event__part__fk_part__fk_support')) 
+#   if (qcollection == 30000287):
+#       regiondisplayset = Regiondisplay.objects.filter(region__location__locationname__locationreference__fk_locationstatus=1
+#           ).annotate(numregions=Count('region__location__locationname__locationreference__fk_event__part__fk_part__fk_support')) 
 
-# 	else:
-# 		#data for region map 
-# 		regiondisplayset = Regiondisplay.objects.filter( 
-# 			region__location__locationname__locationreference__fk_locationstatus=1, 
-# 			region__location__locationname__locationreference__fk_event__part__fk_part__fk_support__fk_face__fk_seal__fk_sealsealdescription__fk_collection=qcollection
-# 			).annotate(numregions=Count('region__location__locationname__locationreference'))
+#   else:
+#       #data for region map 
+#       regiondisplayset = Regiondisplay.objects.filter( 
+#           region__location__locationname__locationreference__fk_locationstatus=1, 
+#           region__location__locationname__locationreference__fk_event__part__fk_part__fk_support__fk_face__fk_seal__fk_sealsealdescription__fk_collection=qcollection
+#           ).annotate(numregions=Count('region__location__locationname__locationreference'))
 
-# 	return(regiondisplayset)
+#   return(regiondisplayset)
 
 @sync_to_async
 def map_regionset(qcollection, qtimechoice=None, qsealtypechoice=None):
@@ -2183,17 +2183,17 @@ def itemform_options(form):
 		series_all_options.append((s['pk_series'], appendvalue))
 		entry = (s['fk_repository'], s['fk_repository_id__repository_fulltitle'])
 		if entry not in repositories_all_options:
-			repositories_all_options.append(entry)	
+			repositories_all_options.append(entry)  
 				
 	#repositories_all_options.append((s['fk_repository'], s['fk_repository_id__repository_fulltitle']))
 
 	# for e in Series.objects.exclude(series_name__istartswith="z").order_by('fk_repository'):
-	# 	repository = e.fk_repository
-	# 	appendvalue = repository.repository + " : " + e.series_name
-	# 	series_all_options.append((e.pk_series, appendvalue))
+	#   repository = e.fk_repository
+	#   appendvalue = repository.repository + " : " + e.series_name
+	#   series_all_options.append((e.pk_series, appendvalue))
 
 	# for e in Repository.objects.order_by('repository_fulltitle'):
-	# 	repositories_all_options.append((e.fk_repository, e.repository_fulltitle))
+	#   repositories_all_options.append((e.fk_repository, e.repository_fulltitle))
 
 	form.fields['series'].choices = series_all_options
 	form.fields['repository'].choices = repositories_all_options
@@ -2216,33 +2216,33 @@ def itemsearchfilter(item_object, form):
 		qrepository = int(form.cleaned_data['repository'])
 		if qrepository > 0:
 			item_object = item_object.filter(fk_repository=qrepository)
-	except:	
+	except: 
 		pass
 	
-	try:		
+	try:        
 		qseries = int(form.cleaned_data['series'])
 		if qseries > 0:
 			item_object = item_object.filter(fk_series=qseries)
-	except:	
+	except: 
 		pass
 	
 	try:
 		qshelfmark = form.cleaned_data['shelfmark']
 		if len(qshelfmark) > 0:
 			item_object = item_object.filter(shelfmark__icontains=qshelfmark)
-	except:	
+	except: 
 		pass
 
 	try:
 		qsearchphrase = form.cleaned_data['searchphrase']
 		if len(searchphrase) > 0:
 			item_object = item_object.filter(part_description__icontains=searchphrase)
-	except:	
+	except: 
 		pass
 
 	try:
 		qpagination = int(form.cleaned_data['pagination'])
-	except:	
+	except: 
 		qpagination = 1
 
 	return (item_object, qpagination)
@@ -2395,7 +2395,7 @@ def dateform_options(form):
 def datesearchfilter(form):
 
 	qclass = form.cleaned_data['classname']
-	qshape = form.cleaned_data['shape']	
+	qshape = form.cleaned_data['shape'] 
 	qvertical = form.cleaned_data['face_vertical']
 	qhorizontal = form.cleaned_data['face_horizontal']
 
@@ -2459,7 +2459,7 @@ def manifestationsform_options(form):
 		group_options.append((e.pk_printgroup, e.printgroup))
 
 	form.fields['repository'].choices = repositories_options
-	form.fields['series'].choices = series_options	
+	form.fields['series'].choices = series_options  
 	form.fields['location'].choices = location_options
 	form.fields['nature'].choices = nature_options
 	form.fields['representation'].choices = representation_options
@@ -2572,20 +2572,20 @@ def sealdescription_displaysetgenerate(sealdescription_object):
 
 # @sync_to_async
 # def manifestation_search():
-# 	manifestation_object = Manifestation.objects.all().select_related(
-# 	'fk_face__fk_seal').select_related(
-# 	'fk_support__fk_part__fk_item__fk_repository').select_related(
-# 	'fk_support__fk_number_currentposition').select_related(
-# 	'fk_support__fk_attachment').select_related(
-# 	'fk_support__fk_supportstatus').select_related(
-# 	'fk_support__fk_nature').select_related(
-# 	'fk_imagestate').select_related(
-# 	'fk_position').select_related(
-# 	'fk_support__fk_part__fk_event').order_by(
-# 	'id_manifestation').prefetch_related(
-# 	Prefetch('fk_manifestation', queryset=Representation.objects.filter(primacy=1)))
+#   manifestation_object = Manifestation.objects.all().select_related(
+#   'fk_face__fk_seal').select_related(
+#   'fk_support__fk_part__fk_item__fk_repository').select_related(
+#   'fk_support__fk_number_currentposition').select_related(
+#   'fk_support__fk_attachment').select_related(
+#   'fk_support__fk_supportstatus').select_related(
+#   'fk_support__fk_nature').select_related(
+#   'fk_imagestate').select_related(
+#   'fk_position').select_related(
+#   'fk_support__fk_part__fk_event').order_by(
+#   'id_manifestation').prefetch_related(
+#   Prefetch('fk_manifestation', queryset=Representation.objects.filter(primacy=1)))
 
-# 	return(manifestation_object)
+#   return(manifestation_object)
 
 
 ## find seal manifestations and optionally limit to those associated with a particular place
@@ -2738,44 +2738,44 @@ async def manifestation_dataassemble(manifestation_pageobject):
 # def seal_searchsetgenerate(digisig_entity_number, return_single=False):
 # ### maindata for manifestations
 
-# 	if return_single:
-# 		manifestation_group = Manifestation.objects.filter(
-# 		fk_face__fk_seal=digisig_entity_number)
+#   if return_single:
+#       manifestation_group = Manifestation.objects.filter(
+#       fk_face__fk_seal=digisig_entity_number)
 
-# 	else:
-# 		manifestation_group = Manifestation.objects.get(id_seal=disisig_entity_number)
+#   else:
+#       manifestation_group = Manifestation.objects.get(id_seal=disisig_entity_number)
 
 	# manifestation_set = Manifestation.objects.filter(
-	# 	fk_face__fk_seal=digisig_entity_number).select_related(
-	# 	'fk_support__fk_part__fk_item__fk_repository').select_related(
-	# 	'fk_support__fk_number_currentposition').select_related(
-	# 	'fk_support__fk_attachment').select_related(
-	# 	'fk_support__fk_supportstatus').select_related(
-	# 	'fk_support__fk_nature').select_related(
-	# 	'fk_imagestate').select_related(
-	# 	'fk_position').select_related(
-	# 	'fk_support__fk_part__fk_event').select_related(
-	# 	'fk_face__fk_seal').order_by(
-	# 	'id_manifestation').values(
-	# 	'id_manifestation',
-	# 	'fk_position',
-	# 	'fk_face',
-	# 	'fk_face__fk_seal',
-	# 	'fk_support__fk_part__fk_item', 
-	# 	'fk_support__fk_part__fk_item__fk_repository__repository_fulltitle',
-	# 	'fk_support__fk_part__fk_item__shelfmark',
-	# 	'fk_support__fk_supportstatus',
-	# 	'fk_support__fk_attachment',
-	# 	'fk_support__fk_number_currentposition',
-	# 	'fk_support__fk_nature',
-	# 	'label_manifestation_repository',
-	# 	'fk_imagestate',
-	# 	'fk_support__fk_part',
-	# 	'fk_support__fk_part__fk_event',
-	# 	'fk_support__fk_part__fk_event__repository_startdate',
-	# 	'fk_support__fk_part__fk_event__repository_enddate',
-	# 	'fk_support__fk_part__fk_event__startdate',
-	# 	'fk_support__fk_part__fk_event__enddate')
+	#   fk_face__fk_seal=digisig_entity_number).select_related(
+	#   'fk_support__fk_part__fk_item__fk_repository').select_related(
+	#   'fk_support__fk_number_currentposition').select_related(
+	#   'fk_support__fk_attachment').select_related(
+	#   'fk_support__fk_supportstatus').select_related(
+	#   'fk_support__fk_nature').select_related(
+	#   'fk_imagestate').select_related(
+	#   'fk_position').select_related(
+	#   'fk_support__fk_part__fk_event').select_related(
+	#   'fk_face__fk_seal').order_by(
+	#   'id_manifestation').values(
+	#   'id_manifestation',
+	#   'fk_position',
+	#   'fk_face',
+	#   'fk_face__fk_seal',
+	#   'fk_support__fk_part__fk_item', 
+	#   'fk_support__fk_part__fk_item__fk_repository__repository_fulltitle',
+	#   'fk_support__fk_part__fk_item__shelfmark',
+	#   'fk_support__fk_supportstatus',
+	#   'fk_support__fk_attachment',
+	#   'fk_support__fk_number_currentposition',
+	#   'fk_support__fk_nature',
+	#   'label_manifestation_repository',
+	#   'fk_imagestate',
+	#   'fk_support__fk_part',
+	#   'fk_support__fk_part__fk_event',
+	#   'fk_support__fk_part__fk_event__repository_startdate',
+	#   'fk_support__fk_part__fk_event__repository_enddate',
+	#   'fk_support__fk_part__fk_event__startdate',
+	#   'fk_support__fk_part__fk_event__enddate')
 
 
 
@@ -2817,10 +2817,10 @@ def seal_displaysetgenerate(manifestation_display_dic, description_set, digisig_
 		'fk_class')
 
 	for f in face_set:
-		if f['fk_faceterm__faceterm'] == "Obverse":			
+		if f['fk_faceterm__faceterm'] == "Obverse":         
 			obverse['faceterm'] = f['fk_faceterm__faceterm']
 			obverse['fk_class'] = f['fk_class']
-		if f['fk_faceterm__faceterm'] == "Reverse":			
+		if f['fk_faceterm__faceterm'] == "Reverse":         
 			reverse['faceterm'] = f['fk_faceterm__faceterm']
 			reverse['fk_class'] = f['fk_class']
 
@@ -2868,7 +2868,7 @@ def manifestation_searchsetgenerate(searchvalue, searchtype=None):
 
 	# a group of seal manifestations (either based on seal or manifestation set)
 	elif searchtype == "seal":
-		manifestation_set = Manifestation.objects.filter(fk_face__fk_seal=searchvalue)	 	
+		manifestation_set = Manifestation.objects.filter(fk_face__fk_seal=searchvalue)      
 	
 	else:
 		manifestation_set = Manifestation.objects.filter(id_manifestation__in=searchvalue.object_list)
@@ -2946,7 +2946,7 @@ def manifestation_displaysetgenerate(manifestation_set, representation_set):
 		manifestation_dic["repository_fulltitle"] = e['fk_support__fk_part__fk_item__fk_repository__repository_fulltitle']
 		manifestation_dic["shelfmark"] = e['fk_support__fk_part__fk_item__shelfmark']
 		manifestation_dic["fk_supportstatus"] = e['fk_support__fk_supportstatus']
-		manifestation_dic["fk_attachment"] = e['fk_support__fk_attachment']	
+		manifestation_dic["fk_attachment"] = e['fk_support__fk_attachment'] 
 		manifestation_dic["number"] = e['fk_support__fk_number_currentposition']
 		manifestation_dic["support_type"] = e['fk_support__fk_nature']
 		manifestation_dic["label_manifestation_repository"] = e['label_manifestation_repository']
@@ -2954,7 +2954,7 @@ def manifestation_displaysetgenerate(manifestation_set, representation_set):
 		#Adding these values through logic seems to dramatically decrease the query run time as compared to DBS query
 		if e['fk_imagestate'] == 2:
 			manifestation_dic["imagestate_term"] = "Seal matrix"
-		else:	
+		else:   
 			manifestation_dic["imagestate_term"] = "Seal impression"
 
 		manifestation_dic["partvalue"] = e['fk_support__fk_part']
@@ -3213,7 +3213,7 @@ def sealdescription_contributorgenerate(collection, contributor_dic):
 	return(contributor_dic)
 
 @sync_to_async
-def	sealdescription_fetchrepresentation(sealdescription_object):
+def sealdescription_fetchrepresentation(sealdescription_object):
 
 	description_dic = {}
 
@@ -3242,7 +3242,7 @@ def representation_fetchinfo(description_dic, representation_set):
 
 
 @sync_to_async
-def	manifestation_fetchrepresentations(e, manifestation_dic):
+def manifestation_fetchrepresentations(e, manifestation_dic):
 
 	try:
 		representation_set = Representation.objects.select_related('fk_connection').get(fk_manifestation=e.id_manifestation, primacy=1)
@@ -3309,7 +3309,7 @@ def manifestation_fetchstandardvalues (e, manifestation_dic):
 	manifestation_dic["repository_fulltitle"] = repositoryvalue.repository_fulltitle
 	manifestation_dic["shelfmark"] = itemvalue.shelfmark
 	manifestation_dic["fk_supportstatus"] = supportvalue.fk_supportstatus
-	manifestation_dic["fk_attachment"] = supportvalue.fk_attachment		
+	manifestation_dic["fk_attachment"] = supportvalue.fk_attachment     
 	manifestation_dic["number"] = numbervalue.number
 	manifestation_dic["support_type"] = supportvalue.fk_nature
 	manifestation_dic["label_manifestation_repository"] = e.label_manifestation_repository
@@ -3369,14 +3369,14 @@ def sealinfo_classvalue (face_case):
 	try:
 		if face_case.fk_class.level2 > 0:
 			faceclass2 = Classification.objects.get(class_number=face_case.fk_class.level2)
-			classvalue["level2"] = faceclass2			
+			classvalue["level2"] = faceclass2           
 	except: 
 		print("level2 unassigned")
 
 	try:
 		if face_case.fk_class.level3 > 0:
 			faceclass3 = Classification.objects.get(class_number=face_case.fk_class.level3)
-			classvalue["level3"] = faceclass3 			
+			classvalue["level3"] = faceclass3           
 	except: 
 		print("level3 unassigned")
 
@@ -3390,9 +3390,9 @@ def sealinfo_classvalue (face_case):
 	try:
 		if face_case.fk_class.level5 > 0:
 			faceclass5 = Classification.objects.get(class_number=face_case.fk_class.level5)
-			classvalue["level5"] = faceclass5			
+			classvalue["level5"] = faceclass5           
 	except: 
-		print("level5 unassigned")			
+		print("level5 unassigned")          
 
 	return(classvalue)
 
@@ -3502,42 +3502,42 @@ def eventset_references(event_object, event_dic):
 
 # def referenceset_references(individual_object, reference_set):
 
-# 	reference_dic = Referenceindividual.objects.filter(
-# 		fk_individual=individual_object).select_related(
-# 		'fk_event').select_related(
-# 		'fk_referencerole').order_by(
-# 		"fk_event__startdate", "fk_event__enddate")
+#   reference_dic = Referenceindividual.objects.filter(
+#       fk_individual=individual_object).select_related(
+#       'fk_event').select_related(
+#       'fk_referencerole').order_by(
+#       "fk_event__startdate", "fk_event__enddate")
 
-# 	for r in reference_dic:
+#   for r in reference_dic:
 
-# 		reference_row = {}
+#       reference_row = {}
 
-# 		#date
-# 		if r.fk_event.startdate != None:
-# 			reference_row['date'] = str(r.fk_event.startdate) + "-" + str(r.fk_event.enddate)
-# 		else:
-# 			if r.fk_event.repository_startdate != None:
-# 				reference_row['date'] = str(r.fk_event.repository_startdate) + " - " + str(r.fk_event.repository_enddate)
-# 		#role
-# 		reference_row["role"] = r.fk_referencerole.referencerole
+#       #date
+#       if r.fk_event.startdate != None:
+#           reference_row['date'] = str(r.fk_event.startdate) + "-" + str(r.fk_event.enddate)
+#       else:
+#           if r.fk_event.repository_startdate != None:
+#               reference_row['date'] = str(r.fk_event.repository_startdate) + " - " + str(r.fk_event.repository_enddate)
+#       #role
+#       reference_row["role"] = r.fk_referencerole.referencerole
 
-# 		#item
-# 		part_object = Part.objects.select_related('fk_item').get(fk_event=r.fk_event)
-# 		reference_row["item_shelfmark"] = part_object.fk_item.shelfmark
-# 		reference_row["item_id"] = part_object.fk_item.id_item
+#       #item
+#       part_object = Part.objects.select_related('fk_item').get(fk_event=r.fk_event)
+#       reference_row["item_shelfmark"] = part_object.fk_item.shelfmark
+#       reference_row["item_id"] = part_object.fk_item.id_item
 
-# 		#location
-# 		locationreference_object = Locationreference.objects.filter(
-# 			location_reference_primary=0).select_related(
-# 			'fk_locationname__fk_location__fk_region').get(
-# 			fk_event=r.fk_event)
-# 		reference_row["region"] = locationreference_object.fk_locationname.fk_location.fk_region
-# 		reference_row["location_id"] = locationreference_object.fk_locationname.fk_location.id_location
-# 		reference_row["location"] = locationreference_object.fk_locationname.fk_location.location
+#       #location
+#       locationreference_object = Locationreference.objects.filter(
+#           location_reference_primary=0).select_related(
+#           'fk_locationname__fk_location__fk_region').get(
+#           fk_event=r.fk_event)
+#       reference_row["region"] = locationreference_object.fk_locationname.fk_location.fk_region
+#       reference_row["location_id"] = locationreference_object.fk_locationname.fk_location.id_location
+#       reference_row["location"] = locationreference_object.fk_locationname.fk_location.location
 
-# 		reference_set[r.pk_referenceindividual] = reference_row
+#       reference_set[r.pk_referenceindividual] = reference_row
 
-# 	return(reference_set)
+#   return(reference_set)
 
 @sync_to_async
 def referenceset_references(witness_entity_number):
@@ -3999,7 +3999,7 @@ def referenceset_references5(witness_entity_number, ref_dic_locations):
 @sync_to_async
 def externallinkgenerator(entity_number):
 	externallinkset = Externallink.objects.filter(internal_entity=entity_number).values('external_link')
-	return (externallinkset)	
+	return (externallinkset)    
 
 @sync_to_async
 def partobjectforitem_define(entity_number):
@@ -4099,14 +4099,14 @@ def partobjectforitem_define(entity_number):
 		partneedingreference['reference_set'] = reference_dic[searchvalue]
 
 	# try:
-	# 	externallinkset = Externallink.objects.filter(internal_entity_in=listofitems)
+	#   externallinkset = Externallink.objects.filter(internal_entity_in=listofitems)
 
-	# 	links_dic = {}
-	# 	for e in externallinkset:
-	# 		links_dic[e.internal_entity].update({e.id_external_link}:{external_link})
+	#   links_dic = {}
+	#   for e in externallinkset:
+	#       links_dic[e.internal_entity].update({e.id_external_link}:{external_link})
 
-	# 	for l in links_dic:
-	# 		part_dic[l.]
+	#   for l in links_dic:
+	#       part_dic[l.]
 
 	location_object = Location.objects.filter(
 		locationname__locationreference__fk_event__in=listofevents, locationname__locationreference__location_reference_primary = False).values(
@@ -4196,7 +4196,7 @@ def manifestationobject_define(digisig_entity_number):
 	'fk_position').select_related(
 	'fk_support__fk_part__fk_event')
 
-	return(manifestation_case)	
+	return(manifestation_case)  
 
 
 #### this is not functional
@@ -4213,11 +4213,11 @@ def manifestation_createdic(manifestationcase):
 
 	manifestation_dic['imagestate_term'] = manifestationcase['fk_imagestate__imagestate_term']
 	manifestation_dic['supportstatus'] = manifestationcase['fk_support__fk_supportstatus__supportstatus']
-	manifestation_dic['fk_supportstatus'] = manifestationcase['fk_support__fk_supportstatus']	
+	manifestation_dic['fk_supportstatus'] = manifestationcase['fk_support__fk_supportstatus']   
 	manifestation_dic['fk_attachment'] = manifestationcase['fk_support__fk_attachment']
 	manifestation_dic['attachment'] = manifestationcase['fk_support__fk_attachment__attachment']
 	manifestation_dic['number'] = manifestationcase['fk_support__fk_number_currentposition__number']
-	manifestation_dic['fk_number_currentposition'] = manifestationcase['fk_support__fk_number_currentposition']	
+	manifestation_dic['fk_number_currentposition'] = manifestationcase['fk_support__fk_number_currentposition'] 
 	manifestation_dic['fk_nature'] = manifestationcase['fk_support__fk_nature']
 	manifestation_dic['nature_name'] = manifestationcase['fk_support__fk_nature__nature_name']
 	manifestation_dic['fk_material'] = manifestationcase['fk_support__fk_material']
