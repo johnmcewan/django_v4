@@ -2804,31 +2804,19 @@ def namecompiler_group(listofactors):
 
 	for i in individual_set:
 		name_temp = ""
-		if hasattr(i, 'fk_group') and i.fk_group is not None:
-			name_temp = group_name_map.get(i.fk_group)
-		if hasattr(i, 'fk_descriptor_title') and i.fk_descriptor_title is not None: 
-			name_temp = name_temp + " " + descriptor_modern_map.get(i.fk_descriptor_title)
-		if hasattr(i, 'fk_descriptor_name') and i.fk_descriptor_name is not None: 
-			name_temp = name_temp + " " + descriptor_modern_map.get(i.fk_descriptor_name)
-		name_temp = name_temp + " " + descriptor_modern_map.get(i.fk_descriptor_name)
-		print ("hhewerwe", nametemp)
-		if hasattr(i, 'fk_descriptor_prefix1') and i.fk_descriptor_prefix1: 
-			name_temp = name_temp + " " + prefix_english_map.get(i.fk_descriptor_prefix1)
-		if hasattr(i, 'fk_descriptor_descriptor1') and i.fk_descriptor_descriptor1 is not None: 
-			name_temp = name_temp + " " + descriptor_modern_map.get(i.fk_descriptor1)
-		if hasattr(i, 'fk_descriptor_prefix2') and i.fk_descriptor_prefix2: 
-			name_temp = name_temp + " " + prefix_english_map.get(i.fk_descriptor_prefix2)
-		if hasattr(i, 'fk_descriptor_descriptor2') and i.fk_descriptor_descriptor2 is not None: 
-			name_temp = name_temp + " " + descriptor_modern_map.get(i.fk_descriptor2)
-		if hasattr(i, 'fk_descriptor_prefix3') and i.fk_descriptor_prefix3: 
-			name_temp = name_temp + " " + prefix_english_map.get(i.fk_descriptor_prefix3)
-		if hasattr(i, 'fk_descriptor_descriptor3') and i.fk_descriptor_descriptor3 is not None: 
-			name_temp = name_temp + " " + descriptor_modern_map.get(i.fk_descriptor3)
+		name_temp += group_name_map.get(i.get('i.fk_group'), "") + " " if group_name_map else ""
+		name_temp += descriptor_modern_map.get(i.get('fk_descriptor_title'), "") + " "
+		name_temp += descriptor_modern_map.get(i.get('fk_descriptor_name'), "") + " "
+		name_temp += prefix_english_map.get(i.get('fk_descriptor_prefix1'), "") + " "
+		name_temp += descriptor_modern_map.get(i.get('fk_descriptor_descriptor1'), "") + " "
+		name_temp += prefix_english_map.get(i.get('fk_descriptor_prefix2'), "") + " "
+		name_temp += descriptor_modern_map.get(i.get('fk_descriptor_descriptor2'), "") + " "
+		name_temp += prefix_english_map.get(i.get('fk_descriptor_prefix3'), "") + " "
+		name_temp += descriptor_modern_map.get(i.get('fk_descriptor_descriptor3'), "")
 		name_set[i['id_individual']] = name_temp.strip()
 
-
-	print(name_set)
-	sdfsd
+	print (name_set)
+	sdfsds
 	return(name_set)
 
 @sync_to_async
@@ -3113,7 +3101,7 @@ async def manifestation_construction(manifestation_pageobject):
 	"""
 	representation_set = await representationsetgenerate(manifestation_pageobject)
 	manifestation_set, totalmanifestation_count = await manifestation_searchsetgenerate(manifestation_pageobject)
-	manifestation_display_dic, listofseals, listofevents = await manifestation_displaysetgenerate(manifestation_set, representation_set)
+	manifestation_display_dic, listofseals, listofevents, listofactors = await manifestation_displaysetgenerate(manifestation_set, representation_set)
 	description_set = await sealdescription_displaysetgenerate2(listofseals)
 	location_set = await location_displaysetgenerate(listofevents)
 	manifestation_displayset = await finalassembly_displaysetgenerate(manifestation_display_dic, location_set, description_set)
