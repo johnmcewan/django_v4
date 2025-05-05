@@ -2742,50 +2742,94 @@ async def manifestation_dataassemble(manifestation_pageobject):
 	return (manifestation_displayset)
 
 
-# @sync_to_async
-# def seal_searchsetgenerate(digisig_entity_number, return_single=False):
-# ### maindata for manifestations
+@sync_to_async
+def namecompiler_group(listofactors):
 
-#   if return_single:
-#       manifestation_group = Manifestation.objects.filter(
-#       fk_face__fk_seal=digisig_entity_number)
+	#create the list of people whose names need to be formulated
+	individual_set = Individual.objects.filter(id_individual__in=listofactors).values(
+		'id_individual',
+		'fk_descriptor_title',
+		'fk_descriptor_name',
+		'fk_descriptor_prefix1',
+		'fk_descriptor_descriptor1',
+		'fk_separator_1',
+		'fk_descriptor_prefix2',
+		'fk_descriptor_descriptor2',
+		'fk_descriptor_prefix3',
+		'fk_descriptor_descriptor3',
+		'fk_group',
+		)
 
-#   else:
-#       manifestation_group = Manifestation.objects.get(id_seal=disisig_entity_number)
+	#gather the information needed to make the names
+	descriptor_list =[]
+	prefix_list= []
+	group_list= []
 
-	# manifestation_set = Manifestation.objects.filter(
-	#   fk_face__fk_seal=digisig_entity_number).select_related(
-	#   'fk_support__fk_part__fk_item__fk_repository').select_related(
-	#   'fk_support__fk_number_currentposition').select_related(
-	#   'fk_support__fk_attachment').select_related(
-	#   'fk_support__fk_supportstatus').select_related(
-	#   'fk_support__fk_nature').select_related(
-	#   'fk_imagestate').select_related(
-	#   'fk_position').select_related(
-	#   'fk_support__fk_part__fk_event').select_related(
-	#   'fk_face__fk_seal').order_by(
-	#   'id_manifestation').values(
-	#   'id_manifestation',
-	#   'fk_position',
-	#   'fk_face',
-	#   'fk_face__fk_seal',
-	#   'fk_support__fk_part__fk_item', 
-	#   'fk_support__fk_part__fk_item__fk_repository__repository_fulltitle',
-	#   'fk_support__fk_part__fk_item__shelfmark',
-	#   'fk_support__fk_supportstatus',
-	#   'fk_support__fk_attachment',
-	#   'fk_support__fk_number_currentposition',
-	#   'fk_support__fk_nature',
-	#   'label_manifestation_repository',
-	#   'fk_imagestate',
-	#   'fk_support__fk_part',
-	#   'fk_support__fk_part__fk_event',
-	#   'fk_support__fk_part__fk_event__repository_startdate',
-	#   'fk_support__fk_part__fk_event__repository_enddate',
-	#   'fk_support__fk_part__fk_event__startdate',
-	#   'fk_support__fk_part__fk_event__enddate')
+	for d in individual_set:
+		descriptor_list.append(d['fk_descriptor_title'])
+		descriptor_list.append(d['fk_descriptor_name'])
+		descriptor_list.append(d['fk_descriptor_descriptor1'])
+		descriptor_list.append(d['fk_descriptor_descriptor2'])
+		descriptor_list.append(d['fk_descriptor_descriptor3'])
+
+	for p in individual_set:
+		prefix_list.append(p['fk_descriptor_prefix1'])
+		prefix_list.append(p['fk_descriptor_prefix2'])
+		prefix_list.append(p['fk_descriptor_prefix3'])
+
+	for g in individual_set:
+		group_list.append(g['fk_group'])
+
+	descriptor_set = Descriptor.objects.filter(
+		pk_descriptor__in=descriptor_list).values_list(
+		'pk_descriptor',
+		'descriptor_modern')
+
+	prefix_set = Prefix.objects.filter(
+		pk_prefix__in=prefix_list).values_list(
+		'pk_prefix',
+		'prefix_english')
+
+	group_set = Groupname.objects.filter(
+		id_group__in=group_list).values_list(
+		'id_group',
+		'group_name')
+
+	descriptor_modern_map = dict(descriptor_set)
+	prefix_english_map = dict(prefix_set)
+	group_name_map = dict(group_set)
+
+	# loop each person and construct the name
+	name_set = {}
+
+	for i in individual_set:
+		name_temp = ""
+		if hasattr(i, 'fk_group') and i.fk_group is not None:
+			name_temp = group_name_map.get(i.fk_group)
+		if hasattr(i, 'fk_descriptor_title') and i.fk_descriptor_title is not None: 
+			name_temp = name_temp + " " + descriptor_modern_map.get(i.fk_descriptor_title)
+		if hasattr(i, 'fk_descriptor_name') and i.fk_descriptor_name is not None: 
+			name_temp = name_temp + " " + descriptor_modern_map.get(i.fk_descriptor_name)
+		name_temp = name_temp + " " + descriptor_modern_map.get(i.fk_descriptor_name)
+		print ("hhewerwe", nametemp)
+		if hasattr(i, 'fk_descriptor_prefix1') and i.fk_descriptor_prefix1: 
+			name_temp = name_temp + " " + prefix_english_map.get(i.fk_descriptor_prefix1)
+		if hasattr(i, 'fk_descriptor_descriptor1') and i.fk_descriptor_descriptor1 is not None: 
+			name_temp = name_temp + " " + descriptor_modern_map.get(i.fk_descriptor1)
+		if hasattr(i, 'fk_descriptor_prefix2') and i.fk_descriptor_prefix2: 
+			name_temp = name_temp + " " + prefix_english_map.get(i.fk_descriptor_prefix2)
+		if hasattr(i, 'fk_descriptor_descriptor2') and i.fk_descriptor_descriptor2 is not None: 
+			name_temp = name_temp + " " + descriptor_modern_map.get(i.fk_descriptor2)
+		if hasattr(i, 'fk_descriptor_prefix3') and i.fk_descriptor_prefix3: 
+			name_temp = name_temp + " " + prefix_english_map.get(i.fk_descriptor_prefix3)
+		if hasattr(i, 'fk_descriptor_descriptor3') and i.fk_descriptor_descriptor3 is not None: 
+			name_temp = name_temp + " " + descriptor_modern_map.get(i.fk_descriptor3)
+		name_set[i['id_individual']] = name_temp.strip()
 
 
+	print(name_set)
+	sdfsd
+	return(name_set)
 
 @sync_to_async
 def seal_displaysetgenerate(manifestation_display_dic, description_set, digisig_entity_number):
@@ -2932,6 +2976,7 @@ def manifestation_displaysetgenerate(manifestation_set, representation_set):
 	manifestation_display_dic = {}
 	listofseals = []
 	listofevents = []
+	listofactors = []
 	description_set = {}
 
 	#the default fallback
@@ -2990,8 +3035,9 @@ def manifestation_displaysetgenerate(manifestation_set, representation_set):
 		manifestation_display_dic[e['id_manifestation']] = manifestation_dic
 		listofseals.append(e['fk_face__fk_seal'])
 		listofevents.append(e['fk_support__fk_part__fk_event'])
+		listofactors.append(e['fk_face__fk_seal__fk_individual_realizer'])
 
-	return(manifestation_display_dic, listofseals, listofevents)
+	return(manifestation_display_dic, listofseals, listofevents, listofactors)
 
 
 @sync_to_async
@@ -3454,6 +3500,9 @@ def namecompiler(individual_target):
 
 	return(nameout)
 
+
+
+
 #gets event set
 def eventset_datedata(event_object, event_dic):
 
@@ -3507,45 +3556,6 @@ def eventset_references(event_object, event_dic):
 	event_dic["referenceset"] = referenceset
 
 	return(event_dic)
-
-# def referenceset_references(individual_object, reference_set):
-
-#   reference_dic = Referenceindividual.objects.filter(
-#       fk_individual=individual_object).select_related(
-#       'fk_event').select_related(
-#       'fk_referencerole').order_by(
-#       "fk_event__startdate", "fk_event__enddate")
-
-#   for r in reference_dic:
-
-#       reference_row = {}
-
-#       #date
-#       if r.fk_event.startdate != None:
-#           reference_row['date'] = str(r.fk_event.startdate) + "-" + str(r.fk_event.enddate)
-#       else:
-#           if r.fk_event.repository_startdate != None:
-#               reference_row['date'] = str(r.fk_event.repository_startdate) + " - " + str(r.fk_event.repository_enddate)
-#       #role
-#       reference_row["role"] = r.fk_referencerole.referencerole
-
-#       #item
-#       part_object = Part.objects.select_related('fk_item').get(fk_event=r.fk_event)
-#       reference_row["item_shelfmark"] = part_object.fk_item.shelfmark
-#       reference_row["item_id"] = part_object.fk_item.id_item
-
-#       #location
-#       locationreference_object = Locationreference.objects.filter(
-#           location_reference_primary=0).select_related(
-#           'fk_locationname__fk_location__fk_region').get(
-#           fk_event=r.fk_event)
-#       reference_row["region"] = locationreference_object.fk_locationname.fk_location.fk_region
-#       reference_row["location_id"] = locationreference_object.fk_locationname.fk_location.id_location
-#       reference_row["location"] = locationreference_object.fk_locationname.fk_location.location
-
-#       reference_set[r.pk_referenceindividual] = reference_row
-
-#   return(reference_set)
 
 @sync_to_async
 def referenceset_references(witness_entity_number):

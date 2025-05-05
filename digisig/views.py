@@ -1372,11 +1372,13 @@ async def seal_page(request, digisig_entity_number):
 
 	manifestation_set, totalmanifestation_count = await manifestation_searchsetgenerate(digisig_entity_number, searchtype="seal")
 	representation_set = await representationsetgenerate2(manifestation_set)
-	manifestation_display_dic, listofseals, listofevents = await manifestation_displaysetgenerate(manifestation_set, representation_set)
+	manifestation_display_dic, listofseals, listofevents, listofactors = await manifestation_displaysetgenerate(manifestation_set, representation_set)
 	description_set = await sealdescription_displaysetgenerate2(listofseals)
+	names_set = await namecompiler_group(listofactors)
 	# location_set = await location_displaysetgenerate(listofevents)
 
 	seal_info = await seal_displaysetgenerate(manifestation_display_dic, description_set, digisig_entity_number)
+
 
 	context = {
 		'pagetitle': pagetitle,

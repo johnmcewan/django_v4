@@ -33,29 +33,24 @@
 				<th>Held by</th>
 				<td>{{part_object.fk_repository}}</td>	
 
-
 				{% if part_object.id_representation != Null %}
+				
 				<td rowspan="6">
 
 					<figure>
-						<img class="modalimage" id="modalimagebaseitem{{forloop.counter}}" src="{{part_object.connection_thumb}}{{part_object.representation_thumbnail}}" alt="{{part_object.id_representation}}" onclick="image2({{forloop.counter}}, 'item')">
+						<img class="modalimage" id="modalimagebaseitem999" src="{{part_object.connection_thumb}}{{part_object.representation_thumbnail}}" alt="{{part_object.id_representation}}" onclick="image2(999, 'item')">
 					</figure>
 
  						<!-- The Modal -->
- 						<div id="myModalitem{{forloop.counter}}" class="modal" style="display: none;">
-						  <span class="close" onclick="modalclose2({{forloop.counter}}, 'item')">&times;</span>
-				  			{% if authenticationstatus == "authenticated" %}
-						  <img class="modal-content" id="modalimgitem{{forloop.counter}}" src="{{part_object.connection_medium}}{{part_object.representation_filename}}" alt="{{part_object.id_representation}}" loading="lazy">
+ 						<div id="myModalitem999" class="modal" style="display: none;">
+						  <span class="close" onclick="modalclose2(999, 'item')">&times;</span>
+						  <img class="modal-content" id="modalimgitem999" src="{{part_object.connection_medium}}{{part_object.representation_filename}}" alt="{{part_object.id_representation}}" loading="lazy">
 
-						   {% else %}
-						  <img class="modal-content" id="modalimgitem{{forloop.counter}}" src="{{part_object.connection_thumb}}{{part_object.representation_filename}}" alt="{{part_object.id_representation}}" loading="lazy">
-
-							{% endif %}  
-
-						  <div class="modal-caption" id="captionitem{{forloop.counter}}"><a href="{% url 'entity' part_object.id_representation %}">Representation details</a>
+						  <div class="modal-caption" id="captionitem999"><a href="{% url 'entity' part_object.id_representation %}">Representation details</a>
 						  </div>
 						</div>
 				</td>
+				
 				{% endif %}
 			</tr>
 			<tr>
