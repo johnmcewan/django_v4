@@ -29,7 +29,7 @@
 				<th>Actor</th>
 				<td>
 					{% if seal_info.fk_individual_realizer != 10000019 %}
-						<a href="{% url 'entity' digisig_entity_number=seal_info.id_individual %}">{{seal_info.actor_label}}</a>
+						<a href="{% url 'entity' digisig_entity_number=seal_info.id_individual %}">{{seal_info.actorname}}</a>
 					{% endif %}
 				</td>
 			</tr>

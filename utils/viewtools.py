@@ -2815,12 +2815,10 @@ def namecompiler_group(listofactors):
 		name_temp += descriptor_modern_map.get(i.get('fk_descriptor_descriptor3'), "")
 		name_set[i['id_individual']] = name_temp.strip()
 
-	print (name_set)
-	sdfsds
 	return(name_set)
 
 @sync_to_async
-def seal_displaysetgenerate(manifestation_display_dic, description_set, digisig_entity_number):
+def seal_displaysetgenerate(manifestation_display_dic, description_set, digisig_entity_number, name_set):
 
 	seal_info = {}
 	seal_info['sealdescription'] = description_set
@@ -2830,31 +2828,42 @@ def seal_displaysetgenerate(manifestation_display_dic, description_set, digisig_
 
 	face_set = Face.objects.filter(
 		fk_seal=digisig_entity_number).select_related(
-		'fk_seal__fk_individual_realizer').select_related(
-		'fk_seal__fk_individual_realizer__fk_group').select_related(
-		'fk_seal__fk_individual_realizer__fk_descriptor_title').select_related(
-		'fk_seal__fk_individual_realizer__fk_descriptor_name').select_related(
-		'fk_seal__fk_individual_realizer__fk_descriptor_prefix1').select_related(
-		'fk_seal__fk_individual_realizer__fk_descriptor_descriptor1').select_related(
-		'fk_seal__fk_individual_realizer__fk_descriptor_prefix2').select_related(
-		'fk_seal__fk_individual_realizer__fk_descriptor_descriptor2').select_related(
-		'fk_seal__fk_individual_realizer__fk_descriptor_prefix3').select_related(
-		'fk_seal__fk_individual_realizer__fk_descriptor_descriptor3').select_related(
-		'fk_class').values(
+		'fk_class',
+		'fk_seal',
+		'fk_faceterm').values(
 		'fk_seal__date_origin',
 		'fk_faceterm__faceterm',
-		'fk_seal__fk_individual_realizer',
-		'fk_seal__fk_individual_realizer__fk_group__group_name',
-		'fk_seal__fk_individual_realizer__fk_descriptor_title__descriptor_modern',
-		'fk_seal__fk_individual_realizer__fk_descriptor_name__descriptor_modern',
-		'fk_seal__fk_individual_realizer__fk_descriptor_prefix1__prefix_english',
-		'fk_seal__fk_individual_realizer__fk_descriptor_descriptor1__descriptor_modern',
-		'fk_seal__fk_individual_realizer__fk_descriptor_prefix2__prefix_english',
-		'fk_seal__fk_individual_realizer__fk_descriptor_descriptor2__descriptor_modern',
-		'fk_seal__fk_individual_realizer__fk_descriptor_prefix3__prefix_english',
-		'fk_seal__fk_individual_realizer__fk_descriptor_descriptor3__descriptor_modern',
 		'fk_seal__date_origin',
+		'fk_seal__fk_individual_realizer',
 		'fk_class')
+
+	# face_set = Face.objects.filter(
+	# 	fk_seal=digisig_entity_number).select_related(
+	# 	'fk_seal__fk_individual_realizer').select_related(
+	# 	'fk_seal__fk_individual_realizer__fk_group').select_related(
+	# 	'fk_seal__fk_individual_realizer__fk_descriptor_title').select_related(
+	# 	'fk_seal__fk_individual_realizer__fk_descriptor_name').select_related(
+	# 	'fk_seal__fk_individual_realizer__fk_descriptor_prefix1').select_related(
+	# 	'fk_seal__fk_individual_realizer__fk_descriptor_descriptor1').select_related(
+	# 	'fk_seal__fk_individual_realizer__fk_descriptor_prefix2').select_related(
+	# 	'fk_seal__fk_individual_realizer__fk_descriptor_descriptor2').select_related(
+	# 	'fk_seal__fk_individual_realizer__fk_descriptor_prefix3').select_related(
+	# 	'fk_seal__fk_individual_realizer__fk_descriptor_descriptor3').select_related(
+	# 	'fk_class').values(
+	# 	'fk_seal__date_origin',
+	# 	'fk_faceterm__faceterm',
+	# 	'fk_seal__fk_individual_realizer',
+	# 	'fk_seal__fk_individual_realizer__fk_group__group_name',
+	# 	'fk_seal__fk_individual_realizer__fk_descriptor_title__descriptor_modern',
+	# 	'fk_seal__fk_individual_realizer__fk_descriptor_name__descriptor_modern',
+	# 	'fk_seal__fk_individual_realizer__fk_descriptor_prefix1__prefix_english',
+	# 	'fk_seal__fk_individual_realizer__fk_descriptor_descriptor1__descriptor_modern',
+	# 	'fk_seal__fk_individual_realizer__fk_descriptor_prefix2__prefix_english',
+	# 	'fk_seal__fk_individual_realizer__fk_descriptor_descriptor2__descriptor_modern',
+	# 	'fk_seal__fk_individual_realizer__fk_descriptor_prefix3__prefix_english',
+	# 	'fk_seal__fk_individual_realizer__fk_descriptor_descriptor3__descriptor_modern',
+	# 	'fk_seal__date_origin',
+	# 	'fk_class')
 
 	for f in face_set:
 		if f['fk_faceterm__faceterm'] == "Obverse":         
@@ -2866,32 +2875,33 @@ def seal_displaysetgenerate(manifestation_display_dic, description_set, digisig_
 
 		seal_info['date_origin'] = f['fk_seal__date_origin']
 		seal_info['id_individual'] = f['fk_seal__fk_individual_realizer']
+		seal_info['actorname'] = name_set[f['fk_seal__fk_individual_realizer']]
 
-		n1= f['fk_seal__fk_individual_realizer__fk_group__group_name'] 
-		n2= f['fk_seal__fk_individual_realizer__fk_descriptor_title__descriptor_modern']
-		n3= f['fk_seal__fk_individual_realizer__fk_descriptor_name__descriptor_modern']
-		n4= f['fk_seal__fk_individual_realizer__fk_descriptor_prefix1__prefix_english']
-		n5= f['fk_seal__fk_individual_realizer__fk_descriptor_descriptor1__descriptor_modern']
-		n6= f['fk_seal__fk_individual_realizer__fk_descriptor_prefix2__prefix_english']
-		n7= f['fk_seal__fk_individual_realizer__fk_descriptor_descriptor2__descriptor_modern']
-		n8= f['fk_seal__fk_individual_realizer__fk_descriptor_prefix3__prefix_english']
-		n9= f['fk_seal__fk_individual_realizer__fk_descriptor_descriptor3__descriptor_modern']
+		# n1= f['fk_seal__fk_individual_realizer__fk_group__group_name'] 
+		# n2= f['fk_seal__fk_individual_realizer__fk_descriptor_title__descriptor_modern']
+		# n3= f['fk_seal__fk_individual_realizer__fk_descriptor_name__descriptor_modern']
+		# n4= f['fk_seal__fk_individual_realizer__fk_descriptor_prefix1__prefix_english']
+		# n5= f['fk_seal__fk_individual_realizer__fk_descriptor_descriptor1__descriptor_modern']
+		# n6= f['fk_seal__fk_individual_realizer__fk_descriptor_prefix2__prefix_english']
+		# n7= f['fk_seal__fk_individual_realizer__fk_descriptor_descriptor2__descriptor_modern']
+		# n8= f['fk_seal__fk_individual_realizer__fk_descriptor_prefix3__prefix_english']
+		# n9= f['fk_seal__fk_individual_realizer__fk_descriptor_descriptor3__descriptor_modern']
 
-		namevariable= ""
-		try: 
-			if (n1 != None): namevariable = n1
-			if (n2 != None): namevariable = namevariable + " " + n2
-			if (n3 != None): namevariable = namevariable + " " + n3
-			if (n4 != None): namevariable = namevariable + " " + n4
-			if (n5 != None): namevariable = namevariable + " " + n5
-			if (n6 != None): namevariable = namevariable + " " + n6
-			if (n7 != None): namevariable = namevariable + " " + n7
-			if (n8 != None): namevariable = namevariable + " " + n8
-			if (n9 != None): namevariable = namevariable + " " + n9
-		except:
-			print ("problem with name")
+		# namevariable= ""
+		# try: 
+		# 	if (n1 != None): namevariable = n1
+		# 	if (n2 != None): namevariable = namevariable + " " + n2
+		# 	if (n3 != None): namevariable = namevariable + " " + n3
+		# 	if (n4 != None): namevariable = namevariable + " " + n4
+		# 	if (n5 != None): namevariable = namevariable + " " + n5
+		# 	if (n6 != None): namevariable = namevariable + " " + n6
+		# 	if (n7 != None): namevariable = namevariable + " " + n7
+		# 	if (n8 != None): namevariable = namevariable + " " + n8
+		# 	if (n9 != None): namevariable = namevariable + " " + n9
+		# except:
+		# 	print ("problem with name")
 
-		seal_info['actor_label'] = namevariable.strip()
+		# seal_info['actor_label'] = namevariable.strip()
 
 	seal_info['manifestation_set'] = manifestation_display_dic
 	seal_info['obverse'] = obverse
@@ -2981,7 +2991,7 @@ def manifestation_displaysetgenerate(manifestation_set, representation_set):
 		manifestation_dic["fk_position"] = e['fk_position']
 		manifestation_dic["id_seal"] = e['fk_face__fk_seal']
 		manifestation_dic['id_individual'] = e['fk_face__fk_seal__fk_individual_realizer']
-		manifestation_dic['outname'] = namecompiler(e['fk_face__fk_seal__fk_individual_realizer'])
+		#manifestation_dic['outname'] = namecompiler(e['fk_face__fk_seal__fk_individual_realizer'])
 		manifestation_dic["id_item"] = e['fk_support__fk_part__fk_item']
 		manifestation_dic["fk_event"] = e['fk_support__fk_part__fk_event']
 		manifestation_dic["repository_fulltitle"] = e['fk_support__fk_part__fk_item__fk_repository__repository_fulltitle']

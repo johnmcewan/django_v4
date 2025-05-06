@@ -515,9 +515,21 @@ async def search(request, searchtype):
 		pagecounternext = qpagination + 1
 		pagecounternextnext = qpagination +2
 
-		manifestation_displayset = await manifestation_construction(manifestation_pageobject)
+		# manifestation_displayset = await manifestation_construction(manifestation_pageobject)
 
-		print (manifestation_displayset)
+	# async def manifestation_construction(manifestation_pageobject):
+	# 	"""
+	# 	Function prepares the data for the seal search (manifestation) page
+	# 	"""
+		representation_set = await representationsetgenerate(manifestation_pageobject)
+		manifestation_set, totalmanifestation_count = await manifestation_searchsetgenerate(manifestation_pageobject)
+		manifestation_display_dic, listofseals, listofevents, listofactors = await manifestation_displaysetgenerate(manifestation_set, representation_set)
+		description_set = await sealdescription_displaysetgenerate2(listofseals)
+		location_set = await location_displaysetgenerate(listofevents)
+		manifestation_displayset = await finalassembly_displaysetgenerate(manifestation_display_dic, location_set, description_set)
+
+	# return manifestation_displayset
+
 
 		context = {
 			'pagetitle': pagetitle, 
@@ -1374,11 +1386,10 @@ async def seal_page(request, digisig_entity_number):
 	representation_set = await representationsetgenerate2(manifestation_set)
 	manifestation_display_dic, listofseals, listofevents, listofactors = await manifestation_displaysetgenerate(manifestation_set, representation_set)
 	description_set = await sealdescription_displaysetgenerate2(listofseals)
-	names_set = await namecompiler_group(listofactors)
+	name_set = await namecompiler_group(listofactors)
 	# location_set = await location_displaysetgenerate(listofevents)
 
-	seal_info = await seal_displaysetgenerate(manifestation_display_dic, description_set, digisig_entity_number)
-
+	seal_info = await seal_displaysetgenerate(manifestation_display_dic, description_set, digisig_entity_number, name_set)
 
 	context = {
 		'pagetitle': pagetitle,
