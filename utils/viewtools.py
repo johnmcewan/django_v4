@@ -136,7 +136,9 @@ def information_terminology_v2():
 	# 	'digisig_column')
 
 	termexamples_object = Terminologyexample.objects.filter(
-		fk_terminology__term_deprecated=0, fk_terminology__level__isnull=False).select_related(
+		fk_terminology__term_deprecated=0, 
+		fk_terminology__level__isnull=False,
+		fk_terminology__level1=1).select_related(
 		'fk_representation__fk_connection',
 		'fk_terminology').values(
 		'fk_terminology__term_sortorder',
@@ -165,17 +167,18 @@ def information_terminology_v2():
 		'fk_representation__representation_filename_hash').order_by('-fk_terminology__level')
 
 	example_set= {}
+	hierarchy_dic = {}
 
 	for ex in termexamples_object:
 		# print (ex['fk_terminology__level'], ex['fk_terminology__term_name'])
 		term_name = ex['fk_terminology__term_name']
-		representation_id = ex['fk_representation']
 
 		# Use setdefault to add the terminology entry if it doesn't exist
 		example_set.setdefault(term_name, {
 			'examples': {},
 			'children': {},
 			'id_term': ex['fk_terminology'],
+			'term_number':ex['fk_terminology__term_number'],
 			'term_group': ex['fk_terminology__digisig_column'],
 			'tooltip': ex['fk_terminology__term_definition'],
 			'level': ex['fk_terminology__level'],
@@ -191,9 +194,11 @@ def information_terminology_v2():
 			'level10': ex['fk_terminology__level10'],
 		})
 
+		representation_id = ex['fk_representation']
+
 		# Create the term representation dictionary
 		term_representation = {
-			representation_id: {  # Use the actual representation ID as the key
+			representation_id: {  
 				"id": representation_id,
 				"connection_thumb": ex['fk_representation__fk_connection__thumb'],
 				"connection_medium": ex['fk_representation__fk_connection__medium'],
@@ -202,10 +207,20 @@ def information_terminology_v2():
 			}
 		}
 
-		# Update the examples dictionary for the current terminology if the representation ID is not already a key
+		# Update the examples dictionary for the current term if representation ID is not a key
 		if representation_id not in example_set[term_name]['examples']:
 			example_set[term_name]['examples'].update(term_representation)
 
+		#what level is the term?
+		childvalues = hierarchy_dic.get(ex['fk_terminology__term_number'], {})
+		example_set[term_name]['children'].update(childvalues) 		
+
+		if ex['fk_terminology__level'] > 1:
+			case_level = ex['fk_terminology__level'] - 1
+			parentlevel = "fk_terminology__level" + str(case_level)
+			parent_class = ex[parentlevel]
+			hierarchy_dic.update({parent_class: {}})
+			hierarchy_dic[parent_class].update({term_name : example_set[term_name]})
 
 	generalset = {}
 	natureset = {}
@@ -218,9 +233,8 @@ def information_terminology_v2():
 		if value['term_group'] == "nature":natureset[key] = value
 		if value['term_group'] == "class":classset[key] = value
 
-	asdasds
 
-	topset= {}
+	topset= example_set
 
 	return (generalset, natureset, topset, shapeset)  
 
