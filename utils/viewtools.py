@@ -113,7 +113,7 @@ def information_ML(qcollection, qclassification):
 
 
 @sync_to_async
-def information_terminology():
+def information_terminology_v2():
 	
 	# term_object = Terminology.objects.filter(
 	# 	term_deprecated=0, level__isnull=False).order_by(
@@ -162,20 +162,33 @@ def information_terminology():
 		'fk_representation__fk_connection__thumb', 
 		'fk_representation__fk_connection__medium', 
 		'fk_representation__representation_thumbnail_hash', 
-		'fk_representation__representation_filename_hash')
+		'fk_representation__representation_filename_hash').order_by('-fk_terminology__level')
 
 	example_set= {}
 
 	for ex in termexamples_object:
+		# print (ex['fk_terminology__level'], ex['fk_terminology__term_name'])
 		term_name = ex['fk_terminology__term_name']
 		representation_id = ex['fk_representation']
 
 		# Use setdefault to add the terminology entry if it doesn't exist
 		example_set.setdefault(term_name, {
 			'examples': {},
+			'children': {},
 			'id_term': ex['fk_terminology'],
 			'term_group': ex['fk_terminology__digisig_column'],
-			'tooltip': ex['fk_terminology__term_definition']
+			'tooltip': ex['fk_terminology__term_definition'],
+			'level': ex['fk_terminology__level'],
+			'level1': ex['fk_terminology__level1'],
+			'level2': ex['fk_terminology__level2'],
+			'level3': ex['fk_terminology__level3'],
+			'level4': ex['fk_terminology__level4'],
+			'level5': ex['fk_terminology__level5'],
+			'level6': ex['fk_terminology__level6'],
+			'level7': ex['fk_terminology__level7'],
+			'level8': ex['fk_terminology__level8'],
+			'level9': ex['fk_terminology__level9'],
+			'level10': ex['fk_terminology__level10'],
 		})
 
 		# Create the term representation dictionary
@@ -193,153 +206,162 @@ def information_terminology():
 		if representation_id not in example_set[term_name]['examples']:
 			example_set[term_name]['examples'].update(term_representation)
 
+
 	generalset = {}
 	natureset = {}
-	topset = {}
+	classset = {}
 	shapeset = {}
 
 	for key, value in example_set.items():
 		if value['term_group'] == "shape": shapeset[key] = value
 		if value['term_group'] == "general":generalset[key] = value
 		if value['term_group'] == "nature":natureset[key] = value
+		if value['term_group'] == "class":classset[key] = value
 
-	return (generalset, natureset, topset, shapeset, term_object)  
+	asdasds
+
+	topset= {}
+
+	return (generalset, natureset, topset, shapeset)  
 
 
+@sync_to_async
+def information_terminology():
 
+	# code for assembling the classification data
+	term_object = Terminology.objects.filter(
+		term_deprecated=0, level__isnull=False).order_by('term_sortorder')
 
-	## code for assembling the classification data
-	# term_object = Terminology.objects.filter(
-	# 	term_deprecated=0, level__isnull=False).order_by('term_sortorder')
+	termobject = []
+	toplevel = term_object.filter(level=1)
 
-	# termobject = []
-	# toplevel = term_object.filter(level=1)
+	fifthset = {}
+	topset = {}
+	level5 = {}
+	level4= {}
+	level3= {}
+	level2= {}
+	level1= {}
 
-	# fifthset = {}
-	# topset = {}
-	# level5 = {}
-	# level4= {}
-	# level3= {}
-	# level2= {}
-	# level1= {}
+	#images for display
+	exampleset1 = {}
+	exampleset2 = {}
+	exampleset3 = {}
+	exampleset4 = {}
+	exampleset5 = {}
 
-	# #images for display
-	# exampleset1 = {}
-	# exampleset2 = {}
-	# exampleset3 = {}
-	# exampleset4 = {}
-	# exampleset5 = {}
+	for t in toplevel:
+		target1 = t.level1
+		name1 = t.term_name
+		idterm1 = t.id_term
+		tooltip1 = t.term_definition
+		exampleset1= examplefinder(idterm1)
 
-	# for t in toplevel:
-	# 	target1 = t.level1
-	# 	name1 = t.term_name
-	# 	idterm1 = t.id_term
-	# 	tooltip1 = t.term_definition
-	# 	exampleset1= examplefinder(idterm1)
+		secondlevel = term_object.filter(level=2, level1=target1)
+		for s in secondlevel:
+			target2 = s.level2
+			name2 = s.term_name
+			idterm2 = s.id_term
+			tooltip2 = s.term_definition
+			exampleset2 = examplefinder(idterm2)
 
-	# 	secondlevel = term_object.filter(level=2, level1=target1)
-	# 	for s in secondlevel:
-	# 		target2 = s.level2
-	# 		name2 = s.term_name
-	# 		idterm2 = s.id_term
-	# 		tooltip2 = s.term_definition
-	# 		exampleset2 = examplefinder(idterm2)
+			thirdlevel = term_object.filter(level=3, level2=target2)
+			for th in thirdlevel:
+				target3 = th.level3
+				name3 = th.term_name
+				idterm3 = th.id_term
+				tooltip3 = th.term_definition
+				exampleset3 = examplefinder(idterm3)
 
-	# 		thirdlevel = term_object.filter(level=3, level2=target2)
-	# 		for th in thirdlevel:
-	# 			target3 = th.level3
-	# 			name3 = th.term_name
-	# 			idterm3 = th.id_term
-	# 			tooltip3 = th.term_definition
-	# 			exampleset3 = examplefinder(idterm3)
+				fourthlevel = term_object.filter(level=4, level3=target3)
+				for fo in fourthlevel:
+					target4 = fo.level4
+					name4 = fo.term_name
+					idterm4 = fo.id_term
+					tooltip4 = fo.term_definition
+					exampleset4 = examplefinder(idterm4)
 
-	# 			fourthlevel = term_object.filter(level=4, level3=target3)
-	# 			for fo in fourthlevel:
-	# 				target4 = fo.level4
-	# 				name4 = fo.term_name
-	# 				idterm4 = fo.id_term
-	# 				tooltip4 = fo.term_definition
-	# 				exampleset4 = examplefinder(idterm4)
-
-	# 				fifthlevel = term_object.filter(level=5, level4=target4)
-	# 				for fi in fifthlevel:
-	# 					name5 = fi.term_name
-	# 					idterm5 = fi.id_term
-	# 					tooltip5 = fi.term_definition
-	# 					exampleset5 = examplefinder(idterm5)
-	# 					fifthset[name5] = {"id_term": idterm5, "examples": exampleset5, "tooltip": tooltip5}
-	# 					exampleset5 = {}
+					fifthlevel = term_object.filter(level=5, level4=target4)
+					for fi in fifthlevel:
+						name5 = fi.term_name
+						idterm5 = fi.id_term
+						tooltip5 = fi.term_definition
+						exampleset5 = examplefinder(idterm5)
+						fifthset[name5] = {"id_term": idterm5, "examples": exampleset5, "tooltip": tooltip5}
+						exampleset5 = {}
 	
-	# 				level4[name4] = {"id_term": idterm4, "children": fifthset, "examples": exampleset4, "tooltip": tooltip4}
-	# 				fifthset = {}
-	# 				exampleset4 = {}
+					level4[name4] = {"id_term": idterm4, "children": fifthset, "examples": exampleset4, "tooltip": tooltip4}
+					fifthset = {}
+					exampleset4 = {}
 	
-	# 			level3[name3] = {"id_term": idterm3, "children": level4, "examples": exampleset3, "tooltip": tooltip3}
-	# 			level4= {}
-	# 			exampleset3 = {}
+				level3[name3] = {"id_term": idterm3, "children": level4, "examples": exampleset3, "tooltip": tooltip3}
+				level4= {}
+				exampleset3 = {}
 
-	# 		level2[name2] = {"id_term": idterm2, "children":level3, "examples": exampleset2, "tooltip": tooltip2}
-	# 		level3 = {}
-	# 		exampleset2 = {}
+			level2[name2] = {"id_term": idterm2, "children":level3, "examples": exampleset2, "tooltip": tooltip2}
+			level3 = {}
+			exampleset2 = {}
 
-	# 	topset[name1] = {"id_term": idterm1, "children": level2, "examples": exampleset1, "tooltip": tooltip1}
-	# 	level2 = {}
-
-
-	# ## code for assembling the shape data
-	# shapeterms = Terminology.objects.filter(digisig_column="shape").order_by("term_name")
-
-	# shapeset = {}
-	# for s in shapeterms:
-	# 	nameshape = s.term_name
-	# 	shapeterm = s.id_term
-	# 	tooltip = s.term_definition
-	# 	examplesetshape = examplefinder(shapeterm)
-	# 	shapeset[nameshape] = {"id_term": shapeterm, "examples":examplesetshape, "tooltip": tooltip}
-
-	# ## code for assembling the nature data
-	# natureterms = Terminology.objects.filter(digisig_column="nature").order_by("term_name")
-
-	# natureset = {}
-	# for n in natureterms:
-	# 	namenature = n.term_name
-	# 	natureterm = n.id_term
-	# 	tooltip = n.term_definition
-	# 	examplesetnature = examplefinder(natureterm)
-	# 	natureset[namenature] = {"id_term": natureterm, "examples":examplesetnature, "tooltip": tooltip}
+		topset[name1] = {"id_term": idterm1, "children": level2, "examples": exampleset1, "tooltip": tooltip1}
+		level2 = {}
 
 
-	# ## code for assembling the general data
-	# generalterms = Terminology.objects.filter(digisig_column="general").order_by("term_name")
+	## code for assembling the shape data
+	shapeterms = Terminology.objects.filter(digisig_column="shape").order_by("term_name")
 
-	# generalset = {}
-	# for g in generalterms:
-	# 	namegeneral = g.term_name
-	# 	generalterm = g.id_term
-	# 	tooltip = g.term_definition
-	# 	examplesetgeneral = examplefinder(generalterm)
-	# 	generalset[namegeneral] = {"id_term": generalterm, "examples":examplesetgeneral, "tooltip": tooltip}
+	shapeset = {}
+	for s in shapeterms:
+		nameshape = s.term_name
+		shapeterm = s.id_term
+		tooltip = s.term_definition
+		examplesetshape = examplefinder(shapeterm)
+		shapeset[nameshape] = {"id_term": shapeterm, "examples":examplesetshape, "tooltip": tooltip}
 
-	# return (generalset, natureset, topset, shapeset, term_object)       
+	## code for assembling the nature data
+	natureterms = Terminology.objects.filter(digisig_column="nature").order_by("term_name")
+
+	natureset = {}
+	for n in natureterms:
+		namenature = n.term_name
+		natureterm = n.id_term
+		tooltip = n.term_definition
+		examplesetnature = examplefinder(natureterm)
+		natureset[namenature] = {"id_term": natureterm, "examples":examplesetnature, "tooltip": tooltip}
+
+
+	## code for assembling the general data
+	generalterms = Terminology.objects.filter(digisig_column="general").order_by("term_name")
+
+	generalset = {}
+	for g in generalterms:
+		namegeneral = g.term_name
+		generalterm = g.id_term
+		tooltip = g.term_definition
+		examplesetgeneral = examplefinder(generalterm)
+		generalset[namegeneral] = {"id_term": generalterm, "examples":examplesetgeneral, "tooltip": tooltip}
+
+	print(topset)
+
+	return (generalset, natureset, topset, shapeset)       
 
 #gets example for classification display
-# def examplefinder(idterm):
-# 	examplesetouta = ""
-# 	examplesetoutb = ""
-# 	examplesetout = {}
+def examplefinder(idterm):
+	examplesetouta = ""
+	examplesetoutb = ""
+	examplesetout = {}
 
-# 	example1 = Terminologyexample.objects.filter(fk_terminology=idterm)
-# 	for e in example1:
-# 		representationobject= e.fk_representation
-# 		key = representationobject.id_representation
-# 		root = representationobject.fk_connection
+	example1 = Terminologyexample.objects.filter(fk_terminology=idterm)
+	for e in example1:
+		representationobject= e.fk_representation
+		key = representationobject.id_representation
+		root = representationobject.fk_connection
 
-# 		examplesetouta=root.thumb + representationobject.representation_thumbnail_hash
-# 		examplesetoutb=root.medium + representationobject.representation_filename_hash
+		examplesetouta=root.thumb + representationobject.representation_thumbnail_hash
+		examplesetoutb=root.medium + representationobject.representation_filename_hash
 
-# 		examplesetout[key] = {"small": examplesetouta, "medium": examplesetoutb}
+		examplesetout[key] = {"small": examplesetouta, "medium": examplesetoutb}
 
-# 	return (examplesetout)
+	return (examplesetout)
 
 ### analysis
 # @sync_to_async

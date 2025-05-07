@@ -786,7 +786,7 @@ async def information(request, infotype):
 	if infotype =="terminology":
 		pagetitle = 'Terminology'
 
-		generalset, natureset, topset, shapeset, term_object = await information_terminology()
+		generalset, natureset, topset, shapeset = await information_terminology_v2()
 
 		context = {
 			'generalobject': generalset,
@@ -794,7 +794,7 @@ async def information(request, infotype):
 			'classterms': topset,
 			'shapeobject': shapeset,
 			'pagetitle': pagetitle,
-			'term_object': term_object,
+			#'term_object': term_object,
 			}
 		template = loader.get_template('digisig/terminology.html')                    
 		return HttpResponse(template.render(context, request))
