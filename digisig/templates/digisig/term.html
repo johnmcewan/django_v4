@@ -49,38 +49,15 @@
 				<td>Predicate</td>
 				<td>Object</td>
 			</tr>
-		{% for statement in statement_object %}
-			<tr>
-				<th>{{statement.label_predicate}}</th>
-				<th>{{statement.skos_vocabulary_uri}}</th>
-				<th><a href="{% url 'entity' digisig_entity_number=statement.skos_data_object %}">{{statement.label_object}}</a></th>
+
+		{% for key, statement in statement_object.items %}
+			<tr>			
+				<th>{{statement.subject__term_name}}</th>
+				<th>{{statement.predicate__vocabulary_uri}}</th>
+				<th><a href="{% url 'entity' digisig_entity_number=statement.skos_data_object %}">{{statement.object__term_name}}</a></th>
 			</tr>
 		{% endfor %}
 		</table>
 	</div>
-
-	<div class="entity_rdf">
-		<div hidden id="rdfajax">{% url 'ajax' digisig_entity_number=term_object.id_term %}</div>
-		<div class="div-caption">
-			RDF 
-			<button id="entitybutton2" onclick="tbtoggle2('entity2', 'entitybutton2')" class="entity">+</button>
-			<button class="RDF-download"><a href="{% url 'data' digisig_entity_number=term_object.id_term %}">Download</a></button> 
-		</div>
-
-		<div>
-		<table id="entity2" style="display:none;">
-			<tr>
-				<th id="rdfelement">
-<!-- 					{% for line in rdftext %}
-					{{line}}<br>
-					{% endfor %} -->
-				</th>
-			</tr>
-		</table>
-		</div>
-	</div>
-
-
-
 
 {% endblock %}

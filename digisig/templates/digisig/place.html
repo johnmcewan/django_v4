@@ -73,67 +73,65 @@
 					<td class="totalrows" colspan="3">Showing {{totaldisplay}} of {{totalrows}}</td>
 				</tr>
 
-		{% for m in manifestation_set.values %}
 
-			{% if forloop.counter|divisibleby:2 %}<tr class="even">{% else %}<tr class="odd">{% endif %}
-				<th class="indent">Held by </th>
-				<td>{{m.repository_fulltitle}}</td>
-				<td rowspan="5" style="text-align:center;">
-					<div class="figure">
-						{% if m.representation_thumbnail_hash != null %}
-						<figure>
-							<img class="modalimage" id="modalimagebase{{forloop.counter}}" src="{{m.thumb}}{{m.representation_thumbnail_hash}}" alt="{{m.id_representation}}" onclick="image({{forloop.counter}})">
-						</figure>
+{% for manifestation in manifestation_set.values %}
+    {% if forloop.counter|divisibleby:2 %}<tr class="even">{% else %}<tr class="odd">{% endif %}
+        <th class="indent">Held by </th>
+        <td>{{ manifestation.repository_fulltitle }}</td>
+        <td rowspan="5" style="text-align:center;">
+            <div class="figure">
+                {% if manifestation.representation_thumbnail_hash != null %}
+                <figure>
+                    <img class="modalimage" id="modalimagebase{{forloop.counter}}" src="{{ manifestation.thumb }}{{ manifestation.representation_thumbnail_hash }}" alt="{{ manifestation.id_representation }}" onclick="image({{forloop.counter}})">
+                </figure>
 
-						<!-- The Modal -->
-						<div id="myModal{{forloop.counter}}" class="modal" style="display: none;">
-						  <span class="close" onclick="modalclose({{forloop.counter}})">&times;</span>
-						  <img class="modal-content" id="modalimg{{forloop.counter}}" src="{{m.medium}}{{m.representation_filename_hash}}" alt="{{m.id_representation}}">
-						  <div class="modal-caption" id="caption{{forloop.counter}}"><a href="{% url 'entity' m.id_representation %}">Representation details</a></div>
-						</div>
+                <div id="myModal{{forloop.counter}}" class="modal" style="display: none;">
+                    <span class="close" onclick="modalclose({{forloop.counter}})">&times;</span>
+                    <img class="modal-content" id="modalimg{{forloop.counter}}" src="{{ manifestation.medium }}{{ manifestation.representation_filename_hash }}" alt="{{ manifestation.id_representation }}">
+                    <div class="modal-caption" id="caption{{forloop.counter}}"><a href="{% url 'entity' manifestation.id_representation %}">Representation details</a></div>
+                </div>
 
-						{% endif %}
-					</div>
-				</td>				
-			</tr>
+                {% endif %}
+            </div>
+        </td>
+    </tr>
 
-			{% if forloop.counter|divisibleby:2 %}<tr class="even">{% else %}<tr class="odd">{% endif %}
-				<th class="indent">Part of item</th>
-				<td><a href="{% url 'item_page' digisig_entity_number=m.id_item %}">{{m.shelfmark}}</a>
-				{% if m.number != 'Undetermined'%}(seal {{m.number}}){% endif %}
-				</td>
-			</tr>
+    {% if forloop.counter|divisibleby:2 %}<tr class="even">{% else %}<tr class="odd">{% endif %}
+        <th class="indent">Part of item</th>
+        <td><a href="{% url 'item_page' digisig_entity_number=manifestation.id_item %}">{{ manifestation.shelfmark }}</a>
+        {% if manifestation.number != 'Undetermined' %}(seal {{ manifestation.number }}){% endif %}
+        </td>
+    </tr>
 
-			{% if m.label_manifestation_repository != null %}
-							{% if forloop.counter|divisibleby:2 %}<tr class="even">{% else %}<tr class="odd">{% endif %}
-				<th class="indent">Reference<a class="help" href="{% url 'entity' digisig_entity_number=10001567 %}" target="_blank"><i class="fas fa-question-circle"></i></a></th>
-				<td>{{m.label_manifestation_repository}}
-				</td>
-			</tr>
-			{% endif %}
+    {% if manifestation.label_manifestation_repository != null %}
+        {% if forloop.counter|divisibleby:2 %}<tr class="even">{% else %}<tr class="odd">{% endif %}
+            <th class="indent">Reference<a class="help" href="{% url 'entity' digisig_entity_number=10001567 %}" target="_blank"><i class="fas fa-question-circle"></i></a></th>
+            <td>{{ manifestation.label_manifestation_repository }}
+            </td>
+        </tr>
+    {% endif %}
 
-			{% if forloop.counter|divisibleby:2 %}<tr class="even">{% else %}<tr class="odd">{% endif %}
-				{% if m.repository_location != null %}
-				<th class="indent">Place </th>
-				<td><a href="{% url 'place_page' digisig_entity_number=m.id_location %}">{{m.repository_location}}</a></td>
-				{% endif %}
-			</tr>
+    {% if forloop.counter|divisibleby:2 %}<tr class="even">{% else %}<tr class="odd">{% endif %}
+        {% if manifestation.repository_location != null %}
+        <th class="indent">Place </th>
+        <td><a href="{% url 'place_page' digisig_entity_number=manifestation.id_location %}">{{ manifestation.repository_location }}</a></td>
+        {% endif %}
+    </tr>
 
-							{% if forloop.counter|divisibleby:2 %}<tr class="even">{% else %}<tr class="odd">{% endif %}
-				{% if m.repository_startdate != null %}
-				<th class="indent">Date</th>
-				<td>{{m.repository_startdate}}
-				{% if m.repository_enddate != null %}- {{m.repository_enddate}}{% endif %}</td>
-				{% endif %}
-			</tr>
+    {% if forloop.counter|divisibleby:2 %}<tr class="even">{% else %}<tr class="odd">{% endif %}
+        {% if manifestation.repository_startdate != null %}
+        <th class="indent">Date</th>
+        <td>{{ manifestation.repository_startdate }}
+        {% if manifestation.repository_enddate != null %}- {{ manifestation.repository_enddate }}{% endif %}</td>
+        {% endif %}
+    </tr>
 
-							{% if forloop.counter|divisibleby:2 %}<tr class="even">{% else %}<tr class="odd">{% endif %}
-				<th class="finalrow indent">Example of </th>
-				<td><a href="{% url 'seal_page' digisig_entity_number=m.id_seal %}">Seal details</a></td>
-			</tr>
+    {% if forloop.counter|divisibleby:2 %}<tr class="even">{% else %}<tr class="odd">{% endif %}
+        <th class="finalrow indent">Example of </th>
+        <td><a href="{% url 'seal_page' digisig_entity_number=manifestation.id_seal %}">Seal details</a></td>
+    </tr>
+{% endfor %}
 
-
-		{% endfor %}
 
 				{% if totalrows > 9 %}
 				<tr>

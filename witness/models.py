@@ -1500,6 +1500,27 @@ class Shape(models.Model):
         managed = False
         db_table = 'shape'
 
+class Skosdata(models.Model):
+    id_skos_data = models.AutoField(primary_key=True)
+    skos_data_subject = models.ForeignKey('Terminology', models.DO_NOTHING, related_name='skos_data_subject', db_column='skos_data_subject', blank=True, null=True)
+    skos_data_predicate = models.ForeignKey('Skosvocabulary', models.DO_NOTHING, related_name='skos_data_predicate', db_column='skos_data_predicate', blank=True, null=True)
+    skos_data_object = models.ForeignKey('Terminology', models.DO_NOTHING, related_name='skos_data_object', db_column='skos_data_object', blank=True, null=True)
+
+    class Meta:
+        managed = False
+        db_table = 'skos_data'
+
+class Skosvocabulary(models.Model):
+    id_skos_vocabulary = models.AutoField(primary_key=True)
+    skos_vocabulary_uri= models.TextField(blank=True, null=True)
+    skos_vocabulary_definition= models.TextField(blank=True, null=True)
+    skos_url= models.TextField(blank=True, null=True)
+    vocabulary= models.TextField(blank=True, null=True)
+
+    class Meta:
+        managed = False
+        db_table = 'skos_vocabulary'
+
 
 class Support(models.Model):
     id_support = models.AutoField(primary_key=True)

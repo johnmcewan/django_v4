@@ -34,12 +34,10 @@
 			<div class="classification" id="general_{{outercounter}}">
 
 		 		<div class="div-level1 tooltip">
-			 		<div class="tooltip"><a href="{% url 'entity' val.id_term %}" target="_blank">{{key}}</a></div>
-		 			<div class="tooltiptext">{{val.tooltip}}</div>					 			
+			 		<div class="tooltip"><a href="{% url 'entity' val.id_term %}" target="_blank">{{val.term_name}}</a></div>
+		 			<div class="tooltiptext">{{val.term_definition}}</div>
 		 		</div>
-
-				 <div></div>
-
+				<div></div>
 
 	 			{% for x, y in val.examples.items %}
 			 	<div>
@@ -89,13 +87,13 @@
 		 		{% with forloop.counter as inner_counter %}
 
 			 	<div>
-			 		<img class="modalimage" id="modalimagebase{{outer_counter}}{{inner_counter}}" src="{{y.small}}" alt="{{x}}" loading="lazy" onclick="image({{outer_counter}}{{inner_counter}})">
+			 		<img class="modalimage" id="modalimagebase{{outer_counter}}{{inner_counter}}" src="{{y.connection_thumb}}{{y.address_thumb}}" alt="{{x}}" loading="lazy" onclick="image({{outer_counter}}{{inner_counter}})">
 			 	</div>
 
 					<!-- The Modal -->
 				<div id="myModal{{outer_counter}}{{inner_counter}}" class="modal" style="display: none;">
 				  <span class="close" onclick="modalclose({{outer_counter}}{{inner_counter}})">&times;</span>
-				  <img class="modal-content" id="modalimg{{outer_counter}}{{inner_counter}}" src="{{y.medium}}" alt="{{x}}" loading="lazy">
+				  <img class="modal-content" id="modalimg{{outer_counter}}{{inner_counter}}" src="{{y.connection_medium}}{{y.address_medium}}" alt="{{x}}" loading="lazy">
 				  <div class="modal-caption" id="caption{{outer_counter}}{{inner_counter}}"><a href="{% url 'entity' val.id_term %}">Term details</a></div>
 				</div>
 				{% endwith %}
@@ -271,8 +269,8 @@
 			<div class="classification" id="shape_{{outercounter}}">
 
 		 		<div class="div-level1 tooltip">
-			 		<div class="tooltip"><a href="{% url 'entity' val.id_term %}" target="_blank">{{key}}</a></div>
-		 			<div class="tooltiptext">{{val.tooltip}}</div>					 			
+					<div class="tooltip"><a href="{% url 'entity' val.id_term %}" target="_blank">{{val.term_name}}</a></div>
+			 		<div class="tooltiptext">{{val.term_definition}}</div>
 		 		</div>
 
 				 <div></div>
@@ -313,8 +311,8 @@
 			<div class="classification" id="nature_{{outer_counter}}">
 
 				<div class="div-level1 tooltip">
-			 		<div class="tooltip"><a href="{% url 'entity' val.id_term %}" target="_blank">{{key}}</a></div>
-		 			<div class="tooltiptext">{{val.tooltip}}</div>					 			
+					<div class="tooltip"><a href="{% url 'entity' val.id_term %}" target="_blank">{{val.term_name}}</a></div>
+			 		<div class="tooltiptext">{{val.term_definition}}</div>
 		 		</div>
 
 		 		<div></div>

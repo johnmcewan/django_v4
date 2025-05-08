@@ -786,7 +786,7 @@ async def information(request, infotype):
 	if infotype =="terminology":
 		pagetitle = 'Terminology'
 
-		generalset, natureset, topset, shapeset = await information_terminology_v2()
+		generalset, natureset, topset, shapeset = await information_terminology()
 
 		context = {
 			'generalobject': generalset,
@@ -794,7 +794,6 @@ async def information(request, infotype):
 			'classterms': topset,
 			'shapeobject': shapeset,
 			'pagetitle': pagetitle,
-			#'term_object': term_object,
 			}
 		template = loader.get_template('digisig/terminology.html')                    
 		return HttpResponse(template.render(context, request))
@@ -1298,31 +1297,17 @@ async def place_page(request, digisig_entity_number):
 	pagecounternextnext = qpagination +2
 
 	representation_set = await representationsetgenerate(manifestation_pageobject)
-	manifestation_set = await manifestation_searchsetgenerate(manifestation_pageobject)
+	manifestation_set, totalmanifestation_count = await manifestation_searchsetgenerate(manifestation_pageobject)
 	manifestation_display_dic, description_set, listofseals, listofevents = await manifestation_displaysetgenerate(manifestation_set, representation_set)
-	description_set = await sealdescription_displaysetgenerate2(listofseals, description_set)
+	description_set = await sealdescription_displaysetgenerate2(listofseals)
 	location_set = await location_displaysetgenerate(listofevents)
-	manifestation_set = await finalassembly_displaysetgenerate(manifestation_display_dic, location_set, description_set)
-
-	# manifestation_set = {}
-
-	# for e in manifestation_object:
-	# 	manifestation_dic = {}
-
-	# 	manifestation_dic = await manifestation_fetchrepresentations(e, manifestation_dic)
-
-	# 	manifestation_dic["repository_location"] = place_object.location
-	# 	manifestation_dic["id_location"] = place_object.id_location
-
-	# 	manifestation_dic = await manifestation_fetchstandardvalues (e, manifestation_dic)
-
-	# 	manifestation_set[e.id_manifestation] = manifestation_dic
+	manifestation_output = await finalassembly_displaysetgenerate(manifestation_display_dic, location_set, description_set)
 
 	context = {
 		'pagetitle': pagetitle,
 		'place_object': place_object,
 		'mapdic': mapdic, 
-		'manifestation_set': manifestation_set,
+		'manifestation_set': manifestation_output,
 		'totalrows': totalrows,
 		'totaldisplay': totaldisplay,
 		'form': form,
@@ -1430,11 +1415,12 @@ async def sealdescription_page(request, digisig_entity_number):
 ################################ TERM ######################################
 
 
-def term_page(request, digisig_entity_number):
+async def term_page(request, digisig_entity_number):
 	pagetitle = 'Term'
 
-	term_object = get_object_or_404(Terminology, id_term=digisig_entity_number)
-	statement_object = Digisigskosdataview.objects.filter(skos_data_subject=digisig_entity_number)
+	term_object, statement_object = await entity_term(digisig_entity_number)
+
+	#print (statement_object)
 
 	template = loader.get_template('digisig/term.html')
 	context = {
