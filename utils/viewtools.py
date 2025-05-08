@@ -170,13 +170,15 @@ def information_terminology_v2():
 	hierarchy_dic = {}
 
 	for ex in termexamples_object:
-		# print (ex['fk_terminology__level'], ex['fk_terminology__term_name'])
-		term_name = ex['fk_terminology__term_name']
+		print (ex['fk_terminology__level'], ex['fk_terminology__term_name'], ex['fk_terminology__term_number'])
+		#term_name = ex['fk_terminology__term_name']
+		term_number = ex['fk_terminology__term_number']
 
 		# Use setdefault to add the terminology entry if it doesn't exist
-		example_set.setdefault(term_name, {
+		example_set.setdefault(ex['fk_terminology__term_number'], {
 			'examples': {},
 			'children': {},
+			'term_name': ex['fk_terminology__term_name'],
 			'id_term': ex['fk_terminology'],
 			'term_number':ex['fk_terminology__term_number'],
 			'term_group': ex['fk_terminology__digisig_column'],
@@ -208,19 +210,27 @@ def information_terminology_v2():
 		}
 
 		# Update the examples dictionary for the current term if representation ID is not a key
-		if representation_id not in example_set[term_name]['examples']:
-			example_set[term_name]['examples'].update(term_representation)
+		if representation_id not in example_set[term_number]['examples']:
+			example_set[term_number]['examples'].update(term_representation)
 
-		#what level is the term?
-		childvalues = hierarchy_dic.get(ex['fk_terminology__term_number'], {})
-		example_set[term_name]['children'].update(childvalues) 		
+		# # is the current value in the hierarchy dictionary?
+		# currentvalue = hierarchy_dic.get(ex['fk_terminology__term_number'], {})
 
-		if ex['fk_terminology__level'] > 1:
-			case_level = ex['fk_terminology__level'] - 1
-			parentlevel = "fk_terminology__level" + str(case_level)
-			parent_class = ex[parentlevel]
+		# #update hierarchy data
+		# hierarchy_dic[ex['fk_terminology__term_number']].update(example_set[term_name])
+
+	for term in example_set:	
+		if term['level'] > 1:
+			parentlevel = term['level'] - 1
+			parent_level_base = "level" + str((term['level'])-1)
+			parent_class = term[parent_level_base]
+			
+			
+
+			example_set
 			hierarchy_dic.update({parent_class: {}})
 			hierarchy_dic[parent_class].update({term_name : example_set[term_name]})
+			example_set[term_name]['children'].update(childvalues)
 
 	generalset = {}
 	natureset = {}
@@ -233,9 +243,10 @@ def information_terminology_v2():
 		if value['term_group'] == "nature":natureset[key] = value
 		if value['term_group'] == "class":classset[key] = value
 
-
 	topset= example_set
-
+	#print (topset['Animal']['children'])
+	#print ("hello", hierarchy_dic)
+	sksksksk
 	return (generalset, natureset, topset, shapeset)  
 
 
