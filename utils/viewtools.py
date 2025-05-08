@@ -115,30 +115,9 @@ def information_ML(qcollection, qclassification):
 @sync_to_async
 def information_terminology_v2():
 	
-	# term_object = Terminology.objects.filter(
-	# 	term_deprecated=0, level__isnull=False).order_by(
-	# 	'term_sortorder').values(
-	# 	'id_term',
-	# 	'term_number',
-	# 	'level',
-	# 	'level1',
-	# 	'level2',
-	# 	'level3',
-	# 	'level4',
-	# 	'level5',
-	# 	'level6',
-	# 	'level7',
-	# 	'level8',
-	# 	'level9',
-	# 	'level10',
-	# 	'term_definition',
-	# 	'term_name',
-	# 	'digisig_column')
-
 	termexamples_object = Terminologyexample.objects.filter(
 		fk_terminology__term_deprecated=0, 
-		fk_terminology__level__isnull=False,
-		fk_terminology__level1=1).select_related(
+		fk_terminology__level__isnull=False).select_related(
 		'fk_representation__fk_connection',
 		'fk_terminology').values(
 		'fk_terminology__term_sortorder',
@@ -167,10 +146,9 @@ def information_terminology_v2():
 		'fk_representation__representation_filename_hash').order_by('-fk_terminology__level')
 
 	example_set= {}
-	hierarchy_dic = {}
 
 	for ex in termexamples_object:
-		print (ex['fk_terminology__level'], ex['fk_terminology__term_name'], ex['fk_terminology__term_number'])
+		#print (ex['fk_terminology__level'], ex['fk_terminology__term_name'], ex['fk_terminology__term_number'])
 		#term_name = ex['fk_terminology__term_name']
 		term_number = ex['fk_terminology__term_number']
 
@@ -213,41 +191,53 @@ def information_terminology_v2():
 		if representation_id not in example_set[term_number]['examples']:
 			example_set[term_number]['examples'].update(term_representation)
 
-		# # is the current value in the hierarchy dictionary?
-		# currentvalue = hierarchy_dic.get(ex['fk_terminology__term_number'], {})
+	topset = {}
 
-		# #update hierarchy data
-		# hierarchy_dic[ex['fk_terminology__term_number']].update(example_set[term_name])
+	for key, value in example_set.items():
+		if value['level'] > 1:
+			parentlevel = value['level'] - 1
+			parent_level_base = "level" + str((value['level'])-1)
 
-	for term in example_set:	
-		if term['level'] > 1:
-			parentlevel = term['level'] - 1
-			parent_level_base = "level" + str((term['level'])-1)
-			parent_class = term[parent_level_base]
-			
-			
+			# Construct the key to access the parent term correctly
+			parent_level_value = value[parent_level_base]
 
-			example_set
-			hierarchy_dic.update({parent_class: {}})
-			hierarchy_dic[parent_class].update({term_name : example_set[term_name]})
-			example_set[term_name]['children'].update(childvalues)
+			# Ensure the parent exists in example_set before trying to add children
+			if parent_level_value in example_set:
+				example_set[parent_level_value]['children'][value['term_name']] = value
+			else:
+				print(f"Warning: Parent level '{parent_level_value}' not found for term '{value['term_name']}'")
+
+		elif value['level'] == 1:
+			topset[value['term_name']] = value
+
+		else:
+			print("error", value)
+
+	otherterm_object = Terminology.objects.filter(
+		term_deprecated=0, level__isnull=True).order_by(
+		'term_sortorder').values(
+		'id_term',
+		'term_definition',
+		'term_name',
+		'digisig_column')
+
+	for o in otherterm_object:
+		if o['digisig_column'] == "shape": shapeset[key] = valueset
+		if o.term_group == "general":generalset[key] = valueset
+		if o.term_group == "nature":natureset[key] = valueset
+		if o.term_group == "class":classset[key] = valueset
+
 
 	generalset = {}
 	natureset = {}
-	classset = {}
 	shapeset = {}
 
-	for key, value in example_set.items():
-		if value['term_group'] == "shape": shapeset[key] = value
-		if value['term_group'] == "general":generalset[key] = value
-		if value['term_group'] == "nature":natureset[key] = value
-		if value['term_group'] == "class":classset[key] = value
-
-	topset= example_set
-	#print (topset['Animal']['children'])
-	#print ("hello", hierarchy_dic)
-	sksksksk
 	return (generalset, natureset, topset, shapeset)  
+
+	# print (topset['Animal']['children'])
+	# sksksksk
+
+
 
 
 @sync_to_async
