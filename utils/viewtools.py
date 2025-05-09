@@ -2354,16 +2354,6 @@ def itemform_options(form):
 		if entry not in repositories_all_options:
 			repositories_all_options.append(entry)  
 				
-	#repositories_all_options.append((s['fk_repository'], s['fk_repository_id__repository_fulltitle']))
-
-	# for e in Series.objects.exclude(series_name__istartswith="z").order_by('fk_repository'):
-	#   repository = e.fk_repository
-	#   appendvalue = repository.repository + " : " + e.series_name
-	#   series_all_options.append((e.pk_series, appendvalue))
-
-	# for e in Repository.objects.order_by('repository_fulltitle'):
-	#   repositories_all_options.append((e.fk_repository, e.repository_fulltitle))
-
 	form.fields['series'].choices = series_all_options
 	form.fields['repository'].choices = repositories_all_options
 
@@ -2589,8 +2579,8 @@ def datesearchfilter(form):
 @sync_to_async
 def manifestationsform_options(form):
 
-	repositories_options = [('','None')]
-	series_options = [('', 'None')]
+	#repositories_options = [('','None')]
+	#series_options = [('', 'None')]
 	location_options = [('', 'None')]
 	nature_options = [('', 'None')]
 	representation_options = [('', 'None')]
@@ -2599,12 +2589,12 @@ def manifestationsform_options(form):
 	classname_options = [('', 'None')]
 	group_options = [('', 'None')]
 
-	for e in Repository.objects.order_by('repository_fulltitle'):
-		repositories_options.append((e.fk_repository, e.repository_fulltitle))
+	# for e in Repository.objects.order_by('repository_fulltitle'):
+	# 	repositories_options.append((e.fk_repository, e.repository_fulltitle))
 
-	for e in Series.objects.select_related('fk_repository').order_by('series_name').distinct('series_name'):
-		appendvalue = str(e.fk_repository) + " : " + e.series_name
-		series_options.append((e.pk_series, appendvalue))
+	# for e in Series.objects.select_related('fk_repository').order_by('series_name').distinct('series_name'):
+	# 	appendvalue = str(e.fk_repository) + " : " + e.series_name
+	# 	series_options.append((e.pk_series, appendvalue))
 
 	for e in Region.objects.order_by('region_label').distinct('region_label'):
 		location_options.append((e.pk_region, e.region_label))
@@ -2627,8 +2617,8 @@ def manifestationsform_options(form):
 	for e in Printgroup.objects.order_by('printgroup_order'):
 		group_options.append((e.pk_printgroup, e.printgroup))
 
-	form.fields['repository'].choices = repositories_options
-	form.fields['series'].choices = series_options  
+	# form.fields['repository'].choices = repositories_options
+	# form.fields['series'].choices = series_options  
 	form.fields['location'].choices = location_options
 	form.fields['nature'].choices = nature_options
 	form.fields['representation'].choices = representation_options
@@ -3124,8 +3114,6 @@ def manifestation_searchsetgenerate(searchvalue, searchtype=None):
 	)
 
 	totalmanifestation_count = manifestation_set.count()
-
-	print (type(manifestation_set), 'atenmdof')
 
 	return (manifestation_set, totalmanifestation_count)
 

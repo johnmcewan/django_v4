@@ -495,7 +495,10 @@ async def search(request, searchtype):
 		pagetitle = 'Impressions, Matrices and Casts'
 
 		form = ManifestationForm(request.POST or None)
+		# form options for manifestation
 		form = await manifestationsform_options(form)
+		# add the section of form that deals with series and repositories
+		form = await itemform_options(form)
 
 		# code prepares the array of series and repositories to pass to the frontend
 		series_object= await seriesset()
@@ -922,25 +925,11 @@ async def actor_page(request, digisig_entity_number):
 	manifestation_pageobject, totalrows, totaldisplay = await defaultpagination(manifestation_object, qpagination)
 
 	representation_set = await representationsetgenerate(manifestation_pageobject)
-	manifestation_set = await manifestation_searchsetgenerate(manifestation_pageobject)
+	manifestation_set, totalmanifestation_count = await manifestation_searchsetgenerate(manifestation_pageobject)
 	manifestation_display_dic, description_set, listofseals, listofevents = await manifestation_displaysetgenerate(manifestation_set, representation_set)
-	description_set = await sealdescription_displaysetgenerate2(listofseals, description_set)
+	description_set = await sealdescription_displaysetgenerate2(listofseals)
 	location_set = await location_displaysetgenerate(listofevents)
 	manifestation_set = await finalassembly_displaysetgenerate(manifestation_display_dic, location_set, description_set)
-
-	# manifestation_set={}
-
-	# for e in manifestation_object:
-	# 	manifestation_dic = {}
-	# 	manifestation_dic = await manifestation_fetchrepresentations(e, manifestation_dic)
-	# 	manifestation_dic = await manifestation_fetchsealdescriptions(e, manifestation_dic)
-	# 	manifestation_dic = await manifestation_fetchstandardvalues (e, manifestation_dic)
-	# 	manifestation_set[e.id_manifestation] = manifestation_dic
-
-	# list of relationships for each actor
-	# relationship_object = []			
-	# relationship_object = Digisigrelationshipview.objects.filter(fk_individual = digisig_entity_number)
-	# relationshipnumber = len(relationship_object)
 
 	relationship_object, relationshipnumber = await relationship_dataset(digisig_entity_number)
 
