@@ -2894,81 +2894,6 @@ async def manifestation_dataassemble(manifestation_pageobject):
 
 
 @sync_to_async
-def namecompiler_group(listofactors):
-
-	#create the list of people whose names need to be formulated
-	individual_set = Individual.objects.filter(id_individual__in=listofactors).values(
-		'id_individual',
-		'fk_descriptor_title',
-		'fk_descriptor_name',
-		'fk_descriptor_prefix1',
-		'fk_descriptor_descriptor1',
-		'fk_separator_1',
-		'fk_descriptor_prefix2',
-		'fk_descriptor_descriptor2',
-		'fk_descriptor_prefix3',
-		'fk_descriptor_descriptor3',
-		'fk_group',
-		)
-
-	#gather the information needed to make the names
-	descriptor_list =[]
-	prefix_list= []
-	group_list= []
-
-	for d in individual_set:
-		descriptor_list.append(d['fk_descriptor_title'])
-		descriptor_list.append(d['fk_descriptor_name'])
-		descriptor_list.append(d['fk_descriptor_descriptor1'])
-		descriptor_list.append(d['fk_descriptor_descriptor2'])
-		descriptor_list.append(d['fk_descriptor_descriptor3'])
-
-	for p in individual_set:
-		prefix_list.append(p['fk_descriptor_prefix1'])
-		prefix_list.append(p['fk_descriptor_prefix2'])
-		prefix_list.append(p['fk_descriptor_prefix3'])
-
-	for g in individual_set:
-		group_list.append(g['fk_group'])
-
-	descriptor_set = Descriptor.objects.filter(
-		pk_descriptor__in=descriptor_list).values_list(
-		'pk_descriptor',
-		'descriptor_modern')
-
-	prefix_set = Prefix.objects.filter(
-		pk_prefix__in=prefix_list).values_list(
-		'pk_prefix',
-		'prefix_english')
-
-	group_set = Groupname.objects.filter(
-		id_group__in=group_list).values_list(
-		'id_group',
-		'group_name')
-
-	descriptor_modern_map = dict(descriptor_set)
-	prefix_english_map = dict(prefix_set)
-	group_name_map = dict(group_set)
-
-	# loop each person and construct the name
-	name_set = {}
-
-	for i in individual_set:
-		name_temp = ""
-		name_temp += group_name_map.get(i.get('i.fk_group'), "") + " " if group_name_map else ""
-		name_temp += descriptor_modern_map.get(i.get('fk_descriptor_title'), "") + " "
-		name_temp += descriptor_modern_map.get(i.get('fk_descriptor_name'), "") + " "
-		name_temp += prefix_english_map.get(i.get('fk_descriptor_prefix1'), "") + " "
-		name_temp += descriptor_modern_map.get(i.get('fk_descriptor_descriptor1'), "") + " "
-		name_temp += prefix_english_map.get(i.get('fk_descriptor_prefix2'), "") + " "
-		name_temp += descriptor_modern_map.get(i.get('fk_descriptor_descriptor2'), "") + " "
-		name_temp += prefix_english_map.get(i.get('fk_descriptor_prefix3'), "") + " "
-		name_temp += descriptor_modern_map.get(i.get('fk_descriptor_descriptor3'), "")
-		name_set[i['id_individual']] = name_temp.strip()
-
-	return(name_set)
-
-@sync_to_async
 def seal_displaysetgenerate(manifestation_display_dic, description_set, digisig_entity_number, name_set):
 
 	seal_info = {}
@@ -2988,34 +2913,6 @@ def seal_displaysetgenerate(manifestation_display_dic, description_set, digisig_
 		'fk_seal__fk_individual_realizer',
 		'fk_class')
 
-	# face_set = Face.objects.filter(
-	# 	fk_seal=digisig_entity_number).select_related(
-	# 	'fk_seal__fk_individual_realizer').select_related(
-	# 	'fk_seal__fk_individual_realizer__fk_group').select_related(
-	# 	'fk_seal__fk_individual_realizer__fk_descriptor_title').select_related(
-	# 	'fk_seal__fk_individual_realizer__fk_descriptor_name').select_related(
-	# 	'fk_seal__fk_individual_realizer__fk_descriptor_prefix1').select_related(
-	# 	'fk_seal__fk_individual_realizer__fk_descriptor_descriptor1').select_related(
-	# 	'fk_seal__fk_individual_realizer__fk_descriptor_prefix2').select_related(
-	# 	'fk_seal__fk_individual_realizer__fk_descriptor_descriptor2').select_related(
-	# 	'fk_seal__fk_individual_realizer__fk_descriptor_prefix3').select_related(
-	# 	'fk_seal__fk_individual_realizer__fk_descriptor_descriptor3').select_related(
-	# 	'fk_class').values(
-	# 	'fk_seal__date_origin',
-	# 	'fk_faceterm__faceterm',
-	# 	'fk_seal__fk_individual_realizer',
-	# 	'fk_seal__fk_individual_realizer__fk_group__group_name',
-	# 	'fk_seal__fk_individual_realizer__fk_descriptor_title__descriptor_modern',
-	# 	'fk_seal__fk_individual_realizer__fk_descriptor_name__descriptor_modern',
-	# 	'fk_seal__fk_individual_realizer__fk_descriptor_prefix1__prefix_english',
-	# 	'fk_seal__fk_individual_realizer__fk_descriptor_descriptor1__descriptor_modern',
-	# 	'fk_seal__fk_individual_realizer__fk_descriptor_prefix2__prefix_english',
-	# 	'fk_seal__fk_individual_realizer__fk_descriptor_descriptor2__descriptor_modern',
-	# 	'fk_seal__fk_individual_realizer__fk_descriptor_prefix3__prefix_english',
-	# 	'fk_seal__fk_individual_realizer__fk_descriptor_descriptor3__descriptor_modern',
-	# 	'fk_seal__date_origin',
-	# 	'fk_class')
-
 	for f in face_set:
 		if f['fk_faceterm__faceterm'] == "Obverse":         
 			obverse['faceterm'] = f['fk_faceterm__faceterm']
@@ -3027,32 +2924,6 @@ def seal_displaysetgenerate(manifestation_display_dic, description_set, digisig_
 		seal_info['date_origin'] = f['fk_seal__date_origin']
 		seal_info['id_individual'] = f['fk_seal__fk_individual_realizer']
 		seal_info['actorname'] = name_set[f['fk_seal__fk_individual_realizer']]
-
-		# n1= f['fk_seal__fk_individual_realizer__fk_group__group_name'] 
-		# n2= f['fk_seal__fk_individual_realizer__fk_descriptor_title__descriptor_modern']
-		# n3= f['fk_seal__fk_individual_realizer__fk_descriptor_name__descriptor_modern']
-		# n4= f['fk_seal__fk_individual_realizer__fk_descriptor_prefix1__prefix_english']
-		# n5= f['fk_seal__fk_individual_realizer__fk_descriptor_descriptor1__descriptor_modern']
-		# n6= f['fk_seal__fk_individual_realizer__fk_descriptor_prefix2__prefix_english']
-		# n7= f['fk_seal__fk_individual_realizer__fk_descriptor_descriptor2__descriptor_modern']
-		# n8= f['fk_seal__fk_individual_realizer__fk_descriptor_prefix3__prefix_english']
-		# n9= f['fk_seal__fk_individual_realizer__fk_descriptor_descriptor3__descriptor_modern']
-
-		# namevariable= ""
-		# try: 
-		# 	if (n1 != None): namevariable = n1
-		# 	if (n2 != None): namevariable = namevariable + " " + n2
-		# 	if (n3 != None): namevariable = namevariable + " " + n3
-		# 	if (n4 != None): namevariable = namevariable + " " + n4
-		# 	if (n5 != None): namevariable = namevariable + " " + n5
-		# 	if (n6 != None): namevariable = namevariable + " " + n6
-		# 	if (n7 != None): namevariable = namevariable + " " + n7
-		# 	if (n8 != None): namevariable = namevariable + " " + n8
-		# 	if (n9 != None): namevariable = namevariable + " " + n9
-		# except:
-		# 	print ("problem with name")
-
-		# seal_info['actor_label'] = namevariable.strip()
 
 	seal_info['manifestation_set'] = manifestation_display_dic
 	seal_info['obverse'] = obverse
@@ -3071,10 +2942,11 @@ def manifestation_searchsetgenerate(searchvalue, searchtype=None):
 	elif searchtype == "seal":
 		manifestation_set = Manifestation.objects.filter(fk_face__fk_seal=searchvalue)      
 	
+	# a set of seal manifestations taken from the paginator function
 	else:
 		manifestation_set = Manifestation.objects.filter(id_manifestation__in=searchvalue.object_list)
 
-	manifestation_set = manifestation_set.select_related(
+	manifestation_out = manifestation_set.select_related(
 		'fk_support__fk_part__fk_item__fk_repository',
 		'fk_support__fk_number_currentposition',
 		'fk_support__fk_attachment',
@@ -3099,7 +2971,9 @@ def manifestation_searchsetgenerate(searchvalue, searchtype=None):
 		'fk_support__fk_part__fk_item__shelfmark',
 		'fk_support__fk_supportstatus',
 		'fk_support__fk_attachment',
+		'fk_support__fk_attachment__attachment',
 		'fk_support__fk_number_currentposition',
+		'fk_support__fk_number_currentposition__number',
 		'fk_support__fk_nature',
 		'label_manifestation_repository',
 		'fk_imagestate',
@@ -3115,14 +2989,12 @@ def manifestation_searchsetgenerate(searchvalue, searchtype=None):
 
 	totalmanifestation_count = manifestation_set.count()
 
-	return (manifestation_set, totalmanifestation_count)
+	return (manifestation_out, totalmanifestation_count)
 
 
 @sync_to_async
 def manifestation_displaysetgenerate(manifestation_set, representation_set):
 ### maindata for manifestations
-
-	print (type(manifestation_set))
 
 	manifestation_display_dic = {}
 	listofseals = []
@@ -3150,8 +3022,9 @@ def manifestation_displaysetgenerate(manifestation_set, representation_set):
 		manifestation_dic["repository_fulltitle"] = e['fk_support__fk_part__fk_item__fk_repository__repository_fulltitle']
 		manifestation_dic["shelfmark"] = e['fk_support__fk_part__fk_item__shelfmark']
 		manifestation_dic["fk_supportstatus"] = e['fk_support__fk_supportstatus']
-		manifestation_dic["fk_attachment"] = e['fk_support__fk_attachment'] 
-		manifestation_dic["number"] = e['fk_support__fk_number_currentposition']
+		manifestation_dic["fk_attachment"] = e['fk_support__fk_attachment']
+		manifestation_dic["attachment"] = e['fk_support__fk_attachment__attachment'] 
+		manifestation_dic["number"] = e['fk_support__fk_number_currentposition__number']
 		manifestation_dic["support_type"] = e['fk_support__fk_nature']
 		manifestation_dic["label_manifestation_repository"] = e['label_manifestation_repository']
 		
@@ -3601,6 +3474,8 @@ def sealinfo_classvalue (face_case):
 
 	return(classvalue)
 
+###### Actor name generators #####
+
 @sync_to_async
 def actorfinder(manifestation_set):
 
@@ -3651,7 +3526,80 @@ def namecompiler(individual_target):
 
 	return(nameout)
 
+@sync_to_async
+def namecompiler_group(listofactors):
 
+	#create the list of people whose names need to be formulated
+	individual_set = Individual.objects.filter(id_individual__in=listofactors).values(
+		'id_individual',
+		'fk_descriptor_title',
+		'fk_descriptor_name',
+		'fk_descriptor_prefix1',
+		'fk_descriptor_descriptor1',
+		'fk_separator_1',
+		'fk_descriptor_prefix2',
+		'fk_descriptor_descriptor2',
+		'fk_descriptor_prefix3',
+		'fk_descriptor_descriptor3',
+		'fk_group',
+		)
+
+	#gather the information needed to make the names
+	descriptor_list =[]
+	prefix_list= []
+	group_list= []
+
+	for d in individual_set:
+		descriptor_list.append(d['fk_descriptor_title'])
+		descriptor_list.append(d['fk_descriptor_name'])
+		descriptor_list.append(d['fk_descriptor_descriptor1'])
+		descriptor_list.append(d['fk_descriptor_descriptor2'])
+		descriptor_list.append(d['fk_descriptor_descriptor3'])
+
+	for p in individual_set:
+		prefix_list.append(p['fk_descriptor_prefix1'])
+		prefix_list.append(p['fk_descriptor_prefix2'])
+		prefix_list.append(p['fk_descriptor_prefix3'])
+
+	for g in individual_set:
+		group_list.append(g['fk_group'])
+
+	descriptor_set = Descriptor.objects.filter(
+		pk_descriptor__in=descriptor_list).values_list(
+		'pk_descriptor',
+		'descriptor_modern')
+
+	prefix_set = Prefix.objects.filter(
+		pk_prefix__in=prefix_list).values_list(
+		'pk_prefix',
+		'prefix_english')
+
+	group_set = Groupname.objects.filter(
+		id_group__in=group_list).values_list(
+		'id_group',
+		'group_name')
+
+	descriptor_modern_map = dict(descriptor_set)
+	prefix_english_map = dict(prefix_set)
+	group_name_map = dict(group_set)
+
+	# loop each person and construct the name
+	name_set = {}
+
+	for i in individual_set:
+		name_temp = ""
+		name_temp += group_name_map.get(i.get('i.fk_group'), "") + " " if group_name_map else ""
+		name_temp += descriptor_modern_map.get(i.get('fk_descriptor_title'), "") + " "
+		name_temp += descriptor_modern_map.get(i.get('fk_descriptor_name'), "") + " "
+		name_temp += prefix_english_map.get(i.get('fk_descriptor_prefix1'), "") + " "
+		name_temp += descriptor_modern_map.get(i.get('fk_descriptor_descriptor1'), "") + " "
+		name_temp += prefix_english_map.get(i.get('fk_descriptor_prefix2'), "") + " "
+		name_temp += descriptor_modern_map.get(i.get('fk_descriptor_descriptor2'), "") + " "
+		name_temp += prefix_english_map.get(i.get('fk_descriptor_prefix3'), "") + " "
+		name_temp += descriptor_modern_map.get(i.get('fk_descriptor_descriptor3'), "")
+		name_set[i['id_individual']] = name_temp.strip()
+
+	return(name_set)
 
 
 #gets event set
@@ -3763,9 +3711,6 @@ def referenceset_references(witness_entity_number):
 
 			#date
 			if r['fk_event__startdate'] != None:
-				#reference_row['startyear'] = r['fk_event__startdate']
-				#reference_row['endyear'] = r['fk_event__enddate']
-
 				startyear = int(str(r['fk_event__startdate'])[:4])
 				endyear = int(str(r['fk_event__enddate'])[:4])
 
@@ -3774,9 +3719,6 @@ def referenceset_references(witness_entity_number):
 				else:
 					reference_row['date'] = str(startyear)
 			elif r['fk_event__repository_startdate'] != None:
-				#reference_row['startyear'] = r['fk_event__repository_startdate']
-				#reference_row['endyear'] = r['fk_event__repository_enddate']
-
 				startyear = int(str(r['fk_event__repository_startdate'])[:4])
 				endyear = int(str(r['fk_event__repository_enddate'])[:4])
 
@@ -3795,7 +3737,6 @@ def referenceset_references(witness_entity_number):
 				reference_row["total"] = position_dic[eventvalue]['total']
 
 			#item
-			# part_object = Part.objects.select_related('fk_item').get(fk_event=r.fk_event)
 			reference_row["item_shelfmark"] = r['fk_event__part__fk_item__shelfmark']
 			reference_row["item_id"] = r['fk_event__part__fk_item__id_item']
 			reference_row["part_id"] = r['fk_event__part__id_part']

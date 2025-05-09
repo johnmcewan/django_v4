@@ -640,73 +640,6 @@ async def search(request, searchtype):
 		template = loader.get_template('digisig/search_place.html')
 		return HttpResponse(template.render(context, request))
 
-
-
-		# placeset = Location.objects.filter(locationname__locationreference__fk_locationstatus=1, longitude__isnull=False, latitude__isnull=False).order_by('location')
-
-		# pagetitle = 'Places'
-		# regionselect = False
-		# qpagination = 1
-		# place_dict = []
-		# center_long = 0
-		# center_lat = 55
-
-		# if request.method == 'POST':
-
-		# 	form = PlaceForm(request.POST)
-		# 	if form.is_valid():
-		# 		qregion = form.cleaned_data['region']
-		# 		qcounty = form.cleaned_data['county']   
-		# 		qpagination = form.cleaned_data['pagination']
-		# 		qlocation_name = form.cleaned_data['location_name']
-
-		# 		if qregion.isdigit():
-		# 			if int(qregion) > 0:
-		# 				placeset = placeset.filter(fk_region__fk_regiondisplay=qregion)
-		# 				regionselect = True
-
-		# 		if regionselect == False:
-		# 			if qcounty.isdigit():
-		# 				if int(qcounty) > 0:
-		# 					placeset = placeset.filter(fk_region=qcounty)
-
-		# 		if len(qlocation_name) > 0:
-		# 			placeset = placeset.filter(location__icontains=qlocation_name)                  
-
-		# 		form = PlaceForm(request.POST)
-
-		# else:
-		# 	form = PlaceForm()
-		# 	qpagination = 1
-
-		# placeset = placeset.annotate(count=Count('locationname__locationreference'))
-
-		# placeset, totalrows, totaldisplay, qpagination = defaultpagination(placeset, qpagination) 
-		# pagecountercurrent = qpagination
-		# pagecounternext = qpagination + 1
-		# pagecounternextnext = qpagination +2		
-
-		# if len(placeset) > 0:
-		# 	place_dict, center_long, center_lat = mapgenerator2(placeset)
-
-		# context = {
-		# 	'pagetitle': pagetitle,
-		# 	'placeset': placeset,
-		# 	'place_dict': place_dict,
-		# 	'center_long': center_long,
-		# 	'center_lat': center_lat,
-		# 	'totalrows': totalrows,
-		# 	'totaldisplay': totaldisplay,
-		# 	'form': form,
-		# 	'pagecountercurrent': pagecountercurrent,
-		# 	'pagecounternext': pagecounternext,
-		# 	'pagecounternextnext': pagecounternextnext,
-		# 	}
-
-		# template = loader.get_template('digisig/search_place.html')
-		# return HttpResponse(template.render(context, request))
-
-
 ######################### information ################################
 
 
@@ -914,34 +847,39 @@ async def actor_page(request, digisig_entity_number):
 
 	template = loader.get_template('digisig/actor.html')
 
+	# establishing the base queries
 	individual_object = await individualsearch(digisig_entity_number)
-	pagetitle= namecompiler(individual_object)
-
 	manifestation_set = await manifestation_search()
+
+	# limits manifestation set to cases connected with actor in question
 	manifestation_object = await sealsearch_actor(manifestation_set, digisig_entity_number)
 
 	# #hack to deal with cases where there are too many seals for the form to handle
 	qpagination = 1
 	manifestation_pageobject, totalrows, totaldisplay = await defaultpagination(manifestation_object, qpagination)
 
+	############ compile information for Actor
+	# get representation information
 	representation_set = await representationsetgenerate(manifestation_pageobject)
 	manifestation_set, totalmanifestation_count = await manifestation_searchsetgenerate(manifestation_pageobject)
-	manifestation_display_dic, description_set, listofseals, listofevents = await manifestation_displaysetgenerate(manifestation_set, representation_set)
+	manifestation_display_dic, listofseals, listofevents, listofactors = await manifestation_displaysetgenerate(manifestation_set, representation_set)
 	description_set = await sealdescription_displaysetgenerate2(listofseals)
 	location_set = await location_displaysetgenerate(listofevents)
-	manifestation_set = await finalassembly_displaysetgenerate(manifestation_display_dic, location_set, description_set)
+	manifestation_object = await finalassembly_displaysetgenerate(manifestation_display_dic, location_set, description_set)
 
 	relationship_object, relationshipnumber = await relationship_dataset(digisig_entity_number)
 
 	# list of references to the actor
 	reference_set = await referenceset_references(digisig_entity_number)
 
+	pagetitle= namecompiler(individual_object)
+
 	context = {
 		'pagetitle': pagetitle,
 		'individual_object': individual_object,
 		'relationship_object': relationship_object,
 		'relationshipnumber' : relationshipnumber,
-		'manifestation_set': manifestation_set,
+		'manifestation_set': manifestation_object,
 		'totalrows': totalrows,
 		'totaldisplay': totaldisplay,
 		'reference_set': reference_set,
@@ -1186,42 +1124,16 @@ async def manifestation_page(request, digisig_entity_number):
 
 	# manifestation_object = await manifestationobject_define(digisig_entity_number)
 
-	manifestation_set = await manifestation_searchsetgenerate(digisig_entity_number, searchtype="manifestation")
+	manifestation_set, totalmanifestation_count = await manifestation_searchsetgenerate(digisig_entity_number, searchtype="manifestation")
 	representation_set = await representationsetgenerate2(manifestation_set, primacy=True)
-	manifestation_display_dic, listofseals, listofevents = await manifestation_displaysetgenerate(manifestation_set, representation_set)
+	manifestation_display_dic, listofseals, listofevents, listofactors = await manifestation_displaysetgenerate(manifestation_set, representation_set)
 	description_set = await sealdescription_displaysetgenerate2(listofseals)
-
-	manifestation_info = await seal_displaysetgenerate(manifestation_display_dic, description_set, digisig_entity_number)
-
+	name_set = await namecompiler_group(listofactors)
+	manifestation_info = await seal_displaysetgenerate(manifestation_display_dic, description_set, digisig_entity_number, name_set)
 	outname, actor_id = await actorfinder(manifestation_set)
-
-	# actornamegenerator(individual_object)
 
 	first_item = next(iter(manifestation_display_dic.items()))
 	first_key, manifestation_dic = first_item
-
-	# manifestation_object = get_object_or_404(Manifestation, id_manifestation=digisig_entity_number)
-	# face_object = manifestation_object.fk_face
-	# seal_object = face_object.fk_seal
-	# sealdescription_set = Sealdescription.objects.filter(fk_seal=seal_object)
-
-	# location_reference_object = Locationreference.objects.get(fk_event=manifestation_object.fk_support.fk_part.fk_event, fk_locationstatus=1)
-	
-	# try:
-	# 	region = location_reference_object.fk_locationname.fk_location.fk_region.region_label
-	# except:
-	# 	region = "Undetermined"
-		
-	# try:
-	# 	representation_object = Representation.objects.get(fk_digisig=digisig_entity_number, primacy=1)
-	# except:
-	# 	#add graphic of generic seal 
-	# 	representation_object = Representation.objects.get(id_representation=12132404)
-
-	# externallink_object = Digisiglinkview.objects.filter(fk_digisigentity=digisig_entity_number)
-
-	# individualtarget = seal_object.fk_individual_realizer
-	# outname = namecompiler(individualtarget)
 
 	template = loader.get_template('digisig/manifestation.html')
 	context = {
@@ -1229,13 +1141,6 @@ async def manifestation_page(request, digisig_entity_number):
 			'pagetitle': pagetitle,
 			'manifestation_info': manifestation_info,
 			'manifestation_dic': manifestation_dic,
-			# 'manifestation_object': manifestation_object,
-			# 'representation_object': representation_object,
-			# 'region': region,
-			# 'seal_object': seal_object,
-			# 'individualtarget': individualtarget.id_individual,
-			# 'sealdescription_object': sealdescription_set,
-			# 'externallink_object': externallink_object,
 			'outname': outname,
 			# 'rdftext': rdftext,
 	}
@@ -1287,7 +1192,7 @@ async def place_page(request, digisig_entity_number):
 
 	representation_set = await representationsetgenerate(manifestation_pageobject)
 	manifestation_set, totalmanifestation_count = await manifestation_searchsetgenerate(manifestation_pageobject)
-	manifestation_display_dic, description_set, listofseals, listofevents = await manifestation_displaysetgenerate(manifestation_set, representation_set)
+	manifestation_display_dic, listofseals, listofevents, listofactors = await manifestation_displaysetgenerate(manifestation_set, representation_set)
 	description_set = await sealdescription_displaysetgenerate2(listofseals)
 	location_set = await location_displaysetgenerate(listofevents)
 	manifestation_output = await finalassembly_displaysetgenerate(manifestation_display_dic, location_set, description_set)

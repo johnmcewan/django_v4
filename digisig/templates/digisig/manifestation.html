@@ -29,31 +29,28 @@
 
 	<div class="entity_detail" id="entity_detail">
 		<h3>{{manifestation_dic.imagestate_term}} details
-			{% if authenticationstatus == "authenticated" %}
-			<button class="permalink"><a href=><a href="{% url 'edit_manifestation' digisig_entity_number=manifestation_dic.id_manifestation %}">Edit</a></button>
-			{% endif %}  
 			<button onclick="toggle('entity-permalink')" class="permalink">Permalink</button>
 		</h3>
 		<table>
-				<tr>
-					<th>Held by </th>
-					<td>{{manifestation_dic.repository_fulltitle}}</td>
+			<tr>
+				<th>Held by </th>
+				<td>{{manifestation_dic.repository_fulltitle}}</td>
 
-					{% if manifestation_dic.fk_representation_type != 0 %}
-					<td rowspan="4">
+				{% if manifestation_dic.fk_representation_type != 0 %}
+				<td rowspan="4">
 					<figure>
-						<img class="modalimage" id="modalimagebase1" src="{{manifestation_dic.fk_connection__thumb}}{{manifestation_dic.representation_thumbnail_hash}}" alt="{{manifestation_dic.id_representation}}" onclick="image(1)">
+						<img class="modalimage" id="modalimagebase1" src="{{manifestation_dic.thumb}}{{manifestation_dic.representation_thumbnail_hash}}" alt="{{manifestation_dic.id_representation}}" onclick="image(1)">
 					</figure>
 
-						<!-- The Modal -->
-						<div id="myModal1" class="modal" style="display: none;">
-						  <span class="close" onclick="modalclose(1)">&times;</span>
-						  <img class="modal-content" id="modalimg1" src="{{manifestation_dic.fk_connection__medium}}{{manifestation_dic.representation_filename}}" alt="{{manifestation_dic.id_representation}}">
-						  <div class="modal-caption" id="caption1"><a href="{% url 'entity' manifestation_dic.id_representation %}">Representation details</a></div>
-						</div>
-					</td>
-					{% endif %}
-				</tr>
+					<!-- The Modal -->
+					<div id="myModal1" class="modal" style="display: none;">
+					  <span class="close" onclick="modalclose(1)">&times;</span>
+					  <img class="modal-content" id="modalimg1" src="{{manifestation_dic.medium}}{{manifestation_dic.representation_filename}}" alt="{{manifestation_dic.id_representation}}">
+					  <div class="modal-caption" id="caption1"><a href="{% url 'entity' manifestation_dic.id_representation %}">Representation details</a></div>
+					</div>
+				</td>
+				{% endif %}
+			</tr>
 
 			{% if manifestation_dic.label_manifestation_repository %}
 				<tr>
@@ -71,17 +68,17 @@
 					<td><a href="{% url 'entity' manifestation_dic.id_item %}">{{manifestation_dic.shelfmark}}</a></td>
 				</tr>
 	
-			{% if manifestation_dic.fk_support.fk_attachment != null %}
+			{% if manifestation_dic.fk_attachment != null %}
 				<tr>
 					<th>Attachment <a class="help" href="{% url 'entity' digisig_entity_number=10001427 %}" target="_blank"><i class="fas fa-question-circle"></i></a></th>
-					<td>{{manifestation_dic.fk_support.attachment}}</td>
+					<td>{{manifestation_dic.attachment}}</td>
 				</tr>
 			{% endif %}
 
-			{% if manifestation_dic.fk_support.fk_number_currentposition.number != 'Undetermined' %}
+			{% if manifestation_dic.number != 'Undetermined' %}
 				<tr>
 					<th>Position <a class="help" href="{% url 'entity' digisig_entity_number=10001447 %}" target="_blank"><i class="fas fa-question-circle"></i></a></th>
-					<td>support {{manifestation_dic.fk_support.fk_number_currentposition}}, {{manifestation_dic.fk_support.position}}</td>
+					<td>support {{manifestation_dic.fk_number_currentposition}}, {{manifestation_dic.fk_support.position}}</td>
 				</tr>
 			{% endif %}
 
