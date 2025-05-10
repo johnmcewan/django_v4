@@ -31,19 +31,12 @@ import pickle
 
 
 # Create your views here.
-def index(request):
-	# return render(request, 'digisig/index.html', {})
+async def index(request):
 
 	pagetitle = 'title'
 	template = loader.get_template('digisig/index.html')
 
-	#### update this to remove databasecall
-
-	manifestation_total = Manifestation.objects.count()
-	seal_total = Seal.objects.count()
-	#item_total = Support.objects.distinct('fk_part__fk_item').count()
-	item_total = 53408
-	catalogue_total = Sealdescription.objects.count()
+	manifestation_total, seal_total, item_total, catalogue_total = await index_info()
 
 	context = {
 		'pagetitle': pagetitle,
@@ -57,7 +50,7 @@ def index(request):
 
 
 #### ABOUT
-def about(request):
+async def about(request):
 
 	pagetitle = 'title'
 	context = {
@@ -141,102 +134,6 @@ async def discover(request, discovertype):
 			}
 
 		return HttpResponse(template.render(context, request))
-
-		# #default
-		# qcollection= 30000287
-		# qmapchoice = 1
-		# mapdic = []
-		# regiondisplayset = []
-		# region_dict = []
-		# mapcounties = []
-		# location_dict = []
-
-		# #adjust values if form submitted
-		# if request.method == 'POST':
-		# 	form = CollectionForm(request.POST)
-			
-		# 	if form.is_valid():
-		# 		collectionstr = form.cleaned_data['collection']
-		# 		#make sure values are not empty then try and convert to ints
-		# 		if len(collectionstr) > 0:
-		# 			qcollection = int(collectionstr)
-
-		# 		mapchoicestr = form.cleaned_data['mapchoice']
-		# 		if len(mapchoicestr) > 0:
-		# 			qmapchoice = int(mapchoicestr)
-
-		# #map points
-		# if (qmapchoice == 1):
-		# 	if (qcollection == 30000287):
-		# 		locationset = Location.objects.filter(
-		# 			Q(locationname__locationreference__fk_locationstatus=1)).annotate(count=Count('locationname__locationreference__fk_event__part__fk_part__fk_support'))
-
-		# 	else:
-		# 		#data for location map
-		# 		locationset = Location.objects.filter(
-		# 			Q(locationname__locationreference__fk_event__part__fk_part__fk_support__fk_face__fk_seal__sealdescription__fk_collection=qcollection)).annotate(count=Count('locationname__locationreference__fk_event__part__fk_part__fk_support'))
-
-		# 	location_dict, center_long, center_lat = mapgenerator2(locationset)
-
-		# #map counties
-		# elif (qmapchoice == 2):
-		# 	#if collection is set then limit the scope of the dataset
-		# 	if (qcollection == 30000287):
-		# 		#data for map counties
-		# 		placeset = Region.objects.filter(fk_locationtype=4, 
-		# 			location__locationname__locationreference__fk_locationstatus=1
-		# 			).annotate(numplaces=Count('location__locationname__locationreference__fk_event__part__fk_part__fk_support')) 
-
-		# 	else:
-		# 		#data for map counties
-		# 		placeset = Region.objects.filter(fk_locationtype=4, 
-		# 			location__locationname__locationreference__fk_locationstatus=1, 
-		# 			location__locationname__locationreference__fk_event__part__fk_part__fk_support__fk_face__fk_seal__sealdescription__fk_collection=qcollection
-		# 			).annotate(numplaces=Count('location__locationname__locationreference'))
-
-		# 	## data for colorpeth map
-		# 	mapcounties1 = get_object_or_404(Jsonstorage, id_jsonfile=1)
-		# 	mapcounties = json.loads(mapcounties1.jsonfiletxt)
-
-		# 	for i in mapcounties:
-		# 		if i == "features":
-		# 			for b in mapcounties[i]:
-		# 				j = b["properties"]
-		# 				countyvalue = j["HCS_NUMBER"]
-		# 				countyname = j["NAME"]
-		# 				numberofcases = placeset.filter(fk_his_countylist=countyvalue)
-		# 				for i in numberofcases:
-		# 					j["cases"] = i.numplaces
-
-		# #map regions
-		# else:
-		# 	if (qcollection == 30000287):
-		# 		regiondisplayset = Regiondisplay.objects.filter(region__location__locationname__locationreference__fk_locationstatus=1
-		# 			).annotate(numregions=Count('region__location__locationname__locationreference__fk_event__part__fk_part__fk_support')) 
-
-		# 	else:
-		# 		#data for region map 
-		# 		regiondisplayset = Regiondisplay.objects.filter( 
-		# 			region__location__locationname__locationreference__fk_locationstatus=1, 
-		# 			region__location__locationname__locationreference__fk_event__part__fk_part__fk_support__fk_face__fk_seal__sealdescription__fk_collection=qcollection
-		# 			).annotate(numregions=Count('region__location__locationname__locationreference'))
-
-		# 	region_dict = mapgenerator3(regiondisplayset)
-
-
-		# form = CollectionForm(initial={'collection': qcollection, 'mapchoice': qmapchoice})		
-
-		# template = loader.get_template('digisig/map.html')
-		# context = {
-		# 	'pagetitle': pagetitle,
-		# 	'location_dict': location_dict,
-		# 	'counties_dict': mapcounties,
-		# 	'region_dict': region_dict,
-		# 	'form': form,
-		# 	}
-
-		# return HttpResponse(template.render(context, request))
-
 
 
 ############################ Analyze #############################
@@ -818,7 +715,7 @@ async def information(request, infotype):
 
 ############################## ENTITY #########################
 
-def entity(request, digisig_entity_number):
+async def entity(request, digisig_entity_number):
 
 	print(digisig_entity_number)
 
@@ -834,7 +731,7 @@ def entity(request, digisig_entity_number):
 	return redirect(targetphrase)
 
 
-def entity_fail(request, entity_phrase):
+async def entity_fail(request, entity_phrase):
 	pagetitle = 'title'
 
 	print(entity_phrase)
@@ -903,69 +800,12 @@ async def collection_page(request, digisig_entity_number):
 	form = CollectionForm(request.POST or None)
 	collection_choices = await digisigcollection_options(form)
 
-	# #adjust values if form submitted
-	# if request.method == 'POST':
-		
-	# 	if form.is_valid():
-
-	# 		collection = form.cleaned_data['collection']
-
-	# 		#make sure values are not empty then try and convert to ints
-	# 		if len(collection) > 0:
-	# 			qcollection = int(collection)
-
-	# else:
-	# 	pass
-
-
-
-
 	collection, collection_dic, sealdescription_set = await collection_details(qcollection)
 
 	contributor_dic = await sealdescription_contributorgenerate(collection, collection_dic)
 
-	# collection = Collection.objects.get(id_collection=qcollection)
-
-	# collection_dic = {}
-	# collection_dic["id_collection"] = int(qcollection)
-	# collection_dic["collection_thumbnail"] = collection.collection_thumbnail
-	# collection_dic["collection_publicationdata"] = collection.collection_publicationdata
-	# collection_dic["collection_fulltitle"] = collection.collection_fulltitle
-	# collection_dic["notes"] = collection.notes
-	# contributor_dic = sealdescription_contributorgenerate(collection, collection_dic)
-
-	# sealdescription_set = Sealdescription.objects.filter(fk_seal__gt=1).select_related('fk_seal')
-
-	# #if collection is set then limit the scope of the dataset
-	# if (qcollection == 30000287):
-	# 	collection_dic["collection_title"] = 'All Collections'
-	# 	pagetitle = 'All Collections'
-	# 	collection_dic["totalsealdescriptions"] = sealdescription_set.count()
-	# 	collection_dic["totalseals"] = sealdescription_set.distinct('fk_seal').count()
-
-	# else:
-	# 	collection_dic["collection_title"] = collection.collection_title
-	# 	pagetitle = collection.collection_title
-	# 	sealdescription_set = sealdescription_set.filter(fk_collection=qcollection)
-	# 	collection_dic["totalsealdescriptions"] = sealdescription_set.distinct(
-	# 		'sealdescription_identifier').count()
-	# 	collection_dic["totalseals"] = sealdescription_set.distinct(
-	# 		'fk_seal').count()
-
-
 	### generate the collection info data for chart 1
 	actorscount, datecount, classcount, facecount = await collection_counts(sealdescription_set)
-
-	# actorscount = sealdescription_set.filter(fk_seal__fk_individual_realizer__gt=10000019).count()
-
-	# datecount =sealdescription_set.filter(fk_seal__date_origin__gt=1).count()
-
-	# classcount = sealdescription_set.filter(
-	# 	fk_seal__fk_seal_face__fk_class__isnull=False).exclude(
-	# 	fk_seal__fk_seal_face__fk_class=10000367).exclude(
-	# 	fk_seal__fk_seal_face__fk_class=10001007).count()
-
-	# facecount = sealdescription_set.filter(fk_seal__fk_seal_face__fk_faceterm=1).distinct('fk_seal__fk_seal_face').count() 
 
 	actors = await calpercent(collection_dic["totalseals"], actorscount)
 	date = await calpercent(collection_dic["totalseals"], datecount)
@@ -978,56 +818,11 @@ async def collection_page(request, digisig_entity_number):
 
 	data2, labels2 = await collection_chart2()
 
-	# result = Terminology.objects.filter(
-	# 	term_type=1).order_by(
-	# 	'term_sortorder').annotate(
-	# 	num_cases=Count("fk_term_interchange__fk_class__fk_class_face"))
-
-	# totalcases = sum([r.num_cases for r in result])	
-
-	# data2 = []
-	# labels2 = []
-
-	# for r in result:
-
-	# 	percentageresult = (r.num_cases / totalcases) * 100 
-
-	# 	if percentageresult > 1:
-	# 		data2.append((r.num_cases / totalcases) * 100)
-	# 		labels2.append(r.term_name)
-
-
 	### generate the collection info data for chart 3  -- 'Percentage of seals by period',
 
 	data3, labels3 = await datedistribution(qcollection)
 
-	# ### generate the collection info data for chart 4 -- seals per region,
-
-	## data for colorpeth map
-	# maplayer1 = get_object_or_404(Jsonstorage, id_jsonfile=1)
-	# maplayer = json.loads(maplayer1.jsonfiletxt)
-
 	maplayer = await collection_loadmaplayer(1)
-
-
-	## data for region map
-	# make circles data -- defaults -- note that this code is very similar to the function mapdata2
-	#data for region map 
-
-	# if (qcollection == 30000287):
-	# 	regiondisplayset = Regiondisplay.objects.filter(
-	# 		region__location__locationname__locationreference__fk_locationstatus=1).annotate(
-	# 		numregions=Count(
-	# 			'region__location__locationname__locationreference__fk_event__part__fk_part__fk_support')).values(
-	# 	'id_regiondisplay', 'id_regiondisplay', 'regiondisplay_label', 'numregions', 'regiondisplay_long', 'regiondisplay_lat') 
-	# else:
-	# 	regiondisplayset = Regiondisplay.objects.filter( 
-	# 		region__location__locationname__locationreference__fk_locationstatus=1, 
-	# 		region__location__locationname__locationreference__fk_event__part__fk_part__fk_support__fk_face__fk_seal__fk_sealsealdescription__fk_collection=qcollection
-	# 		).annotate(
-	# 		numregions=Count(
-	# 			'region__location__locationname__locationreference__fk_event__part__fk_part__fk_support')).values(
-	# 	'id_regiondisplay', 'id_regiondisplay', 'regiondisplay_label', 'numregions', 'regiondisplay_long', 'regiondisplay_lat')
 
 	regiondisplayset = await map_regionset(qcollection)
 
@@ -1037,29 +832,7 @@ async def collection_page(request, digisig_entity_number):
 
 	data5, labels5 = await collection_printgroup(qcollection, collection_dic)
 
-	# #for print group totals (legacy)
-	# if (qcollection == 30000287):
-	# 	printgroupset = Printgroup.objects.annotate(numcases=Count('fk_printgroup', filter=Q(fk_printgroup__fk_sealsealdescription__fk_collection__gte=0))).order_by('printgroup_order')
 
-	# else: printgroupset = Printgroup.objects.annotate(numcases=Count('fk_printgroup', filter=Q(fk_printgroup__fk_sealsealdescription__fk_collection=qcollection))).order_by('printgroup_order')
-
-	# #for modern group system
-	# if (qcollection == 30000287):
-	# 	groupset = Groupclass.objects.annotate(numcases=Count('id_groupclass', filter=Q(fk_group_class__fk_group__fk_actor_group__fk_sealsealdescription__fk_collection__gte=0))).order_by('id_groupclass')
-
-	# else:
-	# 	groupset = Groupclass.objects.annotate(numcases=Count('id_groupclass', filter=Q(fk_group_class__fk_group__fk_actor_group__fk_sealsealdescription__fk_collection=qcollection))).order_by('id_groupclass')
-
-	# data5 = []
-	# labels5 = []
-	# for g in groupset:
-	# 	if (g.numcases > 0):
-	# 		percentagedata = (g.numcases/collection_dic["totalseals"])*100 
-	# 		# if percentagedata > 1:
-	# 		data5.append(percentagedata)
-	# 		labels5.append(g.groupclass)
-
-	
 	context = {
 		'pagetitle': pagetitle,
 		#'collectioninfo': collectioninfo,

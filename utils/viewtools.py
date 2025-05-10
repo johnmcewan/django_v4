@@ -20,6 +20,18 @@ from asgiref.sync import sync_to_async
 from django.urls import reverse
 
 
+@sync_to_async
+def index_info():
+
+	manifestation_total = Manifestation.objects.count()
+	seal_total = Seal.objects.count()
+	item_total = Support.objects.distinct('fk_part__fk_item').count()
+	# item_total = 53408
+	catalogue_total = Sealdescription.objects.count()
+
+	return(manifestation_total, seal_total, item_total, catalogue_total)
+
+
 #### exhitions
 @sync_to_async
 def exhibitgenerate():
