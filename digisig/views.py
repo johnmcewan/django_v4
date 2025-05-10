@@ -1,3 +1,4 @@
+from django.views.decorators.cache import cache_page
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponse, JsonResponse
 from django.template import loader
@@ -62,7 +63,7 @@ async def about(request):
 
 #### Exhibit 
 
- 
+@cache_page(60 * 15)
 async def exhibit(request):
 	pagetitle = 'title'
 
