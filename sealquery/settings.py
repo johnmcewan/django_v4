@@ -88,7 +88,8 @@ TEMPLATES = [
 CACHES = {
     'default': {
         'BACKEND': 'django.core.cache.backends.filebased.FileBasedCache',
-        'LOCATION': '/var/tmp/django_cache',
+        # 'LOCATION': '/var/tmp/django_cache',
+        'LOCATION': os.path.join(BASE_DIR, 'cache'),  # Creates a 'cache' directory in your project root
         "TIMEOUT": None,
         "OPTIONS": {"MAX_ENTRIES": 100},
     }
