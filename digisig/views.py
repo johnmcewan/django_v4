@@ -1,4 +1,5 @@
 from django.views.decorators.cache import cache_page
+from django.core.cache import cache
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponse, JsonResponse
 from django.template import loader
@@ -30,8 +31,31 @@ import pickle
 	# about
 	# exhibit
 
+## regulate how long pages are cached
+cache_timeout = (60 * 60)
+
+
+# from django.core.cache import cache
+
+# def my_view(request):
+#     data = cache.get('my_cached_data')
+#     if data is None:
+#         # Data is not in the cache, so fetch it
+#         data = expensive_operation()
+#         cache.set('my_cached_data', data, timeout=60 * 60)  # Cache for 1 hour
+#     return render(request, 'my_template.html', {'data': data})
+
+# def clear_my_cache(request):
+#     cache.delete('my_cached_data')
+#     return HttpResponse("Cache cleared!")
+
+
+
+
 
 # Create your views here.
+
+@cache_page(cache_timeout)
 async def index(request):
 
 	pagetitle = 'title'
@@ -63,7 +87,7 @@ async def about(request):
 
 #### Exhibit 
 
-@cache_page(60 * 15)
+@cache_page(cache_timeout)
 async def exhibit(request):
 	pagetitle = 'title'
 
@@ -541,12 +565,28 @@ async def search(request, searchtype):
 ######################### information ################################
 
 
-async def information(request, infotype):
+# async def information(request, infotype):
 
+# 	if infotype == "changelog":
+# 		pagetitle = 'title'
+
+# 		change_object = await information_changes() 
+
+# 		context = {
+# 			'pagetitle': pagetitle,
+# 			'change_object': change_object,
+# 		}
+
+
+async def information(request, infotype):
 	if infotype == "changelog":
 		pagetitle = 'title'
+		cache_key = 'changelog_data'  # Unique key for the cache
 
-		change_object = await information_changes() 
+		change_object = cache.get(cache_key)
+		if change_object is None:
+			change_object = await information_changes()
+			cache.set(cache_key, change_object, timeout=cache_timeout)
 
 		context = {
 			'pagetitle': pagetitle,
@@ -1087,8 +1127,6 @@ async def term_page(request, digisig_entity_number):
 	pagetitle = 'Term'
 
 	term_object, statement_object = await entity_term(digisig_entity_number)
-
-	#print (statement_object)
 
 	template = loader.get_template('digisig/term.html')
 	context = {
