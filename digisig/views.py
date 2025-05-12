@@ -365,6 +365,18 @@ async def search(request, searchtype):
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
 ### Search Item
 
 	if searchtype == "items":
@@ -440,12 +452,6 @@ async def search(request, searchtype):
 		pagecounternext = qpagination + 1
 		pagecounternextnext = qpagination +2
 
-		# manifestation_displayset = await manifestation_construction(manifestation_pageobject)
-
-	# async def manifestation_construction(manifestation_pageobject):
-	# 	"""
-	# 	Function prepares the data for the seal search (manifestation) page
-	# 	"""
 		representation_set = await representationsetgenerate(manifestation_pageobject)
 		manifestation_set, totalmanifestation_count = await manifestation_searchsetgenerate(manifestation_pageobject)
 		manifestation_display_dic, listofseals, listofevents, listofactors = await manifestation_displaysetgenerate(manifestation_set, representation_set)
