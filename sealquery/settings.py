@@ -88,13 +88,15 @@ TEMPLATES = [
 CACHES = {
     'default': {
         'BACKEND': 'django.core.cache.backends.filebased.FileBasedCache',
-        # 'LOCATION': '/var/tmp/django_cache',
         'LOCATION': os.path.join(BASE_DIR, 'cache'),  # Creates a 'cache' directory in your project root
         "TIMEOUT": None,
         "OPTIONS": {"MAX_ENTRIES": 100},
     }
 }
 
+#### added 12/5/2025
+LOGIN_REDIRECT_URL = 'home'  # or the name of your home view if you use reverse()
+LOGIN_URL = '/login/' #or the name if you use reverse()
 
 
 WSGI_APPLICATION = 'sealquery.wsgi.application'

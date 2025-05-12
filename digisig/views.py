@@ -1,5 +1,9 @@
 from django.views.decorators.cache import cache_page
 from django.core.cache import cache
+
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.views import LoginView
+
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponse, JsonResponse
 from django.template import loader
@@ -51,9 +55,15 @@ cache_timeout = (60 * 60)
 
 
 
-
-
 # Create your views here.
+
+class CustomLoginView(LoginView):
+    template_name = 'digisig/login.html' #Replace with your actual login template
+    redirect_authenticated_user = True # If the user is already logged in redirect them
+
+    def get_success_url(self):
+        return reverse('index') # Replace 'home' with the name of your home view.
+
 
 @cache_page(cache_timeout)
 async def index(request):
@@ -362,19 +372,6 @@ async def search(request, searchtype):
 
 		template = loader.get_template('digisig/search_actor.html')
 		return HttpResponse(template.render(context, request))
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 ### Search Item
@@ -762,9 +759,8 @@ async def information(request, infotype):
 
 ############################## ENTITY #########################
 
+@login_required(login_url='/login/')
 async def entity(request, digisig_entity_number):
-
-	print(digisig_entity_number)
 
 	#create flag that this is a view operation....
 	operation = 1
@@ -773,7 +769,7 @@ async def entity(request, digisig_entity_number):
 	#item = 0, seal=1, manifestation=2, sealdescription=3, etc...
 	targetphrase = redirectgenerator(digisig_entity_number, operation, application)
 
-	print ("targetphrase", targetphrase)
+	print ("pass through")
 
 	return redirect(targetphrase)
 
@@ -787,6 +783,7 @@ async def entity_fail(request, entity_phrase):
 
 ############################## Actor #############################
 
+@login_required(login_url='/login/')
 async def actor_page(request, digisig_entity_number):
 
 	template = loader.get_template('digisig/actor.html')
@@ -836,6 +833,7 @@ async def actor_page(request, digisig_entity_number):
 
 #https://allwin-raju-12.medium.com/reverse-relationship-in-django-f016d34e2c68
 
+@login_required(login_url='/login/')
 async def collection_page(request, digisig_entity_number):
 	pagetitle = 'Collection'
 
@@ -911,6 +909,7 @@ async def collection_page(request, digisig_entity_number):
 
 ############################## Item #############################
 
+@login_required(login_url='/login/')
 async def item_page(request, digisig_entity_number):
 
 	part_dic = await partobjectforitem_define(digisig_entity_number)
@@ -938,6 +937,7 @@ async def item_page(request, digisig_entity_number):
 
 ############################ Manifestation #####################
 
+@login_required(login_url='/login/')
 async def manifestation_page(request, digisig_entity_number): 
 	####manifestation_dic = await manifestation_createdic(manifestation_object)
 	pagetitle = 'title'
@@ -975,6 +975,7 @@ async def manifestation_page(request, digisig_entity_number):
 
 ############################## Place #############################
 
+@login_required(login_url='/login/')
 async def place_page(request, digisig_entity_number):
 
 	template = loader.get_template('digisig/place.html')  
@@ -1035,7 +1036,7 @@ async def place_page(request, digisig_entity_number):
 
 ############################## Representation #############################
 
-
+@login_required(login_url='/login/')
 async def representation_page(request, digisig_entity_number):
 
 	pagetitle = 'Representation'
@@ -1076,7 +1077,7 @@ async def representation_page(request, digisig_entity_number):
 
 ############################## Seal #############################
 
-
+@login_required(login_url='/login/')
 async def seal_page(request, digisig_entity_number):
 	pagetitle = 'title'
 	template = loader.get_template('digisig/seal.html')
@@ -1100,7 +1101,7 @@ async def seal_page(request, digisig_entity_number):
 
 ############################## Seal description #############################
 
-
+@login_required(login_url='/login/')
 async def sealdescription_page(request, digisig_entity_number):
 
 	template = loader.get_template('digisig/sealdescription.html')
@@ -1128,7 +1129,7 @@ async def sealdescription_page(request, digisig_entity_number):
 
 ################################ TERM ######################################
 
-
+@login_required(login_url='/login/')
 async def term_page(request, digisig_entity_number):
 	pagetitle = 'Term'
 

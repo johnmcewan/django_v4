@@ -1,10 +1,13 @@
 from django.urls import path, re_path
 from debug_toolbar.toolbar import debug_toolbar_urls
 
+from .views import CustomLoginView
 from . import views
+
 
 urlpatterns = [
     path('', views.index, name='index'),
+    path('login/', CustomLoginView.as_view(), name='login'),
     path('search/<str:searchtype>', views.search, name='search'),
     path('information/<str:infotype>', views.information, name='information'),
     path('discover/<str:discovertype>', views.discover, name='discover'),
