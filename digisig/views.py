@@ -2,7 +2,7 @@ from django.views.decorators.cache import cache_page
 from django.core.cache import cache
 
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.views import LoginView
+from django.contrib.auth.views import LoginView, LogoutView
 
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponse, JsonResponse
