@@ -105,7 +105,7 @@
 			{% for key1, val1 in val.children.items %}
 			{% with forloop.counter as level1_counter %}
 			 	<div class="classification entity2_{{outer_counter}} close2_{{outer_counter}}" style="display:none;">
-			 		<div class="leftarrow-2"><img class="leftarrow" src="{% static 'sealquery/images/icons/icons8-left-down-2-48-v2.png' %}" alt="arrow-right"> </div>
+			 		<div class="leftarrow-2"><img class="leftarrow" src="{% static 'digisig/images/icons/icons8-left-down-2-48-v2.png' %}" alt="arrow-right"> </div>
 
 			 		{% if val1.children %}
 			 		<div class="div-level"><button id="entitybutton3_{{outer_counter}}_{{level1_counter}}" onclick="settoggle('entity3_{{outer_counter}}_{{level1_counter}}', 'entitybutton3_{{outer_counter}}_{{level1_counter}}', 'close3_{{outer_counter}}_{{level1_counter}}')">+</button> </div>
@@ -121,13 +121,13 @@
 			 		{% with forloop.counter as inner_counter %}
 
 				 	<div>
-				 		<img class="modalimage" id="modalimagebase{{outer_counter}}{{level1_counter}}{{inner_counter}}" src="{{y.small}}" alt="{{x}}" loading="lazy" onclick="image({{outer_counter}}{{level1_counter}}{{inner_counter}})">
+				 		<img class="modalimage" id="modalimagebase{{outer_counter}}{{level1_counter}}{{inner_counter}}" src="{{y.connection_thumb}}{{y.address_thumb}}" alt="{{x}}" loading="lazy" onclick="image({{outer_counter}}{{level1_counter}}{{inner_counter}})">
 				 	</div>
 
 						<!-- The Modal -->
 					<div id="myModal{{outer_counter}}1{{inner_counter}}" class="modal" style="display: none;">
 					  <span class="close" onclick="modalclose({{outer_counter}}{{level1_counter}}{{inner_counter}})">&times;</span>
-					  <img class="modal-content" id="modalimg{{outer_counter}}{{level1_counter}}{{inner_counter}}" src="{{y.medium}}" alt="{{x}}" loading="lazy">
+					  <img class="modal-content" id="modalimg{{outer_counter}}{{level1_counter}}{{inner_counter}}" src="{{y.connection_medium}}{{y.address_medium}}" alt="{{x}}" loading="lazy">
 					  <div class="modal-caption" id="caption{{outer_counter}}{{level1_counter}}{{inner_counter}}"><a href="{% url 'entity' val1.id_term %}">Term details</a></div>
 					</div>
 
@@ -141,7 +141,7 @@
 				{% with forloop.counter as level2_counter %}
 				 	<div class="classification entity3_{{outer_counter}}_{{level1_counter}} close2_{{outer_counter}} close3_{{outer_counter}}_{{level1_counter}}" style="display:none;">
 				 		
-						<div class="leftarrow-3"><img class="leftarrow" src="{% static 'sealquery/images/icons/icons8-left-down-2-48-v2.png' %}" alt="arrow-right"></div>
+						<div class="leftarrow-3"><img class="leftarrow" src="{% static 'digisig/images/icons/icons8-left-down-2-48-v2.png' %}" alt="arrow-right"></div>
 				 		
 				 		{% if val2.children %}
 				 		<div class="div-level"><button id="entitybutton4_{{outer_counter}}_{{level1_counter}}_{{level2_counter}}" onclick="settoggle('entity4_{{outer_counter}}_{{level1_counter}}_{{level2_counter}}', 'entitybutton4_{{outer_counter}}_{{level1_counter}}_{{level2_counter}}', 'close4_{{outer_counter}}_{{level1_counter}}_{{level2_counter}}')">+</button></div>
@@ -176,7 +176,7 @@
 					{% for key3, val3 in val2.children.items %}
 					{% with forloop.counter as level3_counter %}
 					 	<div class="classification entity4_{{outer_counter}}_{{level1_counter}}_{{level2_counter}} close2_{{outer_counter}} close3_{{outer_counter}}_{{level1_counter}} close4_{{outer_counter}}_{{level1_counter}}_{{level2_counter}}" style="display:none;">
-							<div class="leftarrow-4"><img class="leftarrow" src="{% static 'sealquery/images/icons/icons8-left-down-2-48-v2.png' %}" alt="arrow-right"></div>
+							<div class="leftarrow-4"><img class="leftarrow" src="{% static 'digisig/images/icons/icons8-left-down-2-48-v2.png' %}" alt="arrow-right"></div>
 					 		
 					 		{% if val3.children %}
 					 		<div class="div-level">
@@ -213,7 +213,7 @@
 						{% with forloop.counter as level4_counter %}
 						 	<div class="classification entity5_{{outer_counter}}_{{level1_counter}}_{{level2_counter}}_{{level3_counter}} close2_{{outer_counter}} close3_{{outer_counter}}_{{level1_counter}} close4_{{outer_counter}}_{{level1_counter}}_{{level2_counter}} close5_{{outer_counter}}_{{level1_counter}}_{{level2_counter}}_{{level3_counter}}" style="display:none;">
 						 		
-						 		<div class="leftarrow-5"><img class="leftarrow" src="{% static 'sealquery/images/icons/icons8-left-down-2-48-v2.png' %}" alt="arrow-right"></div>
+						 		<div class="leftarrow-5"><img class="leftarrow" src="{% static 'digisig/images/icons/icons8-left-down-2-48-v2.png' %}" alt="arrow-right"></div>
 					 			<div class="div-level5 tooltip">
 					 				<div><a href="{% url 'entity' val4.id_term %}" target="_blank">{{key4}}</a></div>
 					 				<div><span class="tooltiptext">{{val4.tooltip}}</span></div>
