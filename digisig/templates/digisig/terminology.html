@@ -157,13 +157,13 @@
 			 			{% with forloop.counter as inner_counter %}
 
 						 	<div>
-						 		<img class="modalimage" id="modalimagebase{{outer_counter}}{{level1_counter}}{{level2_counter}}{{inner_counter}}" src="{{y.small}}" alt="{{x}}" loading="lazy" onclick="image({{outer_counter}}{{level1_counter}}{{level2_counter}}{{inner_counter}})">
+						 		<img class="modalimage" id="modalimagebase{{outer_counter}}{{level1_counter}}{{level2_counter}}{{inner_counter}}" src="{{y.connection_thumb}}{{y.address_thumb}}" alt="{{x}}" loading="lazy" onclick="image({{outer_counter}}{{level1_counter}}{{level2_counter}}{{inner_counter}})">
 						 	</div>
 
 								<!-- The Modal -->
 							<div id="myModal{{outer_counter}}{{level1_counter}}{{level2_counter}}{{inner_counter}}" class="modal" style="display: none;">
 							  <span class="close" onclick="modalclose({{outer_counter}}{{level1_counter}}{{level2_counter}}{{inner_counter}})">&times;</span>
-							  <img class="modal-content" id="modalimg{{outer_counter}}{{level1_counter}}{{level2_counter}}{{inner_counter}}" src="{{y.medium}}" alt="{{x}}" loading="lazy">
+							  <img class="modal-content" id="modalimg{{outer_counter}}{{level1_counter}}{{level2_counter}}{{inner_counter}}" src="{{y.connection_medium}}{{y.address_medium}}" alt="{{x}}" loading="lazy">
 							  <div class="modal-caption" id="caption{{outer_counter}}{{level1_counter}}{{level2_counter}}{{inner_counter}}"><a href="{% url 'entity' val1.id_term %}">Term details</a></div>
 							</div>
 
@@ -194,13 +194,13 @@
 				 			{% with forloop.counter as inner_counter %}
 
 							 	<div>
-							 		<img class="modalimage" id="modalimagebase{{outer_counter}}{{level1_counter}}{{level2_counter}}{{level3_counter}}{{inner_counter}}" src="{{y.small}}" alt="{{x}}" loading="lazy" onclick="image({{outer_counter}}{{level1_counter}}{{level2_counter}}{{level3_counter}}{{inner_counter}})">
+							 		<img class="modalimage" id="modalimagebase{{outer_counter}}{{level1_counter}}{{level2_counter}}{{level3_counter}}{{inner_counter}}" src="{{y.connection_thumb}}{{y.address_thumb}}" alt="{{x}}" loading="lazy" onclick="image({{outer_counter}}{{level1_counter}}{{level2_counter}}{{level3_counter}}{{inner_counter}})">
 							 	</div>
 
 									<!-- The Modal -->
 								<div id="myModal{{outer_counter}}{{level1_counter}}{{level2_counter}}{{level3_counter}}{{inner_counter}}" class="modal" style="display: none;">
 								  <span class="close" onclick="modalclose({{outer_counter}}{{level1_counter}}{{level2_counter}}{{level3_counter}}{{inner_counter}})">&times;</span>
-								  <img class="modal-content" id="modalimg{{outer_counter}}{{level1_counter}}{{level2_counter}}{{level3_counter}}{{inner_counter}}" src="{{y.medium}}" alt="{{x}}" loading="lazy">
+								  <img class="modal-content" id="modalimg{{outer_counter}}{{level1_counter}}{{level2_counter}}{{level3_counter}}{{inner_counter}}" src="{{y.connection_medium}}{{y.address_medium}}" alt="{{x}}" loading="lazy">
 								  <div class="modal-caption" id="caption{{outer_counter}}{{level1_counter}}{{level2_counter}}{{level3_counter}}{{inner_counter}}"><a href="{% url 'entity' val3.id_term %}">Term details</a></div>
 								</div>
 
@@ -224,13 +224,13 @@
 					 			{% with forloop.counter as inner_counter %}
 
 								 	<div>
-								 		<img class="modalimage" id="modalimagebase{{outer_counter}}{{level1_counter}}{{level2_counter}}{{level3_counter}}{{level4_counter}}{{inner_counter}}" src="{{y.small}}" alt="{{x}}" loading="lazy" onclick="image({{outer_counter}}{{level1_counter}}{{level2_counter}}{{level3_counter}}{{level4_counter}}{{inner_counter}})">
+								 		<img class="modalimage" id="modalimagebase{{outer_counter}}{{level1_counter}}{{level2_counter}}{{level3_counter}}{{level4_counter}}{{inner_counter}}" src="{{y.connection_thumb}}{{y.address_thumb}}" alt="{{x}}" loading="lazy" onclick="image({{outer_counter}}{{level1_counter}}{{level2_counter}}{{level3_counter}}{{level4_counter}}{{inner_counter}})">
 								 	</div>
 
 										<!-- The Modal -->
 									<div id="myModal{{outer_counter}}{{level1_counter}}{{level2_counter}}{{level3_counter}}{{level4_counter}}{{inner_counter}}" class="modal" style="display: none;">
 									  <span class="close" onclick="modalclose({{outer_counter}}{{level1_counter}}{{level2_counter}}{{level3_counter}}{{level4_counter}}{{inner_counter}})">&times;</span>
-									  <img class="modal-content" id="modalimg{{outer_counter}}{{level1_counter}}{{level2_counter}}{{level3_counter}}{{level4_counter}}{{inner_counter}}" src="{{y.medium}}" alt="{{x}}" loading="lazy">
+									  <img class="modal-content" id="modalimg{{outer_counter}}{{level1_counter}}{{level2_counter}}{{level3_counter}}{{level4_counter}}{{inner_counter}}" src="{{y.connection_medium}}{{y.address_medium}}" alt="{{x}}" loading="lazy">
 									  <div class="modal-caption" id="caption{{outer_counter}}{{level1_counter}}{{level2_counter}}{{level3_counter}}{{level4_counter}}{{inner_counter}}"><a href="{% url 'entity' val4.id_term %}">Term details</a></div>
 									</div>
 
