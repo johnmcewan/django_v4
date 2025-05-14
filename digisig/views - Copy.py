@@ -3,7 +3,6 @@ from django.core.cache import cache
 
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.views import LoginView, LogoutView
-from django.utils.decorators import method_decorator
 
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponse, JsonResponse
@@ -23,8 +22,6 @@ from .forms import *
 # from utils.mltools import * 
 from utils.generaltools import *
 from utils.viewtools import *
-from django.views import View
-from asgiref.sync import sync_to_async
 
 import json
 import os
@@ -763,144 +760,151 @@ async def entity_fail(request, entity_phrase):
 @method_decorator(login_required(login_url='/login/'), name='dispatch')
 class EntityView(View):
 	async def get(self, request, entity_type, digisig_entity_number):
-		if entity_type == 'actor':
-			return await self.actor_page(request, digisig_entity_number)
-		elif entity_type == 'collection':
-			return await self.collection_page(request, digisig_entity_number)
-		elif entity_type == 'item':
-			return await self.item_page(request, digisig_entity_number)
-		elif entity_type == 'manifestation':
-			return await self.manifestation_page(request, digisig_entity_number)
-		elif entity_type == 'place':
-			return await self.place_page(request, digisig_entity_number)
-		elif entity_type == 'representation':
-			return await self.representation_page(request, digisig_entity_number)
-		elif entity_type == 'seal':
-			return await self.seal_page(request, digisig_entity_number)
-		elif entity_type == 'sealdescription':
-			return await self.sealdescription_page(request, digisig_entity_number)
+		if entity_type == 'item':
+			return await self.handle_item(request, digisig_entity_number)
 		elif entity_type == 'term':
-			return await self.term_page(request, digisig_entity_number)
+			return await self.handle_term(request, digisig_entity_number)
+		elif entity_type == 'seal':
+			return await self.handle_seal(request, digisig_entity_number)
+		elif entity_type == 'manifestation':
+			return await self.handle_manifestation(request, digisig_entity_number)
+		elif entity_type == 'sealdescription':
+			return await self.handle_sealdescription(request, digisig_entity_number)
+		elif entity_type == 'representation':
+			return await self.handle_representation(request, digisig_entity_number)
+		elif entity_type == 'actor':
+			return await self.handle_actor(request, digisig_entity_number)
+		elif entity_type == 'place':
+			return await self.handle_place(request, digisig_entity_number)
+		elif entity_type == 'collection':
+			return await self.handle_collection(request, digisig_entity_number)
 		else:
 			raise Http404("Invalid entity type")
 
-
-################################ Actor ######################################
-
-	async def actor_page(self, request, digisig_entity_number):
-
-		template = loader.get_template('digisig/actor.html')
-
-		# establishing the base queries
-		individual_object = await individualsearch(digisig_entity_number)
-		manifestation_set = await manifestation_search()
-
-		# limits manifestation set to cases connected with actor in question
-		manifestation_object = await sealsearch_actor(manifestation_set, digisig_entity_number)
-
-		# #hack to deal with cases where there are too many seals for the form to handle
-		qpagination = 1
-		manifestation_pageobject, totalrows, totaldisplay = await defaultpagination(manifestation_object, qpagination)
-
-		############ compile information for Actor
-		# get representation information
-		representation_set = await representationsetgenerate(manifestation_pageobject)
-		manifestation_set, totalmanifestation_count = await manifestation_searchsetgenerate(manifestation_pageobject)
-		manifestation_display_dic, listofseals, listofevents, listofactors = await manifestation_displaysetgenerate(manifestation_set, representation_set)
-		description_set = await sealdescription_displaysetgenerate2(listofseals)
-		location_set = await location_displaysetgenerate(listofevents)
-		manifestation_object = await finalassembly_displaysetgenerate(manifestation_display_dic, location_set, description_set)
-
-		relationship_object, relationshipnumber = await relationship_dataset(digisig_entity_number)
-
-		# list of references to the actor
-		reference_set = await referenceset_references(digisig_entity_number)
-
-		pagetitle= namecompiler(individual_object)
-
-		context = {
-			'pagetitle': pagetitle,
-			'individual_object': individual_object,
-			'relationship_object': relationship_object,
-			'relationshipnumber' : relationshipnumber,
-			'manifestation_set': manifestation_object,
-			'totalrows': totalrows,
-			'totaldisplay': totaldisplay,
-			'reference_set': reference_set,
-			}
-
+	async def handle_item(self, request, digisig_entity_number):
+		part_dic = await partobjectforitem_define(digisig_entity_number)
+		# ... (rest of your item_page logic) ...
+		template = loader.get_template('digisig/item.html')
+		context = { /* ... */ }
 		return render(request, template, context)
+
+
+@login_required(login_url='/login/')
+async def actor_page(request, digisig_entity_number):
+
+	template = loader.get_template('digisig/actor.html')
+
+	# establishing the base queries
+	individual_object = await individualsearch(digisig_entity_number)
+	manifestation_set = await manifestation_search()
+
+	# limits manifestation set to cases connected with actor in question
+	manifestation_object = await sealsearch_actor(manifestation_set, digisig_entity_number)
+
+	# #hack to deal with cases where there are too many seals for the form to handle
+	qpagination = 1
+	manifestation_pageobject, totalrows, totaldisplay = await defaultpagination(manifestation_object, qpagination)
+
+	############ compile information for Actor
+	# get representation information
+	representation_set = await representationsetgenerate(manifestation_pageobject)
+	manifestation_set, totalmanifestation_count = await manifestation_searchsetgenerate(manifestation_pageobject)
+	manifestation_display_dic, listofseals, listofevents, listofactors = await manifestation_displaysetgenerate(manifestation_set, representation_set)
+	description_set = await sealdescription_displaysetgenerate2(listofseals)
+	location_set = await location_displaysetgenerate(listofevents)
+	manifestation_object = await finalassembly_displaysetgenerate(manifestation_display_dic, location_set, description_set)
+
+	relationship_object, relationshipnumber = await relationship_dataset(digisig_entity_number)
+
+	# list of references to the actor
+	reference_set = await referenceset_references(digisig_entity_number)
+
+	pagetitle= namecompiler(individual_object)
+
+	context = {
+		'pagetitle': pagetitle,
+		'individual_object': individual_object,
+		'relationship_object': relationship_object,
+		'relationshipnumber' : relationshipnumber,
+		'manifestation_set': manifestation_object,
+		'totalrows': totalrows,
+		'totaldisplay': totaldisplay,
+		'reference_set': reference_set,
+		}
+
+	return HttpResponse(template.render(context, request))
 
 
 ################################ Collection ######################################
 
 #https://allwin-raju-12.medium.com/reverse-relationship-in-django-f016d34e2c68
 
-	async def collection_page(self, request, digisig_entity_number):
-		pagetitle = 'Collection'
+@login_required(login_url='/login/')
+async def collection_page(request, digisig_entity_number):
+	pagetitle = 'Collection'
 
-		#defaults
-		qcollection = int(digisig_entity_number)
+	#defaults
+	qcollection = int(digisig_entity_number)
+	
+	### This code prepares collection info box and the data for charts on the collection page
+
+	form = CollectionForm_digisig(request.POST or None)
+	collection_choices = await digisigcollection_options(form)
+
+	collection, collection_dic, sealdescription_set = await collection_details(qcollection)
+
+	contributor_dic = await sealdescription_contributorgenerate(collection, collection_dic)
+
+	### generate the collection info data for chart 1
+	actorscount, datecount, classcount, facecount = await collection_counts(sealdescription_set)
+
+	actors = await calpercent(collection_dic["totalseals"], actorscount)
+	date = await calpercent(collection_dic["totalseals"], datecount)
+	fclass = await calpercent(facecount, classcount)
+ 
+	data1 = [actors, date, fclass]
+	labels1 = ["actor", "date", "class"]
+
+	### generate the collection info data for chart 2 -- 'Percentage of seals per class',
+
+	data2, labels2 = await collection_chart2()
+
+	### generate the collection info data for chart 3  -- 'Percentage of seals by period',
+
+	data3, labels3 = await datedistribution(qcollection)
+
+	maplayer = await collection_loadmaplayer(1)
+
+	regiondisplayset = await map_regionset(qcollection)
+
+	region_dict = await mapgenerator3(regiondisplayset)
+
+	# ### generate the collection info data for chart 5 --  'Percentage of actors per class',
+
+	data5, labels5 = await collection_printgroup(qcollection, collection_dic)
+
+
+	context = {
+		'pagetitle': pagetitle,
+		'collection': collection,
+		'collection_dic': collection_dic,
+		'contributor_dic': contributor_dic,
+		'labels1': labels1,
+		'data1': data1,
+		'labels2': labels2,
+		'data2': data2,
+		'labels3': labels3,
+		'data3': data3,
+		'region_dict': region_dict,
+		'maplayer': maplayer,
+		'labels5': labels5,
+		'data5': data5,
+		'form': form,
+	}
 		
-		### This code prepares collection info box and the data for charts on the collection page
-
-		form = CollectionForm_digisig(request.POST or None)
-		collection_choices = await digisigcollection_options(form)
-
-		collection, collection_dic, sealdescription_set = await collection_details(qcollection)
-
-		contributor_dic = await sealdescription_contributorgenerate(collection, collection_dic)
-
-		### generate the collection info data for chart 1
-		actorscount, datecount, classcount, facecount = await collection_counts(sealdescription_set)
-
-		actors = await calpercent(collection_dic["totalseals"], actorscount)
-		date = await calpercent(collection_dic["totalseals"], datecount)
-		fclass = await calpercent(facecount, classcount)
-	 
-		data1 = [actors, date, fclass]
-		labels1 = ["actor", "date", "class"]
-
-		### generate the collection info data for chart 2 -- 'Percentage of seals per class',
-
-		data2, labels2 = await collection_chart2()
-
-		### generate the collection info data for chart 3  -- 'Percentage of seals by period',
-
-		data3, labels3 = await datedistribution(qcollection)
-
-		maplayer = await collection_loadmaplayer(1)
-
-		regiondisplayset = await map_regionset(qcollection)
-
-		region_dict = await mapgenerator3(regiondisplayset)
-
-		# ### generate the collection info data for chart 5 --  'Percentage of actors per class',
-
-		data5, labels5 = await collection_printgroup(qcollection, collection_dic)
-
-
-		context = {
-			'pagetitle': pagetitle,
-			'collection': collection,
-			'collection_dic': collection_dic,
-			'contributor_dic': contributor_dic,
-			'labels1': labels1,
-			'data1': data1,
-			'labels2': labels2,
-			'data2': data2,
-			'labels3': labels3,
-			'data3': data3,
-			'region_dict': region_dict,
-			'maplayer': maplayer,
-			'labels5': labels5,
-			'data5': data5,
-			'form': form,
-		}
-			
-		template = loader.get_template('digisig/collection.html') 
-					 
-		return render(request, template, context)
+	template = loader.get_template('digisig/collection.html') 
+				 
+	return HttpResponse(template.render(context, request))
 
 
 ############################## Face #############################
@@ -908,61 +912,63 @@ class EntityView(View):
 
 ############################## Item #############################
 
-	async def item_page(self, request, digisig_entity_number):
+@login_required(login_url='/login/')
+async def item_page(request, digisig_entity_number):
 
-		part_dic = await partobjectforitem_define(digisig_entity_number)
+	part_dic = await partobjectforitem_define(digisig_entity_number)
 
-		if len(part_dic) == 1:
+	if len(part_dic) == 1:
 
-			for key, part_info in part_dic.items():
-				template = loader.get_template('digisig/item.html')
-				context = {
-					'pagetitle': part_info['pagetitle'],
-					'part_object': part_info,
-					'mapdic': part_info['mapdic'],
-					}
-		
-		## this seems to be a hack to deal with cases with multiple parts #14/5/2025
-		else:
+		for key, part_info in part_dic.items():
 			template = loader.get_template('digisig/item.html')
-			for key, part_info in part_dic.items():
-				template = loader.get_template('digisig/item.html')
-				context = {
-					'pagetitle': part_info['pagetitle'],
-					'part_object': part_info,
-					'mapdic': part_info['mapdic'],
-					}
+			context = {
+				'pagetitle': part_info['pagetitle'],
+				'part_object': part_info,
+				'mapdic': part_info['mapdic'],
+				}
+	
+	## this seems to be a hack to deal with cases with multiple parts #14/5/2025
+	else:
+		template = loader.get_template('digisig/item.html')
+		for key, part_info in part_dic.items():
+			template = loader.get_template('digisig/item.html')
+			context = {
+				'pagetitle': part_info['pagetitle'],
+				'part_object': part_info,
+				'mapdic': part_info['mapdic'],
+				}
 
-		return render(request, template, context)
+	return HttpResponse(template.render(context, request))
 
 ############################ Manifestation #####################
 
-	async def manifestation_page(self, request, digisig_entity_number): 
-		####manifestation_dic = await manifestation_createdic(manifestation_object)
-		pagetitle = 'title'
+@login_required(login_url='/login/')
+async def manifestation_page(request, digisig_entity_number): 
+	####manifestation_dic = await manifestation_createdic(manifestation_object)
+	pagetitle = 'title'
 
-		# manifestation_object = await manifestationobject_define(digisig_entity_number)
+	# manifestation_object = await manifestationobject_define(digisig_entity_number)
 
-		manifestation_set, totalmanifestation_count = await manifestation_searchsetgenerate(digisig_entity_number, searchtype="manifestation")
-		representation_set = await representationsetgenerate2(manifestation_set, primacy=True)
-		manifestation_display_dic, listofseals, listofevents, listofactors = await manifestation_displaysetgenerate(manifestation_set, representation_set)
-		description_set = await sealdescription_displaysetgenerate2(listofseals)
-		name_set = await namecompiler_group(listofactors)
-		manifestation_info = await seal_displaysetgenerate(manifestation_display_dic, description_set, digisig_entity_number, name_set)
-		outname, actor_id = await actorfinder(manifestation_set)
+	manifestation_set, totalmanifestation_count = await manifestation_searchsetgenerate(digisig_entity_number, searchtype="manifestation")
+	representation_set = await representationsetgenerate2(manifestation_set, primacy=True)
+	manifestation_display_dic, listofseals, listofevents, listofactors = await manifestation_displaysetgenerate(manifestation_set, representation_set)
+	description_set = await sealdescription_displaysetgenerate2(listofseals)
+	name_set = await namecompiler_group(listofactors)
+	manifestation_info = await seal_displaysetgenerate(manifestation_display_dic, description_set, digisig_entity_number, name_set)
+	outname, actor_id = await actorfinder(manifestation_set)
 
-		first_item = next(iter(manifestation_display_dic.items()))
-		first_key, manifestation_dic = first_item
+	first_item = next(iter(manifestation_display_dic.items()))
+	first_key, manifestation_dic = first_item
 
-		template = loader.get_template('digisig/manifestation.html')
-		context = {
-				'pagetitle': pagetitle,
-				'manifestation_info': manifestation_info,
-				'manifestation_dic': manifestation_dic,
-				'outname': outname,
-		}
+	template = loader.get_template('digisig/manifestation.html')
+	context = {
+			'pagetitle': pagetitle,
+			'manifestation_info': manifestation_info,
+			'manifestation_dic': manifestation_dic,
+			'outname': outname,
+	}
 
-		return render(request, template, context)
+	return HttpResponse(template.render(context, request))
 
 
 
@@ -972,149 +978,153 @@ class EntityView(View):
 
 ############################## Place #############################
 
-	async def place_page(self, request, digisig_entity_number):
+@login_required(login_url='/login/')
+async def place_page(request, digisig_entity_number):
 
-		template = loader.get_template('digisig/place.html')  
-		# displaystatus = 1
+	template = loader.get_template('digisig/place.html')  
+	# displaystatus = 1
 
-		qpagination = 1
+	qpagination = 1
 
-		if request.method == 'POST':
+	if request.method == 'POST':
+		form = PageCycleForm(request.POST)
+
+		if form.is_valid():
+			qpagination = form.cleaned_data['pagination']
 			form = PageCycleForm(request.POST)
+			# displaystatus = 0		
 
-			if form.is_valid():
-				qpagination = form.cleaned_data['pagination']
-				form = PageCycleForm(request.POST)
-				# displaystatus = 0		
+	else:
+		form = PageCycleForm()
 
-		else:
-			form = PageCycleForm()
+	place_object, pagetitle = await place_information(digisig_entity_number)
 
-		place_object, pagetitle = await place_information(digisig_entity_number)
+	mapdic = await mapgenerator(place_object)
 
-		mapdic = await mapgenerator(place_object)
+	placecall = True
+	manifestation_object = await manifestation_search(digisig_entity_number, placecall)
 
-		placecall = True
-		manifestation_object = await manifestation_search(digisig_entity_number, placecall)
+	# #note that is should pick up cases where manifestations are associated with secondary places?
+	# manifestation_object = manifestation_object.filter(
+	# 		fk_support__fk_part__fk_event__fk_event_locationreference__fk_locationname__fk_location__id_location=digisig_entity_number).distinct()
 
-		# #note that is should pick up cases where manifestations are associated with secondary places?
-		# manifestation_object = manifestation_object.filter(
-		# 		fk_support__fk_part__fk_event__fk_event_locationreference__fk_locationname__fk_location__id_location=digisig_entity_number).distinct()
+	## these pagecounters are going to break on pages that are small lists
+	manifestation_pageobject, totalrows, totaldisplay = await defaultpagination(manifestation_object, qpagination)
+	pagecountercurrent = qpagination 
+	pagecounternext = qpagination + 1
+	pagecounternextnext = qpagination +2
 
-		## these pagecounters are going to break on pages that are small lists
-		manifestation_pageobject, totalrows, totaldisplay = await defaultpagination(manifestation_object, qpagination)
-		pagecountercurrent = qpagination 
-		pagecounternext = qpagination + 1
-		pagecounternextnext = qpagination +2
+	representation_set = await representationsetgenerate(manifestation_pageobject)
+	manifestation_set, totalmanifestation_count = await manifestation_searchsetgenerate(manifestation_pageobject)
+	manifestation_display_dic, listofseals, listofevents, listofactors = await manifestation_displaysetgenerate(manifestation_set, representation_set)
+	description_set = await sealdescription_displaysetgenerate2(listofseals)
+	location_set = await location_displaysetgenerate(listofevents)
+	manifestation_output = await finalassembly_displaysetgenerate(manifestation_display_dic, location_set, description_set)
 
-		representation_set = await representationsetgenerate(manifestation_pageobject)
-		manifestation_set, totalmanifestation_count = await manifestation_searchsetgenerate(manifestation_pageobject)
-		manifestation_display_dic, listofseals, listofevents, listofactors = await manifestation_displaysetgenerate(manifestation_set, representation_set)
-		description_set = await sealdescription_displaysetgenerate2(listofseals)
-		location_set = await location_displaysetgenerate(listofevents)
-		manifestation_output = await finalassembly_displaysetgenerate(manifestation_display_dic, location_set, description_set)
+	context = {
+		'pagetitle': pagetitle,
+		'place_object': place_object,
+		'mapdic': mapdic, 
+		'manifestation_set': manifestation_output,
+		'totalrows': totalrows,
+		'totaldisplay': totaldisplay,
+		'form': form,
+		'pagecountercurrent': pagecountercurrent,
+		'pagecounternext': pagecounternext,
+		'pagecounternextnext': pagecounternextnext,
+		}
 
-		context = {
-			'pagetitle': pagetitle,
-			'place_object': place_object,
-			'mapdic': mapdic, 
-			'manifestation_set': manifestation_output,
-			'totalrows': totalrows,
-			'totaldisplay': totaldisplay,
-			'form': form,
-			'pagecountercurrent': pagecountercurrent,
-			'pagecounternext': pagecounternext,
-			'pagecounternextnext': pagecounternextnext,
-			}
-
-		return render(request, template, context)
+	return HttpResponse(template.render(context, request))
 
 
 ############################## Representation #############################
 
-	async def representation_page(self, request, digisig_entity_number):
+@login_required(login_url='/login/')
+async def representation_page(request, digisig_entity_number):
 
-		pagetitle = 'Representation'
-		template = loader.get_template('digisig/representation.html')
+	pagetitle = 'Representation'
+	template = loader.get_template('digisig/representation.html')
 
-		representation_object = await representation_queryformulate(digisig_entity_number)
+	representation_object = await representation_queryformulate(digisig_entity_number)
 
-		representation_dic = await representationmetadata(representation_object)
+	representation_dic = await representationmetadata(representation_object)
 
-		# Entity type is determined by the final digit in the DIGISIG ID number (manifestation=2, sealdescription=3, part=8)
-		entitytype = representation_dic["entity_type"]
-		searchvalue = representation_dic['entity_link']
+	# Entity type is determined by the final digit in the DIGISIG ID number (manifestation=2, sealdescription=3, part=8)
+	entitytype = representation_dic["entity_type"]
+	searchvalue = representation_dic['entity_link']
 
-		if entitytype == 2:
-			manifestation_case, totalmanifestation_count = await manifestation_searchsetgenerate(searchvalue, searchtype="manifestation")
-			representation_dic = await representationmetadata_manifestation(manifestation_case, representation_dic)
-			representation_dic = await representationmetadata_part(manifestation_case, representation_dic)
-			representation_dic['outname'], actor_id = await actorfinder(manifestation_case)
+	if entitytype == 2:
+		manifestation_case, totalmanifestation_count = await manifestation_searchsetgenerate(searchvalue, searchtype="manifestation")
+		representation_dic = await representationmetadata_manifestation(manifestation_case, representation_dic)
+		representation_dic = await representationmetadata_part(manifestation_case, representation_dic)
+		representation_dic['outname'], actor_id = await actorfinder(manifestation_case)
 
-			# representation_dic = await representationmetadata_part(representation_object, representation_dic)
-			#representation_dic = await representationmetadata_manifestation(representation_object, representation_dic)
+		# representation_dic = await representationmetadata_part(representation_object, representation_dic)
+		#representation_dic = await representationmetadata_manifestation(representation_object, representation_dic)
 
-		if entitytype == 3:
-			representation_dic = await representationmetadata_sealdescription(representation_object, representation_dic)
+	if entitytype == 3:
+		representation_dic = await representationmetadata_sealdescription(representation_object, representation_dic)
 
-		if entitytype == 8:
-			representation_dic = await representationmetadata_partquery(searchvalue, representation_dic)
-			
-			#representation_dic = await representationmetadata_part(representation_object, representation_dic)
+	if entitytype == 8:
+		representation_dic = await representationmetadata_partquery(searchvalue, representation_dic)
+		
+		#representation_dic = await representationmetadata_part(representation_object, representation_dic)
 
-		context = {
-			'pagetitle': pagetitle,
-			'representation_dic': representation_dic,
-			}
+	context = {
+		'pagetitle': pagetitle,
+		'representation_dic': representation_dic,
+		}
 
-		return render(request, template, context)
+	return HttpResponse(template.render(context, request))
 
 
 ############################## Seal #############################
 
-	async def seal_page(self, request, digisig_entity_number):
-		pagetitle = 'title'
-		template = loader.get_template('digisig/seal.html')
+@login_required(login_url='/login/')
+async def seal_page(request, digisig_entity_number):
+	pagetitle = 'title'
+	template = loader.get_template('digisig/seal.html')
 
-		manifestation_set, totalmanifestation_count = await manifestation_searchsetgenerate(digisig_entity_number, searchtype="seal")
-		representation_set = await representationsetgenerate2(manifestation_set)
-		manifestation_display_dic, listofseals, listofevents, listofactors = await manifestation_displaysetgenerate(manifestation_set, representation_set)
-		description_set = await sealdescription_displaysetgenerate2(listofseals)
-		name_set = await namecompiler_group(listofactors)
-		# location_set = await location_displaysetgenerate(listofevents)
+	manifestation_set, totalmanifestation_count = await manifestation_searchsetgenerate(digisig_entity_number, searchtype="seal")
+	representation_set = await representationsetgenerate2(manifestation_set)
+	manifestation_display_dic, listofseals, listofevents, listofactors = await manifestation_displaysetgenerate(manifestation_set, representation_set)
+	description_set = await sealdescription_displaysetgenerate2(listofseals)
+	name_set = await namecompiler_group(listofactors)
+	# location_set = await location_displaysetgenerate(listofevents)
 
-		seal_info = await seal_displaysetgenerate(manifestation_display_dic, description_set, digisig_entity_number, name_set)
+	seal_info = await seal_displaysetgenerate(manifestation_display_dic, description_set, digisig_entity_number, name_set)
 
-		context = {
-			'pagetitle': pagetitle,
-			'seal_info': seal_info,
-			}
+	context = {
+		'pagetitle': pagetitle,
+		'seal_info': seal_info,
+		}
 
-		return render(request, template, context)
+	return HttpResponse(template.render(context, request))
 
 
 ############################## Seal description #############################
 
-	async def sealdescription_page(self, request, digisig_entity_number):
+@login_required(login_url='/login/')
+async def sealdescription_page(request, digisig_entity_number):
 
-		template = loader.get_template('digisig/sealdescription.html')
+	template = loader.get_template('digisig/sealdescription.html')
 
-		sealdescription_object = await sealdescription_fetchobject(digisig_entity_number)
-		
-		pagetitle = sealdescription_object.fk_collection.collection_title
+	sealdescription_object = await sealdescription_fetchobject(digisig_entity_number)
+	
+	pagetitle = sealdescription_object.fk_collection.collection_title
 
-		sealdescription_dic= await sealdescription_fetchrepresentation(sealdescription_object)
-		sealdescription_dic = await sealdescription_contributorgenerate(sealdescription_object.fk_collection, sealdescription_dic)
-		externallinkset = await externallinkgenerator(digisig_entity_number)
+	sealdescription_dic= await sealdescription_fetchrepresentation(sealdescription_object)
+	sealdescription_dic = await sealdescription_contributorgenerate(sealdescription_object.fk_collection, sealdescription_dic)
+	externallinkset = await externallinkgenerator(digisig_entity_number)
 
-		context = {
-			'pagetitle': pagetitle,
-			'sealdescription_object': sealdescription_object,
-			'sealdescription_dic': sealdescription_dic,
-			'externallinkset': externallinkset, 
-			}
+	context = {
+		'pagetitle': pagetitle,
+		'sealdescription_object': sealdescription_object,
+		'sealdescription_dic': sealdescription_dic,
+		'externallinkset': externallinkset, 
+		}
 
-		return render(request, template, context)
+	return HttpResponse(template.render(context, request))
 
 
 ############################## Support #############################
@@ -1122,30 +1132,20 @@ class EntityView(View):
 
 ################################ TERM ######################################
 
-	# async def term_page(self, request, digisig_entity_number):
-	# 	pagetitle = 'Term'
+@login_required(login_url='/login/')
+async def term_page(request, digisig_entity_number):
+	pagetitle = 'Term'
 
-	# 	term_object, statement_object = await entity_term(digisig_entity_number)
+	term_object, statement_object = await entity_term(digisig_entity_number)
 
-	# 	template = loader.get_template('digisig/term.html')
-	# 	context = {
-	# 		'pagetitle': pagetitle,
-	# 		'term_object': term_object,
-	# 		'statement_object': statement_object,
-	# 		}
-
-	# 	return render(request, template, context)
-
-	async def term_page(self, request, digisig_entity_number):
-		pagetitle = 'Term'
-
-		term_object, statement_object = await sync_to_async(entity_term)(digisig_entity_number)
-
-		template = await sync_to_async(loader.get_template)('digisig/term.html')
-		context = {
-			'pagetitle': pagetitle,
-			'term_object': term_object,
-			'statement_object': statement_object,
+	template = loader.get_template('digisig/term.html')
+	context = {
+		'pagetitle': pagetitle,
+		'term_object': term_object,
+		'statement_object': statement_object,
 		}
 
-		return await sync_to_async(render)(request, template, context)
+	return HttpResponse(template.render(context, request))
+
+
+

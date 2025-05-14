@@ -87,7 +87,7 @@ timegroup_options2 = []
 # 	# classname = forms.ChoiceField(label='Digisig Class', choices=classname_options, required=False)
 # 	sealtypechoice = forms.ChoiceField(choices=sealtype_options, required=False)
 
-class CollectionForm(forms.Form):
+class CollectionForm_digisig(forms.Form):
 	collection = forms.ChoiceField(label='Collections', choices=[], required=False)
 	mapchoice = forms.ChoiceField(choices=mapchoices, required=False)
 	timechoice = forms.ChoiceField(choices=timegroup_options2, required=False)
