@@ -1,12 +1,8 @@
 from django.urls import path, re_path
 from debug_toolbar.toolbar import debug_toolbar_urls
-
 from django.contrib import admin
-
 from .views import CustomLoginView, LogoutView, EntityView
-
 from . import views
-
 
 urlpatterns = [
 	path('', views.index, name='index'),

@@ -75,7 +75,7 @@
 
 			<tr>
 				<th class="indent">Part of item</th>
-				<td><a href="{% url 'item_page' digisig_entity_number=m.id_item %}">{{m.shelfmark}}</a>
+				<td><a href="{% url 'item_page' entity_type='item' digisig_entity_number=m.id_item %}">{{m.shelfmark}}</a>
 				{% if m.number != 'Undetermined'%}(seal {{m.number}}){% endif %}
 				</td>
 			</tr>
@@ -91,7 +91,7 @@
 			<tr>
 				{% if m.repository_location != null %}
 				<th class="indent">Place </th>
-				<td><a href="{% url 'place_page' digisig_entity_number=m.id_location %}">{{m.repository_location}}</a></td>
+				<td><a href="{% url 'place_page' entity_type='place' digisig_entity_number=m.id_location %}">{{m.repository_location}}</a></td>
 				{% endif %}
 			</tr>
 
@@ -105,7 +105,7 @@
 
 			<tr>
 				<th class="indent">Example of </th>
-				<td><a href="{% url 'seal_page' digisig_entity_number=m.id_seal %}">Seal details</a></td>
+				<td><a href="{% url 'seal_page' entity_type='seal' digisig_entity_number=m.id_seal %}">Seal details</a></td>
 			</tr>
 
 			{% for key, value in m.sealdescriptions.items %}
@@ -113,7 +113,7 @@
 				<th class="indent">
 					{% if forloop.first %} Described in {% endif %}
 				</th>
-				<td><a href="{% url 'sealdescription_page' digisig_entity_number=value.sealdescription_id %}">{{value.collection}} ({{value.identifier}})</a></td>
+				<td><a href="{% url 'sealdescription_page' entity_type='sealdescription' digisig_entity_number=value.sealdescription_id %}">{{value.collection}} ({{value.identifier}})</a></td>
 			</tr>
 			{% endfor %}
 
@@ -133,7 +133,7 @@
 			{% for key, value in relationship_object.items %}
 				{% if forloop.counter|divisibleby:2 %}<tr class="even">{% else %}<tr class="odd">{% endif %}
 					<td>{{value.role}} of 
-						<a href="{% url 'actor_page' digisig_entity_number=value.id_individual %}">{{value.name}}</a>
+						<a href="{% url 'actor_page' entity_type='actor' digisig_entity_number=value.id_individual %}">{{value.name}}</a>
 					</td>
 				</tr>
 			{% endfor %}

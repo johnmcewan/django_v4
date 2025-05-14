@@ -765,6 +765,7 @@ async def entity_fail(request, entity_phrase):
 
 
 class EntityView(View):
+	
 	@method_decorator(login_required(login_url='/login/'))
 	async def dispatch(self, request, *args, **kwargs):
 		return await super().dispatch(request, *args, **kwargs)
@@ -773,6 +774,7 @@ class EntityView(View):
 		if entity_type == 'actor':
 			return await self.actor_page(request, digisig_entity_number)
 		elif entity_type == 'collection':
+
 			return await self.collection_page(request, digisig_entity_number)
 		elif entity_type == 'item':
 			return await self.item_page(request, digisig_entity_number)
@@ -796,7 +798,6 @@ class EntityView(View):
 
 	async def actor_page(self, request, digisig_entity_number):
 
-		template = loader.get_template('digisig/actor.html')
 
 		# establishing the base queries
 		individual_object = await individualsearch(digisig_entity_number)
@@ -836,7 +837,9 @@ class EntityView(View):
 			'reference_set': reference_set,
 			}
 
-		return render(request, template, context)
+		# template = loader.get_template('digisig/actor.html')
+
+		return render(request, 'digisig/actor.html', context)
 
 
 ################################ Collection ######################################
@@ -905,9 +908,9 @@ class EntityView(View):
 			'form': form,
 		}
 			
-		template = loader.get_template('digisig/collection.html') 
+		# template = loader.get_template('digisig/collection.html') 
 					 
-		return render(request, template, context)
+		return render(request, 'digisig/collection.html', context)
 
 
 ############################## Face #############################
@@ -922,7 +925,7 @@ class EntityView(View):
 		if len(part_dic) == 1:
 
 			for key, part_info in part_dic.items():
-				template = loader.get_template('digisig/item.html')
+				# template = loader.get_template('digisig/item.html')
 				context = {
 					'pagetitle': part_info['pagetitle'],
 					'part_object': part_info,
@@ -931,7 +934,7 @@ class EntityView(View):
 		
 		## this seems to be a hack to deal with cases with multiple parts #14/5/2025
 		else:
-			template = loader.get_template('digisig/item.html')
+			# template = loader.get_template('digisig/item.html')
 			for key, part_info in part_dic.items():
 				template = loader.get_template('digisig/item.html')
 				context = {
@@ -940,7 +943,7 @@ class EntityView(View):
 					'mapdic': part_info['mapdic'],
 					}
 
-		return render(request, template, context)
+		return render(request, 'digisig/item.html', context)
 
 ############################ Manifestation #####################
 
@@ -961,7 +964,7 @@ class EntityView(View):
 		first_item = next(iter(manifestation_display_dic.items()))
 		first_key, manifestation_dic = first_item
 
-		template = loader.get_template('digisig/manifestation.html')
+		#template = loader.get_template('digisig/manifestation.html')
 		context = {
 				'pagetitle': pagetitle,
 				'manifestation_info': manifestation_info,
@@ -969,7 +972,7 @@ class EntityView(View):
 				'outname': outname,
 		}
 
-		return render(request, template, context)
+		return render(request, 'digisig/manifestation.html', context)
 
 
 
@@ -981,7 +984,7 @@ class EntityView(View):
 
 	async def place_page(self, request, digisig_entity_number):
 
-		template = loader.get_template('digisig/place.html')  
+
 		# displaystatus = 1
 
 		qpagination = 1
@@ -1034,7 +1037,9 @@ class EntityView(View):
 			'pagecounternextnext': pagecounternextnext,
 			}
 
-		return render(request, template, context)
+		# template = loader.get_template('digisig/place.html')  
+
+		return render(request, 'digisig/place.html', context)
 
 
 ############################## Representation #############################
@@ -1074,14 +1079,14 @@ class EntityView(View):
 			'representation_dic': representation_dic,
 			}
 
-		return render(request, template, context)
+		#template = loader.get_template('digisig/representation.html')
+		return render(request, 'digisig/representation.html', context)
 
 
 ############################## Seal #############################
 
 	async def seal_page(self, request, digisig_entity_number):
 		pagetitle = 'title'
-		template = loader.get_template('digisig/seal.html')
 
 		manifestation_set, totalmanifestation_count = await manifestation_searchsetgenerate(digisig_entity_number, searchtype="seal")
 		representation_set = await representationsetgenerate2(manifestation_set)
@@ -1097,7 +1102,9 @@ class EntityView(View):
 			'seal_info': seal_info,
 			}
 
-		return render(request, template, context)
+		#template = loader.get_template('digisig/seal.html')
+
+		return render(request, 'digisig/seal.html', context)
 
 
 ############################## Seal description #############################
@@ -1121,7 +1128,9 @@ class EntityView(View):
 			'externallinkset': externallinkset, 
 			}
 
-		return render(request, template, context)
+		#template = loader.get_template('digisig/sealdescription.html')
+
+		return render(request, 'digisig/sealdescription.html', context)
 
 
 ############################## Support #############################

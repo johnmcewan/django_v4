@@ -26,11 +26,11 @@
 	<div class="guidance" id="guidance" style="display:none;">
 		<p>17 March 2023</p>
 		<h3>Introduction</h3>
-		<p>Welcome to the experimental <a href="{% url 'term_page' digisig_entity_number=10001287 %}">seal</a> dating tool!</p>
-		<p>I built this tool in March 2023 while investigating the feasibility of using existing archival seal catalogues to create an automated system to assist cataloguers dating medieval <a href="{% url 'term_page' digisig_entity_number=10001317 %}">seal matrices</a>.</p>
+		<p>Welcome to the experimental <a href="{% url 'term_page' entity_type='term' digisig_entity_number=10001287 %}">seal</a> dating tool!</p>
+		<p>I built this tool in March 2023 while investigating the feasibility of using existing archival seal catalogues to create an automated system to assist cataloguers dating medieval <a href="{% url 'term_page' entity_type='term' digisig_entity_number=10001317 %}">seal matrices</a>.</p>
 		<h3>How to use this tool</h3>
 		<p>Enter the size, <a href="{% url 'information' infotype='terminology' %}">shape and class</a> of the seal in the form on the left and hit submit.</p>
-		<p>The website will return a predicted date, a graph, and possibly some <a href="{% url 'term_page' digisig_entity_number=10001307 %}">seal impressions</a> that (hopefully!) resemble the seal matrix you are trying to date.</p>
+		<p>The website will return a predicted date, a graph, and possibly some <a href="{% url 'term_page' entity_type='term' digisig_entity_number=10001307 %}">seal impressions</a> that (hopefully!) resemble the seal matrix you are trying to date.</p>
 		<h3>How does it work?</h3> 
 		<p>To make predictions, the website uses a decision tree. The website takes the information you submit and uses the decision tree to situate your seal in a group of seals that are similar to the seal you described in the form. I created the decision tree using an algorithm trained on data from DIGISIG. For further information about the training data, <a href="{% url 'information' infotype='machinelearning' %}" target="_blank">please visit this page</a>.</p> 
 		<h3>How do I evalute the prediction?</h3>

@@ -98,7 +98,7 @@
 
     {% if forloop.counter|divisibleby:2 %}<tr class="even">{% else %}<tr class="odd">{% endif %}
         <th class="indent">Part of item</th>
-        <td><a href="{% url 'item_page' digisig_entity_number=manifestation.id_item %}">{{ manifestation.shelfmark }}</a>
+        <td><a href="{% url 'item_page' entity_type='item' digisig_entity_number=manifestation.id_item %}">{{ manifestation.shelfmark }}</a>
         {% if manifestation.number != 'Undetermined' %}(seal {{ manifestation.number }}){% endif %}
         </td>
     </tr>
@@ -114,7 +114,7 @@
     {% if forloop.counter|divisibleby:2 %}<tr class="even">{% else %}<tr class="odd">{% endif %}
         {% if manifestation.repository_location != null %}
         <th class="indent">Place </th>
-        <td><a href="{% url 'place_page' digisig_entity_number=manifestation.id_location %}">{{ manifestation.repository_location }}</a></td>
+        <td><a href="{% url 'place_page' entity_type='place' digisig_entity_number=manifestation.id_location %}">{{ manifestation.repository_location }}</a></td>
         {% endif %}
     </tr>
 
@@ -128,7 +128,7 @@
 
     {% if forloop.counter|divisibleby:2 %}<tr class="even">{% else %}<tr class="odd">{% endif %}
         <th class="finalrow indent">Example of </th>
-        <td><a href="{% url 'seal_page' digisig_entity_number=manifestation.id_seal %}">Seal details</a></td>
+        <td><a href="{% url 'seal_page' entity_type='seal' digisig_entity_number=manifestation.id_seal %}">Seal details</a></td>
     </tr>
 {% endfor %}
 

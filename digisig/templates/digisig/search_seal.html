@@ -20,9 +20,9 @@
 
 	<div class="guidance" id="guidance" style="display:none;">
 		<p>June 16, 2022</p>
-		<p>This page enables researchers to search for <a href="{% url 'term_page' digisig_entity_number=10001307 %}" target="_blank">seal impressions</a>, <a href="{% url 'term_page' digisig_entity_number=10001317 %}" target="_blank">seal matrices</a> and <a href="{% url 'term_page' digisig_entity_number=10001327 %}" target="_blank">seal casts</a>.</p>
+		<p>This page enables researchers to search for <a href="{% url 'term_page' entity_type='term' digisig_entity_number=10001307 %}" target="_blank">seal impressions</a>, <a href="{% url 'term_page' entity_type='term' digisig_entity_number=10001317 %}" target="_blank">seal matrices</a> and <a href="{% url 'term_page' entity_type='term' digisig_entity_number=10001327 %}" target="_blank">seal casts</a>.</p>
 
-		<p>In Digisig, the various physical embodiments of seals are termed <a href="{% url 'term_page' digisig_entity_number=10001297 %}" target="_blank">manifestations</a>. A manifestation can be either positive or negative.</p> 
+		<p>In Digisig, the various physical embodiments of seals are termed <a href="{% url 'term_page' entity_type='term' digisig_entity_number=10001297 %}" target="_blank">manifestations</a>. A manifestation can be either positive or negative.</p> 
 
 		<p>Positive manifestations are typically seal impressions (marks made in a plastic material -- typically wax -- by a seal matrix). However, positive impressions can also be the result of casting, which involves the use of a mould. Multiple positive examples of a particular seal can exist. For example, many impressions of the <a href="{% url 'entity' digisig_entity_number=10213781 %}" target="_blank">first seal of King Henry III</a> survive.</p> 
 
@@ -31,9 +31,9 @@
 		<p>Query result sets can be limited in a several ways. As each manifestation is an example of particular seal, searches can be limited based on features of the seal, such as shape or class. Moreover, as each manifestation is embodied in a physical object that was created a particular moment and place, a query can be limited by date and place, and according to where the manifestation is now preserved.</p>        
 
 			<ul>
-			  <li><button><a href="{% url 'term_page' digisig_entity_number=10001477 %}">SHAPE</a></button> Seals take a wide variety of different shapes</a>. For a list of shapes with definitions and examples, consult the <a href="{% url 'information' infotype='terminology' %}">terminology</a> page.</li>
-			  <li><button><a href="{% url 'term_page' digisig_entity_number=10001497 %}">CLASS</a></button> The particular words that catalogues use to describe the same graphical content can vary. To allow researchers to find seals with particular graphical contents, DIGISIG employs a classification system, which is detailed on the <a href="{% url 'information' infotype='terminology' %}">terminology</a> page. The classification system is hierarchical, with parent and child classes, so researchers can search at both a general level (eg: animal) and at a more specific level (eg: griffin). Seals are classified based on the information supplied by seal cataloguers. What the cataloguer identifies as the central element of the design determines the classification. The classes enable researchers to perform searches and they provide a point of departure for further research into the significance of seals in their original historical contexts.</li>
-			  <li><button> <a href="{% url 'term_page' digisig_entity_number=10001967 %}">Region</a></button> localities, counties, or regions</li>
+			  <li><button><a href="{% url 'term_page' entity_type='term' digisig_entity_number=10001477 %}">SHAPE</a></button> Seals take a wide variety of different shapes</a>. For a list of shapes with definitions and examples, consult the <a href="{% url 'information' infotype='terminology' %}">terminology</a> page.</li>
+			  <li><button><a href="{% url 'term_page' entity_type='term' digisig_entity_number=10001497 %}">CLASS</a></button> The particular words that catalogues use to describe the same graphical content can vary. To allow researchers to find seals with particular graphical contents, DIGISIG employs a classification system, which is detailed on the <a href="{% url 'information' infotype='terminology' %}">terminology</a> page. The classification system is hierarchical, with parent and child classes, so researchers can search at both a general level (eg: animal) and at a more specific level (eg: griffin). Seals are classified based on the information supplied by seal cataloguers. What the cataloguer identifies as the central element of the design determines the classification. The classes enable researchers to perform searches and they provide a point of departure for further research into the significance of seals in their original historical contexts.</li>
+			  <li><button> <a href="{% url 'term_page' entity_type='term' digisig_entity_number=10001967 %}">Region</a></button> localities, counties, or regions</li>
 			</ul> 
 	</div>
 
@@ -136,7 +136,7 @@
 
 			<tr>
 				<th class="indent">Part of item</th>
-				<td><a href="{% url 'item_page' digisig_entity_number=m.id_item %}">{{m.shelfmark}}</a>
+				<td><a href="{% url 'item_page' entity_type='item' digisig_entity_number=m.id_item %}">{{m.shelfmark}}</a>
 				{% if m.number != 'Undetermined'%}(seal {{m.number}}){% endif %}
 				</td>
 			</tr>
@@ -152,7 +152,7 @@
 			<tr>
 				{% if m.repository_location != null %}
 				<th class="indent">Place </th>
-				<td><a href="{% url 'place_page' digisig_entity_number=m.id_location %}">{{m.repository_location}}</a></td>
+				<td><a href="{% url 'place_page' entity_type='place' digisig_entity_number=m.id_location %}">{{m.repository_location}}</a></td>
 				{% endif %}
 			</tr>
 			<tr>
@@ -165,7 +165,7 @@
 
 			<tr>
 				<th class="indent">Example of </th>
-				<td><a href="{% url 'seal_page' digisig_entity_number=m.id_seal %}">Seal details</a></td>
+				<td><a href="{% url 'seal_page' entity_type='seal' digisig_entity_number=m.id_seal %}">Seal details</a></td>
 			</tr>
 
 			{% for key, value in m.sealdescription.items %}
@@ -173,7 +173,7 @@
 				<th class="indent">
 					{% if forloop.first %} Described in {% endif %}
 				</th>
-				<td><a href="{% url 'sealdescription_page' digisig_entity_number=value.sealdescription_id %}">{{value.collection}} ({{value.identifier}})</a></td>
+				<td><a href="{% url 'sealdescription_page' entity_type='sealdescription' digisig_entity_number=value.sealdescription_id %}">{{value.collection}} ({{value.identifier}})</a></td>
 			</tr>
 			{% endfor %}
 			</table>
