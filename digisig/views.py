@@ -760,8 +760,15 @@ async def entity_fail(request, entity_phrase):
 
 ############################## Actor #############################
 
-@method_decorator(login_required(login_url='/login/'), name='dispatch')
+#@method_decorator(login_required(login_url='/login/'), name='dispatch')
+#@method_decorator(sync_to_async(login_required(login_url='/login/')), name='dispatch')
+
+
 class EntityView(View):
+	@method_decorator(login_required(login_url='/login/'))
+	async def dispatch(self, request, *args, **kwargs):
+		return await super().dispatch(request, *args, **kwargs)
+
 	async def get(self, request, entity_type, digisig_entity_number):
 		if entity_type == 'actor':
 			return await self.actor_page(request, digisig_entity_number)
@@ -1122,30 +1129,16 @@ class EntityView(View):
 
 ################################ TERM ######################################
 
-	# async def term_page(self, request, digisig_entity_number):
-	# 	pagetitle = 'Term'
-
-	# 	term_object, statement_object = await entity_term(digisig_entity_number)
-
-	# 	template = loader.get_template('digisig/term.html')
-	# 	context = {
-	# 		'pagetitle': pagetitle,
-	# 		'term_object': term_object,
-	# 		'statement_object': statement_object,
-	# 		}
-
-	# 	return render(request, template, context)
-
 	async def term_page(self, request, digisig_entity_number):
 		pagetitle = 'Term'
 
-		term_object, statement_object = await sync_to_async(entity_term)(digisig_entity_number)
+		term_object, statement_object = await entity_term(digisig_entity_number)
 
-		template = await sync_to_async(loader.get_template)('digisig/term.html')
+		template = loader.get_template('digisig/term.html')
 		context = {
 			'pagetitle': pagetitle,
 			'term_object': term_object,
 			'statement_object': statement_object,
-		}
+			}
 
-		return await sync_to_async(render)(request, template, context)
+		return render(request, 'digisig/term.html', context)
