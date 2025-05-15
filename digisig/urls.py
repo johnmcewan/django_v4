@@ -26,6 +26,13 @@ urlpatterns = [
     re_path(r'page/(?P<entity_type>place)/(?P<digisig_entity_number>[0-9]{8})', views.EntityView.as_view(), name='place_page'),
     re_path(r'page/(?P<entity_type>collection)/(?P<digisig_entity_number>[0-9]{8})', views.EntityView.as_view(), name='collection_page'),
 
+
+
+	re_path(r'entity/(?P<digisig_entity_number>[0-9]{8})', views.entity, name='entity'),
+
+] #+ debug_toolbar_urls()
+
+
 	# re_path(r'page/item/(?P<digisig_entity_number>[0-9]{8})', views.item_page, name='item_page'),
 	# re_path(r'page/term/(?P<digisig_entity_number>[0-9]{8})', views.term_page, name='term_page'),
 	# re_path(r'page/seal/(?P<digisig_entity_number>[0-9]{8})', views.seal_page, name='seal_page'),
@@ -35,7 +42,3 @@ urlpatterns = [
 	# re_path(r'page/actor/(?P<digisig_entity_number>[0-9]{8})', views.actor_page, name='actor_page'),
 	# re_path(r'page/place/(?P<digisig_entity_number>[0-9]{8})', views.place_page, name='place_page'),
 	# re_path(r'page/collection/(?P<digisig_entity_number>[0-9]{8})', views.collection_page, name='collection_page'),
-
-	re_path(r'entity/(?P<digisig_entity_number>[0-9]{8})', views.entity, name='entity'),
-
-] #+ debug_toolbar_urls()
