@@ -1,0 +1,45 @@
+{% extends "digisig/base.html" %}
+
+{% load static %}
+
+{% block content %}
+
+
+
+
+<style>
+
+#search1 {
+    background-image: url({% static 'digisig/images/IMGP9307_3b.jpg' %});
+}
+
+#search2 {
+  background-image: url({% static 'digisig/images/IMGP9870_v3.jpg' %});
+}
+
+#search3 {
+  background-image: url({% static 'digisig/images/SBH1266_v1.jpg' %});
+}
+
+</style>
+
+
+    <div class="home-banner"></div> 
+    <div class="sidepanel-left"></div>
+    <div class="sidepanel-right"></div>
+
+    <div id="digisigstats" style="color:black;">
+      <h2>Sign Up</h2>
+      <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Register</button>
+      </form>
+      <p>Already have an account? <a href="{% url 'login' %}">Log in</a></p>
+    </div>
+
+    <div id="digisigblock1"></div>
+    <div id="digisigtextblock1"></div>
+    <div id="digisigtextblock2"></div>
+
+{% endblock %}

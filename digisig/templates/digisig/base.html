@@ -124,6 +124,15 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
           <!-- <a href="{% url 'information' infotype='contact' %}">Contact</a> -->
       </div>
     </div>
+     <div class="subnav">
+      <button class="subnavbtn">Access<i class="fas fa-caret-down"></i></button>
+      <div class="subnav-content">
+          <a href="{% url 'login' %}">Login</a>
+          <a href="{% url 'logout' %}">Logout</a>
+          <a href="{% url 'signup' %}">Register</a>
+          <!-- <a href="{% url 'information' infotype='contact' %}">Contact</a> -->
+      </div>
+    </div>
   </div>  
 </nav>
 

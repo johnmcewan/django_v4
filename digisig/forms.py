@@ -1,8 +1,31 @@
 from django import forms
 from django.db.models import Count
-# from django.db.models import Q
-
 from .models import * 
+
+from django.contrib.auth.forms import UserCreationForm, UsernameField
+from django.contrib.auth import get_user_model
+
+class CustomUserCreationForm(UserCreationForm):
+	first_name = forms.CharField(max_length=30, label='First Name')
+	last_name = forms.CharField(max_length=30, label='Last Name')
+	academic_status_choices = [
+		('student', 'Student'),
+		('faculty', 'Faculty'),
+		('staff', 'Staff'),
+		('graduate', 'Graduate'),
+		('other', 'Other'),
+	]
+	academic_status = forms.ChoiceField(choices=academic_status_choices, label='Academic Status')
+	interest = forms.CharField(widget=forms.Textarea, label='Reason for Consulting Site')
+	academicaffiliation = forms.CharField(max_length=30, label='Academic Affiliation')
+
+	class Meta(UserCreationForm.Meta):
+		model = get_user_model()
+		fields = UserCreationForm.Meta.fields + ('first_name', 'last_name', 'email', 'academic_status', 'academicaffiliation', 'interest')
+		field_classes = {'username': UsernameField}
+
+
+################ Older materials below ###################
 
 #Form for querying seal impressions
 repositories_options = [('','None')]

@@ -58,12 +58,38 @@ cache_timeout = (60 * 60)
 
 # Create your views here.
 
+
+from django.urls import reverse_lazy
+from django.views import generic
+from django.contrib.auth import get_user_model
+# from .forms import CustomUserCreationForm
+
+class SignUpView(generic.CreateView):
+	form_class = CustomUserCreationForm
+	success_url = reverse_lazy('login') # Redirect to the login page after successful registration
+	template_name = 'digisig/signup.html' # Create this template
+
+	def form_valid(self, form):
+		user = form.save()
+		# You can add additional logic here, such as sending a confirmation email
+		Digisiguser.objects.create(
+			digisig_user_django=user,
+			digisiguser_firstname = form.cleaned_data['first_name'],
+			digisiguser_lastname = form.cleaned_data['last_name'],
+			digisiguser_interest = form.cleaned_data['interest'],
+			digisiguser_academicstatus = form.cleaned_data['academic_status'],
+			digisiguser_academicaffiliation = form.cleaned_data['academicaffiliation'],
+			digisiguser_email = form.cleaned_data['email'],
+		)
+		return super().form_valid(form)
+
+
 class CustomLoginView(LoginView):
-	template_name = 'digisig/login.html' #Replace with your actual login template
+	template_name = 'digisig/login.html' 
 	redirect_authenticated_user = True # If the user is already logged in redirect them
 
 	def get_success_url(self):
-		return reverse('index') # Replace 'home' with the name of your home view.
+		return reverse('index') 
 
 
 @cache_page(cache_timeout)

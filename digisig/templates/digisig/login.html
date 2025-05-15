@@ -37,7 +37,7 @@
     {% endif %}
 
     <form method="post">
-        {% csrf_token %}  {# VERY IMPORTANT:  Include the CSRF token #}
+        {% csrf_token %} 
         <table>
             <tr>
                 <td>{{ form.username.label_tag }}</td>
@@ -52,7 +52,7 @@
         <input type="hidden" name="next" value="{{ next }}"> {#Optional, passed through next variable#}
     </form>
 
-    <p>Don't have an account? <a href="{% url 'login' %}">Register here</a></p>
+    <p>Don't have an account? <a href="{% url 'signup' %}">Register here</a></p>
 
 
 

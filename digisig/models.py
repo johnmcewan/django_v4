@@ -10,6 +10,7 @@ from django.db import models
 from django.forms import ModelForm
 from django.utils.safestring import mark_safe
 from django.contrib.auth.models import User
+from django.conf import settings
 
 from .models import *
 
@@ -402,6 +403,23 @@ class Descriptortype(models.Model):
 		managed = False
 		db_table = 'descriptortype'
 
+
+class Digisiguser(models.Model):
+	id_digisig_user = models.AutoField(primary_key=True)
+	digisiguser_firstname = models.TextField(blank=True, null=True)
+	digisiguser_lastname = models.TextField(blank=True, null=True)
+	digisiguser_interest = models.TextField(blank=True, null=True)
+	digisiguser_academicstatus = models.TextField(blank=True, null=True)
+	digisiguser_academicaffiliation = models.TextField(blank=True, null=True)
+	digisiguser_email = models.TextField(blank=True, null=True)
+	digisig_user_django = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='profile') 
+
+	def __str__(self):
+		return f"{self.digisig_user_django.username}'s Profile"
+
+	class Meta:
+		managed = False
+		db_table = 'digisig_user'
 
 class Entity(models.Model):
 	pk_entity = models.AutoField(primary_key=True)
