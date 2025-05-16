@@ -10,6 +10,8 @@ urlpatterns = [
 	path('login/', CustomLoginView.as_view(), name='login'),
 	path('logout/', LogoutView.as_view(next_page='/'), name='logout'),
 	path('signup/', SignUpView.as_view(), name='signup'),
+	path('registration/pending/', views.registration_pending, name='registration_pending'),
+	path('verify/<uuid:token>/', views.verify_email, name='verify_email'),
 	path('search/<str:searchtype>', views.search, name='search'),
 	path('information/<str:infotype>', views.information, name='information'),
 	path('discover/<str:discovertype>', views.discover, name='discover'),

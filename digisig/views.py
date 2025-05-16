@@ -1,34 +1,50 @@
-from django.views.decorators.cache import cache_page
+from django.core.mail import send_mail
+from django.template.loader import render_to_string
+from django.conf import settings 
+
+from django.core import serializers
 from django.core.cache import cache
 
+from django.contrib import messages
+from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.models import User
 from django.contrib.auth.views import LoginView, LogoutView
-from django.utils.decorators import method_decorator
+
+from django.urls import reverse_lazy
+
+from django.views import View
+from django.views import generic
+from django.views.decorators.cache import cache_page
 
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponse, JsonResponse
 from django.template import loader
 from django.urls import reverse
-from datetime import datetime
-from time import time
-# from django.core.paginator import Paginator
+
+
 from django.db.models import Prefetch
 from django.db.models import Q
 from django.db.models import Count
 from django.db.models import Sum
-from django.core import serializers
+
+from django.utils.decorators import method_decorator
+
+from utils.generaltools import *
+from utils.viewtools import *
+from asgiref.sync import sync_to_async
+#from django.ratelimit.decorators import ratelimit
+
+from datetime import datetime
+from time import time
 
 from .models import *
 from .forms import * 
-# from utils.mltools import * 
-from utils.generaltools import *
-from utils.viewtools import *
-from django.views import View
-from asgiref.sync import sync_to_async
 
 import json
 import os
 import pickle
+
 
 
 # Table of Contents
@@ -59,20 +75,17 @@ cache_timeout = (60 * 60)
 # Create your views here.
 
 
-from django.urls import reverse_lazy
-from django.views import generic
-from django.contrib.auth import get_user_model
-# from .forms import CustomUserCreationForm
-
 class SignUpView(generic.CreateView):
 	form_class = CustomUserCreationForm
-	success_url = reverse_lazy('login') # Redirect to the login page after successful registration
-	template_name = 'digisig/signup.html' # Create this template
+	success_url = reverse_lazy('registration_pending')
+	template_name = 'digisig/signup.html'
 
 	def form_valid(self, form):
 		user = form.save()
-		# You can add additional logic here, such as sending a confirmation email
-		Digisiguser.objects.create(
+		user_agent = self.request.META.get('HTTP_USER_AGENT', '')
+		user_language = self.request.META.get('HTTP_ACCEPT_LANGUAGE')
+
+		digisig_user = Digisiguser.objects.create(
 			digisig_user_django=user,
 			digisiguser_firstname = form.cleaned_data['first_name'],
 			digisiguser_lastname = form.cleaned_data['last_name'],
@@ -80,7 +93,26 @@ class SignUpView(generic.CreateView):
 			digisiguser_academicstatus = form.cleaned_data['academic_status'],
 			digisiguser_academicaffiliation = form.cleaned_data['academicaffiliation'],
 			digisiguser_email = form.cleaned_data['email'],
+			digisiguser_useragent = user_agent,
+			digisiguser_userlanguage = user_language,
+			digisiguser_registrationdate = datetime.datetime.now()
 		)
+
+
+		# Generate verification link
+		verification_url = self.request.build_absolute_uri(
+			reverse('verify_email', kwargs={'token': digisig_user.verification_token})
+		)
+
+		# Send verification email
+		subject = 'Verify Your Email Address'
+		message = render_to_string('digisig/verification_email.txt', {'user': user, 'verification_url': verification_url})
+		html_message = render_to_string('digisig/verification_email.html', {'user': user, 'verification_url': verification_url})
+		from_email = settings.DEFAULT_FROM_EMAIL
+		to_email = form.cleaned_data['email']
+
+		send_mail(subject, message, from_email, [to_email], html_message=html_message)
+
 		return super().form_valid(form)
 
 
@@ -90,6 +122,25 @@ class CustomLoginView(LoginView):
 
 	def get_success_url(self):
 		return reverse('index') 
+
+def registration_pending(request):
+	return render(request, 'digisig/registration_pending.html')
+
+
+def verify_email(request, token):
+    try:
+        digisig_user = Digisiguser.objects.get(verification_token=token)
+        if not digisig_user.digisiguser_emailverified:
+            digisig_user.digisiguser_emailverified = True
+            digisig_user.save()
+            messages.success(request, 'Your email address has been successfully verified. You can now log in.')
+        else:
+            messages.info(request, 'This email address has already been verified.')
+    except Digisiguser.DoesNotExist:
+        messages.error(request, 'Invalid verification link.')
+
+    return redirect('login')
+
 
 
 @cache_page(cache_timeout)
@@ -793,6 +844,7 @@ async def entity_fail(request, entity_phrase):
 class EntityView(View):
 	
 	@method_decorator(login_required(login_url='/login/'))
+	# @method_decorator(ratelimit(key='user', rate='5/m'))
 	async def dispatch(self, request, *args, **kwargs):
 		return await super().dispatch(request, *args, **kwargs)
 

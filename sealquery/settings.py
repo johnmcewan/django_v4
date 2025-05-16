@@ -50,6 +50,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'digisig.apps.DigisigConfig',
     'witness.apps.WitnessConfig',
+    # 'ratelimit',
     'debug_toolbar',
 ]
 
@@ -97,6 +98,19 @@ CACHES = {
 #### added 12/5/2025
 LOGIN_REDIRECT_URL = 'home'  # or the name of your home view if you use reverse()
 LOGIN_URL = '/login/' #or the name if you use reverse()
+
+
+### added 15/5/2025
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'digital.sigillography.resource@gmail.com'
+EMAIL_HOST_PASSWORD = 'gges rnvg feii zgmh'
+#EMAIL_HOST_PASSWORD = os.environ.get('email')
+DEFAULT_FROM_EMAIL = 'digital.sigillography.resource@gmail.com'
+
 
 
 WSGI_APPLICATION = 'sealquery.wsgi.application'

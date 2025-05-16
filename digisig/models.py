@@ -12,6 +12,8 @@ from django.utils.safestring import mark_safe
 from django.contrib.auth.models import User
 from django.conf import settings
 
+import uuid
+
 from .models import *
 
 
@@ -412,7 +414,12 @@ class Digisiguser(models.Model):
 	digisiguser_academicstatus = models.TextField(blank=True, null=True)
 	digisiguser_academicaffiliation = models.TextField(blank=True, null=True)
 	digisiguser_email = models.TextField(blank=True, null=True)
-	digisig_user_django = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='profile') 
+	digisig_user_django = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='profile')
+	digisiguser_useragent = models.TextField(blank=True, null=True)
+	digisiguser_userlanguage= models.TextField(blank=True, null=True)
+	digisiguser_emailverified = models.BooleanField(default=False)
+	verification_token = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
+	digisiguser_registrationdate = models.DateField(blank=True, null=True)
 
 	def __str__(self):
 		return f"{self.digisig_user_django.username}'s Profile"
