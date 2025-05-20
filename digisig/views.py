@@ -111,7 +111,10 @@ class SignUpView(generic.CreateView):
 		from_email = settings.DEFAULT_FROM_EMAIL
 		to_email = form.cleaned_data['email']
 
+		archiveemail = "digitalsigillographyresource@gmail.com"
+
 		send_mail(subject, message, from_email, [to_email], html_message=html_message)
+		#send_mail(subject, message, from_email, [archiveemail], html_message=html_message)
 
 		return super().form_valid(form)
 
