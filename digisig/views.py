@@ -95,7 +95,7 @@ class SignUpView(generic.CreateView):
 			digisiguser_email = form.cleaned_data['email'],
 			digisiguser_useragent = user_agent,
 			digisiguser_userlanguage = user_language,
-			digisiguser_registrationdate = datetime.datetime.now()
+			digisiguser_registrationdate = datetime.now()
 		)
 
 
@@ -114,7 +114,15 @@ class SignUpView(generic.CreateView):
 		archiveemail = "digitalsigillographyresource@gmail.com"
 
 		send_mail(subject, message, from_email, [to_email], html_message=html_message)
-		#send_mail(subject, message, from_email, [archiveemail], html_message=html_message)
+
+		# Notify administrator
+		subject = 'New User'
+		message = render_to_string('digisig/verification_email.txt', {'user': user})
+		html_message = render_to_string('digisig/verification_email.html', {'user': user})
+		from_email = settings.DEFAULT_FROM_EMAIL
+		to_email = settings.DEFAULT_FROM_EMAIL
+
+		send_mail(subject, message, from_email, [to_email], html_message=html_message)
 
 		return super().form_valid(form)
 
