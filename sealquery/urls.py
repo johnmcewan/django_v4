@@ -20,6 +20,6 @@ from debug_toolbar.toolbar import debug_toolbar_urls
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', include('digisig.urls')),
+#    path('', include('digisig.urls')),
     path('', include('witness.urls')), 
 ] + debug_toolbar_urls()

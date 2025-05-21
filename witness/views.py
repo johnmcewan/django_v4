@@ -361,12 +361,7 @@ def part_page(request, witness_entity_number):
 		'event_dic': event_dic,
 		'mapdic': mapdic,
 		'representationset': representationset,
-		# 'manifestationset': manifestation_set,
-		# 'totalrows': totalrows,
-		# 'totaldisplay': totaldisplay,
 		'externallink_object': externallinkset,
-		#'location': location,
-		#'location_dict': location_dict,
 		}
 
 	return HttpResponse(template.render(context, request))
