@@ -212,47 +212,12 @@ async def personrelationships_ajax(request, witness_entity_number):
 
 	datareferences = json.dumps(relationship_dic)
 
-	print (datareferences)
-
 	return (JsonResponse(datareferences, safe=False))
 
 
 
 
-def entity(request, witness_entity_number):
 
-	print(witness_entity_number)
-
-	#create flag that this is a view operation....
-	operation = 1
-	application = 2
-
-	#item = 0, seal=1, manifestation=2, sealdescription=3, etc...
-	targetphrase = redirectgenerator(witness_entity_number, operation, application)
-
-	print ("targetphrase", targetphrase)
-
-	return redirect(targetphrase)
-
-async def parish_page(request, witness_entity_number):
- 
-	parish = await parishvalue(witness_entity_number)
-
-	individual_object = await individualsearch()
-	individual_object = await parish_fetch(individual_object, witness_entity_number)
-	individual_list = await parish_individuallistfetch(individual_object)
-	#case_value, totalcases = await parishcases_fetch(individual_object)
-
-	mapparishes = await parish_map(witness_entity_number, parish)
-
-	template = loader.get_template('witness/parish.html')
-	context = {
-		'parish': parish,
-		'individual_list': individual_list,
-		'parishes_dict': mapparishes,
-		}
-
-	return HttpResponse(template.render(context, request))
 
 
 async def parishpersonajax(request, witness_entity_number):
@@ -305,7 +270,48 @@ def parishnetwork_page(request, witness_entity_number):
 
 	return HttpResponse(template.render(context, request))
 
-def part_page(request, witness_entity_number):
+
+###### Entities
+
+
+def entity(request, witness_entity_number):
+
+	#create flag that this is a view operation....
+	operation = 1
+	application = 2
+
+	#item = 0, seal=1, manifestation=2, sealdescription=3, etc...
+	targetphrase = redirectgenerator(witness_entity_number, operation, application)
+
+	return redirect(targetphrase)
+
+
+
+async def parish_page(request, witness_entity_number):
+ 
+	parish = await parishvalue(witness_entity_number)
+
+	individual_object = await individualsearch()
+	individual_object = await parish_fetch(individual_object, witness_entity_number)
+	individual_list = await parish_individuallistfetch(individual_object)
+	#case_value, totalcases = await parishcases_fetch(individual_object)
+
+	mapparishes = await parish_map(witness_entity_number, parish)
+
+	template = loader.get_template('witness/parish.html')
+	context = {
+		'parish': parish,
+		'individual_list': individual_list,
+		'parishes_dict': mapparishes,
+		}
+
+	return HttpResponse(template.render(context, request))
+
+
+
+
+
+async def part_page(request, witness_entity_number):
 
 	externallinkset = externallinkgenerator(witness_entity_number)
 
@@ -325,7 +331,7 @@ def part_page(request, witness_entity_number):
 	event_dic = eventset_references(event_object, event_dic)
 
 	place_object = event_dic["location"]
-	mapdic = mapgenerator(place_object, 0)
+	mapdic = await mapgenerator(place_object, 0)
 
 	#for part images (code to show images not implemented yet)
 	representationset = {}
@@ -395,7 +401,6 @@ async def item_page(request, witness_entity_number):
 
 def seal_page(request, witness_entity_number):
 
-	print (request)
 	targetphrase = "parish_page"
 
 	return redirect(targetphrase, 50013947)
@@ -427,3 +432,5 @@ def personnetwork_page(request, witness_entity_number):
 		}
 
 	return HttpResponse(template.render(context, request))
+
+

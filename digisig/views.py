@@ -855,7 +855,6 @@ class EntityView(View):
 		if entity_type == 'actor':
 			return await self.actor_page(request, digisig_entity_number)
 		elif entity_type == 'collection':
-
 			return await self.collection_page(request, digisig_entity_number)
 		elif entity_type == 'item':
 			return await self.item_page(request, digisig_entity_number)
