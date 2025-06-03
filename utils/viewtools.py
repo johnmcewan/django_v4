@@ -3288,9 +3288,9 @@ def sealdescription_contributorgenerate(collection, contributor_dic):
 		namevalue = ""
 		if c.fk_contributor.name_first:
 			namevalue = namevalue + c.fk_contributor.name_first
-		if c.fk_contributor.name_first:
+		if c.fk_contributor.name_middle:
 			namevalue = namevalue + " " + c.fk_contributor.name_middle
-		if c.fk_contributor.name_first:
+		if c.fk_contributor.name_last:
 			namevalue = namevalue + " " + c.fk_contributor.name_last
 
 		contribution['name'] = namevalue
