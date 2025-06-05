@@ -1010,27 +1010,15 @@ class EntityView(View):
 
 		part_dic = await partobjectforitem_define(digisig_entity_number)
 
-		if len(part_dic) == 1:
-
-			for key, part_info in part_dic.items():
-				# template = loader.get_template('digisig/item.html')
-				context = {
-					'pagetitle': part_info['pagetitle'],
-					'part_object': part_info,
-					'mapdic': part_info['mapdic'],
-					}
-		
-		## this seems to be a hack to deal with cases with multiple parts #14/5/2025
-		else:
+		for key, part_info in part_dic.items():
 			# template = loader.get_template('digisig/item.html')
-			for key, part_info in part_dic.items():
-				template = loader.get_template('digisig/item.html')
-				context = {
-					'pagetitle': part_info['pagetitle'],
-					'part_object': part_info,
-					'mapdic': part_info['mapdic'],
-					}
-
+			context = {
+				'pagetitle': part_info['pagetitle'],
+				'part_object': part_info,
+				'mapdic': part_info['mapdic'],
+				#'mapdic': part_info.get('mapdic', {})
+				}
+		
 		return render(request, 'digisig/item.html', context)
 
 ############################ Manifestation #####################

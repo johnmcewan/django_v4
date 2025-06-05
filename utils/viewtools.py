@@ -4270,6 +4270,9 @@ def partobjectforitem_define(entity_number):
 			part_info['location_dict'] = location_dict
 			part_info['mapdic'] = mapdic
 
+		### to avoid forms breaking where location info is not present 6/5/2025
+		else:
+			part_info['mapdic'] = {} 
 
 	## find seals associated with the parts
 	manifestation_set = Manifestation.objects.filter(
