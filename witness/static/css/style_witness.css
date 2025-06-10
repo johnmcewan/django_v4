@@ -8,7 +8,7 @@
 
 body {
 	font-family: Carrois Gothic, Tahoma, sans-serif;
-	background-color: #230132;
+	background-color: black;
 	line-height: 1.75;
 	font-size: 16px;
 	overflow: scroll;
@@ -200,7 +200,7 @@ background-color: #e5ebef;
 .sidepanel-left,
 .sidepanel-right {
 	grid-row: 5/14;
-	background-color:	#763d8f;
+	background-color:	#b6abba;
 }
 
 .sidepanel-left {
@@ -217,7 +217,7 @@ background-color: #e5ebef;
 .colophon {
 	grid-column: 1/12;
 	grid-row: 1;
-	background-color: #011a32;
+	background-color: #763d8f;
 	background-position: right top;
 	background-repeat: no-repeat;
 	background-size: 100%;
@@ -234,7 +234,7 @@ background-color: #e5ebef;
 	position: -webkit-sticky;
 	position: sticky;
 	top:0;
-	background: #230132;
+	background: black;
 	z-index: 2;
 	line-height: 1;
 }
@@ -255,7 +255,7 @@ background-color: #e5ebef;
     display: block;
     font-size: 1rem;
     padding: 0.5rem 1rem; /* Equivalent to px-4 py-2 */
-    color: #4a5568; /* Equivalent to text-gray-700 */
+    color: white; /* #4a5568; /* Equivalent to text-gray-700 */
     text-decoration: none;
     border-radius: 0.375rem; /* Equivalent to rounded-md */
     font-weight: 500; /* Equivalent to font-medium */
@@ -324,78 +324,6 @@ background-color: #e5ebef;
     transform: translateY(0); /* Move back to original position */
 }
 
-
-/* Navbar attempt 3 -- code borrowed from https://www.w3schools.com/howto/tryit.asp?filename=tryhow_css_subnav*/
-
-/*.global-nav {
-	grid-column: 2/11;
-	grid-row: 2;
-	grid-auto-columns: 50px;
-	position: -webkit-sticky;
-	position: sticky;
-	top:0;
-	background: #230132;
-	z-index: 2;
-	line-height: 1;
-}
-
-.navbar {
-  overflow: hidden;
-}
-
-.navbar a {
-  float: left;
-  font-size: 16px;
-  color: white;
-  text-align: center;
-  padding: 14px 16px;
-  text-decoration: none;
-}
-
-.subnav {
-  float: left;
-  overflow: hidden;
-}
-
-.subnav .subnavbtn {
-  font-size: 16px;  
-  border: none;
-  outline: none;
-  color: white;
-  padding: 14px 16px;
-  background-color: inherit;
-  font-family: inherit;
-  margin: 0;
-}
-
-.navbar a:hover, .subnav:hover .subnavbtn {
-  background-color: #04c804;
-}
-
-.subnav-content {
-  display: none;
-  position: absolute;
-  left: 0;
-  background-color: #04c804;
-  width: 100%;
-  z-index: 1;
-}
-
-.subnav-content a {
-  float: left;
-  color: white;
-  text-decoration: none;
-}
-
-.subnav-content a:hover {
-  background-color: #b6c1c9;
-  color: black;
-}
-
-.subnav:hover .subnav-content {
-  display: block;
-}
-*/
 /* Banners on various pages */
 
 .search-banner,
@@ -1363,8 +1291,7 @@ input[type=image] {
 .main-footer {
 	grid-column: span 12;
 	grid-row: 15;
-	background-color: #230132;
-	/*background-color: #230132;*/
+	background-color: black;
 	text-align: center;
 	color: white;	
 }
