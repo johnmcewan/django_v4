@@ -1,4 +1,4 @@
-/*Digisig version 2*/
+/*Witness version 1*/
 
 /*CSS for all pages*/
 
@@ -8,7 +8,7 @@
 
 body {
 	font-family: Carrois Gothic, Tahoma, sans-serif;
-	background-color: black;
+	background-color: #230132;
 	line-height: 1.75;
 	font-size: 16px;
 	overflow: scroll;
@@ -90,7 +90,7 @@ th.indent {
 a {
 	text-decoration: underline;
 	text-decoration-style: dotted;
-	text-decoration-color: #c20a0a;
+	text-decoration-color: #04c804;
 	text-decoration-thickness: 1px;
 	color: black;
 }
@@ -104,7 +104,7 @@ a.centerpanel {
 
 a:hover, a.headingbtn:hover {
 	text-decoration: underline;
-	text-decoration-color: #c20a0a;
+	text-decoration-color: #04c804;
 }
 a:active {
 	color:red;
@@ -118,7 +118,7 @@ a.help:visited {
 }
 a.headingbtn {
 text-decoration: none;
-border-left: 5px solid #c20a0a;
+border-left: 5px solid #04c804;
 padding: 5px;
 background-color: #e5ebef;
 }
@@ -200,7 +200,7 @@ background-color: #e5ebef;
 .sidepanel-left,
 .sidepanel-right {
 	grid-row: 5/14;
-	background-color:#000;
+	background-color:	#763d8f;
 }
 
 .sidepanel-left {
@@ -217,7 +217,7 @@ background-color: #e5ebef;
 .colophon {
 	grid-column: 1/12;
 	grid-row: 1;
-	background-color: #000;
+	background-color: #011a32;
 	background-position: right top;
 	background-repeat: no-repeat;
 	background-size: 100%;
@@ -226,8 +226,7 @@ background-color: #e5ebef;
 	z-index: 5;
 }
 
-/* Navbar attempt 3 -- code borrowed from https://www.w3schools.com/howto/tryit.asp?filename=tryhow_css_subnav*/
-
+/* Custom CSS for Dropdown */
 .global-nav {
 	grid-column: 2/11;
 	grid-row: 2;
@@ -235,7 +234,107 @@ background-color: #e5ebef;
 	position: -webkit-sticky;
 	position: sticky;
 	top:0;
-	background: black;
+	background: #230132;
+	z-index: 2;
+	line-height: 1;
+}
+
+.navbar {
+    display: flex;
+    justify-content: left;
+    align-items: center;
+    gap: 1.5rem; /* Equivalent to space-x-6 */
+}
+
+/* Subnav (Individual Navigation Item) */
+.subnav {
+    position: relative; /* Needed for positioning the dropdown */
+}
+
+.subnav a, .subnavbtn {
+    display: block;
+    font-size: 1rem;
+    padding: 0.5rem 1rem; /* Equivalent to px-4 py-2 */
+    color: #4a5568; /* Equivalent to text-gray-700 */
+    text-decoration: none;
+    border-radius: 0.375rem; /* Equivalent to rounded-md */
+    font-weight: 500; /* Equivalent to font-medium */
+    transition-property: background-color, color; /* Equivalent to transition */
+    transition-duration: 300ms; /* Equivalent to duration-300 */
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1); /* Equivalent to ease-in-out */
+    border: none; /* Remove button default border */
+    background: none; /* Remove button default background */
+    cursor: pointer; /* Indicate clickable */
+    white-space: nowrap; /* Prevent text wrapping */
+}
+
+.subnav a:hover, .subnavbtn:hover {
+    color: #2563eb; /* Equivalent to hover:text-blue-600 */
+    background-color: #f3f4f6; /* Equivalent to hover:bg-gray-100 */
+}
+
+.subnavbtn {
+    display: flex;
+    align-items: center;
+}
+
+.subnavbtn i {
+    margin-left: 0.5rem; /* Equivalent to ml-2 */
+    font-size: 0.875rem; /* Equivalent to text-sm */
+}
+
+/* Dropdown Content */
+.subnav-content {
+    /* Changed for smooth transition */
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s ease, transform 0.3s ease;
+    transform: translateY(-5px); /* Slightly move up initially */
+
+    position: absolute;
+    left: 0;
+    top: 100%; /* Position directly below the button */
+    background-color: #fff;
+    border-radius: 0.375rem; /* Equivalent to rounded-md */
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); /* Equivalent to shadow-lg */
+    overflow: hidden; /* Hide overflowing content */
+    border: 1px solid rgba(0, 0, 0, 0.05); /* Equivalent to ring-1 ring-black ring-opacity-5 */
+    min-width: 160px; /* Minimum width of the dropdown */
+    z-index: 1; /* Ensure dropdown appears above other content */
+}
+
+.subnav-content a {
+    padding: 0.75rem 1rem; /* Equivalent to px-4 py-2 */
+    color: #4a5568; /* Equivalent to text-gray-700 */
+    text-align: left; /* Align text to the left */
+    transition-property: background-color, color;
+    transition-duration: 300ms;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.subnav-content a:hover {
+    background-color: #eff6ff; /* Equivalent to hover:bg-blue-50 */
+    color: #2563eb; /* Equivalent to hover:text-blue-600 */
+}
+
+/* Show the dropdown menu when hovering over the subnav container */
+.subnav:hover .subnav-content {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0); /* Move back to original position */
+}
+
+
+/* Navbar attempt 3 -- code borrowed from https://www.w3schools.com/howto/tryit.asp?filename=tryhow_css_subnav*/
+
+/*.global-nav {
+	grid-column: 2/11;
+	grid-row: 2;
+	grid-auto-columns: 50px;
+	position: -webkit-sticky;
+	position: sticky;
+	top:0;
+	background: #230132;
 	z-index: 2;
 	line-height: 1;
 }
@@ -270,14 +369,14 @@ background-color: #e5ebef;
 }
 
 .navbar a:hover, .subnav:hover .subnavbtn {
-  background-color: #c20a0a;
+  background-color: #04c804;
 }
 
 .subnav-content {
   display: none;
   position: absolute;
   left: 0;
-  background-color: #c20a0a;
+  background-color: #04c804;
   width: 100%;
   z-index: 1;
 }
@@ -296,7 +395,7 @@ background-color: #e5ebef;
 .subnav:hover .subnav-content {
   display: block;
 }
-
+*/
 /* Banners on various pages */
 
 .search-banner,
@@ -637,12 +736,12 @@ border-radius: 15px;
 .div-caption {
 	text-align: left;
 	padding: 10px 10px 10px 30px;
-	border-left: 5px solid #c20a0a;
+	border-left: 5px solid #04c804;
 	background-color: #cedae3;
 }
 
 .div-caption button {
-  background-color: #c20a0a;
+  background-color: #04c804;
   border-radius: 5px;
   color: white;
   width: 30px;
@@ -654,12 +753,12 @@ border-radius: 15px;
 }
 
 .div-caption button:hover {
-  background-color: #f20d0d;
+  background-color: #04af04;
  	cursor: pointer;
 }
 
 .div-level button {
-	background-color: #c20a0a;
+	background-color: #04c804;
   border-radius: 5px;
   color: white;
   width: 25px;
@@ -669,7 +768,8 @@ border-radius: 15px;
 }
 
 .div-level button:hover, button:active {
-  background-color: #f20d0d;
+  /*background-color: #f20d0d;*/
+  background-color: #04af04;
 	cursor: pointer;
 }
 
@@ -774,7 +874,7 @@ input[type=image] {
 }
 
 .filter button:hover {
-	background-color: #c20a0a;
+	background-color: #04c804;
 	color: white;
 	cursor: pointer;
 }
@@ -804,7 +904,7 @@ input[type=image] {
 }
 
 .sidebar button:hover {
-	background-color: #c20a0a;
+	background-color: #04c804;
 	color: white;
 	cursor: pointer;
 }
@@ -834,7 +934,7 @@ input[type=image] {
 }
 
 .entity_chartfilter button:hover {
-	background-color: #c20a0a;
+	background-color: #04c804;
 	color:  white;
 	cursor: pointer;
 }
@@ -874,7 +974,7 @@ input[type=image] {
 }
 
 .submit:hover {
-	background-color: #c20a0a;
+	background-color: #04c804;
 	color:  white;
 	cursor: pointer;
 }
@@ -883,7 +983,7 @@ input[type=image] {
 /* Permalink */
 .permalink {
 	float: right;
-  background-color: #c20a0a;
+  background-color: #04c804;
   border-radius: 5px;
   color: white;
   height: 30px;
@@ -917,11 +1017,10 @@ input[type=image] {
 }
 
 .permalinkinfo {
-	background-color: #dbe9f0;
 	border: 5px solid black;
 	padding-left: 10px;
 	padding-right:  10px;
-	background-color: black;
+	background-color: #230132;
 	color: white;
 }
 
@@ -965,7 +1064,7 @@ input[type=image] {
 
 /* the selection of search appproaches on main page */
 .searchoptions a:link, .searchoptions a:visited {
-  background-color: #c20a0a;
+  background-color: #04c804;
   border-radius: 20px;
   color: white;
   padding: 14px 25px;
@@ -1263,8 +1362,9 @@ input[type=image] {
 
 .main-footer {
 	grid-column: span 12;
-	grid-row: 15;	
-	background-color: black;
+	grid-row: 15;
+	background-color: #230132;
+	/*background-color: #230132;*/
 	text-align: center;
 	color: white;	
 }
@@ -1348,7 +1448,7 @@ input[type=image] {
 	grid-column: 3/7;
 	grid-row: 5;
 	color:white;
-	background-color:black;
+	background-color:#230132;
 }
 
 /* rules introduced for witness */
