@@ -217,7 +217,8 @@ background-color: #e5ebef;
 .colophon {
 	grid-column: 1/12;
 	grid-row: 1;
-	background-color: #763d8f;
+	/*background-color: #663d8f;*/
+	background-color: #66428a;
 	background-position: right top;
 	background-repeat: no-repeat;
 	background-size: 100%;
@@ -1374,8 +1375,8 @@ input[type=image] {
 .centerpanel {
 	grid-column: 3/7;
 	grid-row: 5;
-	color:white;
-	background-color:#230132;
+	color:black;
+	background-color:#e6cdfe;
 }
 
 /* rules introduced for witness */
