@@ -15,6 +15,7 @@ import json
 from django.conf import settings
 
 from time import time
+from datetime import datetime
 from asgiref.sync import sync_to_async
 
 from django.urls import reverse
@@ -3198,11 +3199,19 @@ def sealsearchfilter(manifestation_object, form):
 
 	if qtimegroup.isdigit():
 		if int(qtimegroup) > 0:
-			temporalperiod_target = (TimegroupA.objects.get(pk_timegroup_a = qtimegroup))   
-			yearstart = (temporalperiod_target.timegroup_a_startdate)
+			qtimegroup_int = int(qtimegroup)
+			temporalperiod_target = (TimegroupC.objects.get(timegroup_c = qtimegroup_int))   
+			yearstart = (temporalperiod_target.timegroup_c_startdate)
+			yearend = (temporalperiod_target.timegroup_c_finaldate)
+			# manifestation_object = manifestation_object.filter(
+			# 	fk_support__fk_part__fk_event__repository_startdate__lt=datetime.strptime(str(yearstart), "%Y")).filter(
+			# 	fk_support__fk_part__fk_event__repository_enddate__gt=datetime.strptime(str(yearstart+50), "%Y"))
 			manifestation_object = manifestation_object.filter(
-				fk_support__fk_part__fk_event__repository_startdate__lt=datetime.strptime(str(yearstart), "%Y")).filter(
-				fk_support__fk_part__fk_event__repository_enddate__gt=datetime.strptime(str(yearstart+50), "%Y"))
+				fk_support__fk_part__fk_event__startdate__lt=datetime.strptime(str(yearend), "%Y")).filter(
+				fk_support__fk_part__fk_event__enddate__gt=datetime.strptime(str(yearstart), "%Y"))
+
+
+
 
 	if qshape.isdigit():
 		if int(qshape) > 0:

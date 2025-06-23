@@ -51,7 +51,8 @@
 			<form id="form" action="/search/seals" method="post">
 	    	{% csrf_token %}
 	    	{{ form.non_field_errors }}
-	    	<div>Seal Fields</div>
+	    
+	    <div>Seal Fields</div>
 
 			<div class="fieldWrapper">
 			    {{ form.group.errors }}
@@ -64,32 +65,39 @@
 			    <label for="{{ form.shape.id_for_label }}">Shape <a class="help" href="{% url 'entity' digisig_entity_number=10001477 %}" target="_blank"><i class="fas fa-question-circle"></i></a></label>
 			    {{ form.shape }}
 			</div>
+			
 			<div class="fieldWrapper">
 			    {{ form.classname.errors }}
 			    <label for="{{ form.classname.id_for_label }}">Class <a class="help" href="{% url 'entity' digisig_entity_number=10001497 %}" target="_blank"><i class="fas fa-question-circle"></i></a></label>
 			    {{ form.classname }}
 			</div>
-	    	<div>Record Fields</div>
+	    
+	    <div>Record Fields</div>
+			
 			<div class="fieldWrapper">
 				{{ form.repository.errors}}
 				<label for="{{ form.repository.id_for_label }}">Repository <a class="help" href="{% url 'entity' digisig_entity_number=10001387 %}" target="_blank"><i class="fas fa-question-circle"></i></a></label>
 				{{ form.repository }}
 			</div>
+			
 			<div class="fieldWrapper">
 			    {{ form.series.errors }}
 			    <label for="{{ form.series.id_for_label }}">Series <a class="help" href="{% url 'entity' digisig_entity_number=10001397 %}" target="_blank"><i class="fas fa-question-circle"></i></a></label>
 			    {{ form.series }}
 			</div>
+			
 			<div class="fieldWrapper" id="normal">
 			    {{ form.name.errors }}
 			    <label for="{{ form.name.id_for_label }}">Identifier <a class="help" href="{% url 'entity' digisig_entity_number=10001487 %}" target="_blank"><i class="fas fa-question-circle"></i></a></label>
 			    {{ form.name }}
 			</div>
+			
 			<div class="fieldWrapper">
 			    {{ form.representation.errors }}
 			    <label for="{{ form.representation.id_for_label }}">Representation <a class="help" href="{% url 'entity' digisig_entity_number=10001457 %}" target="_blank"><i class="fas fa-question-circle"></i></a></label>
 			    {{ form.representation }}
 			</div>
+ 			
  			<div class="fieldWrapper">
 			    {{ form.location.errors }}
 			    <label for="{{ form.location.id_for_label }}">Region <a class="help" href="{% url 'entity' digisig_entity_number=10001347 %}" target="_blank"><i class="fas fa-question-circle"></i></a></label>
@@ -110,13 +118,13 @@
 			<div class="fieldWrapper">
 	    		<input class="submit" type="submit" value="Submit">
 	    	</div>
-    <div class="fieldWrapper">
-    		<button id="filterclear_button" type="reset" value="Reset">Clear filter</button>
-    	</div>
-    </div>
+	    <div class="fieldWrapper">
+	    		<button id="filterclear_button" type="reset" value="Reset">Clear filter</button>
+	    </div>
 			</form>
-		</div>
 
+    </div>
+		</div>
 
 	<div class="searchresults">
 

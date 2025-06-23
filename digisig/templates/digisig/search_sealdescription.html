@@ -42,32 +42,39 @@
 					<label for="{{ form.pagination.id_for_label }}">pagination</label>
 					{{ form.pagination}}
 				</div>
+				
 				<div class="fieldWrapper">
 					{{ form.collection.errors }}
 					<label for="{{ form.collection.id_for_label }}">Reference Work <a class="help" href="{% url 'entity' digisig_entity_number=10001507 %}" target="_blank"><i class="fas fa-question-circle"></i></a></label>
 					{{ form.collection }}
 				</div>
+				
 				<div class="fieldWrapper">
 					{{ form.cataloguecode.errors }}
 					<label for="{{ form.cataloguecode.id_for_label }}">Entry Identifier <a class="help" href="{% url 'entity' digisig_entity_number=10001597 %}" target="_blank"><i class="fas fa-question-circle"></i></a></label>
 					{{ form.cataloguecode }}
 				</div>
+				
 				<div class="fieldWrapper">		
 					{{ form.cataloguename.errors }}
 					<label for="{{ form.cataloguename.id_for_label }}">Entry Title </label>
 					{{ form.cataloguename}}
 				</div>
+				
 				<div class="fieldWrapper">		
 					{{ form.cataloguemotif.errors }}
 					<label for="{{ form.cataloguemotif.id_for_label }}">Description </label>
 					{{ form.cataloguemotif}}
 				</div>
+				
 				<div class="fieldWrapper">
 			    	<input class="submit" type="submit" value="Submit">
 		    	</div>
+		    	
 		    	<div class="fieldWrapper">
 		    		<button id="filterclear_button" type="reset" value="Reset">Clear filter</button>
 		    	</div>
+			
 			</form>
 			</div>
 		</div>
