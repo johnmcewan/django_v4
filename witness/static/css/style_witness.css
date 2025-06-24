@@ -981,7 +981,7 @@ input[type=image] {
 /* the special banner on top of the index page */
 
 .home-banner {
-	grid-column: 2/12;
+	grid-column: 1/12;
 	grid-row: 1/4;
 	background-position: right top;
 	background-repeat: no-repeat;
@@ -1360,7 +1360,7 @@ input[type=image] {
 /* rules from here are for witness Oct21 2024*/
 
 .main-title-witness {
-	grid-column:2/11;
+	grid-column:1/12;
 	grid-row: 4;
 	background-color:#eff3f6;
 	color: black;

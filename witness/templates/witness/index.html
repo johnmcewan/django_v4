@@ -4,15 +4,26 @@
 
 {% block content %}
 
+<style>
+
+#search1 {
+    background-image: url({% static 'images/parish_map.png' %});
+}
+
+#search2 {
+  background-image: url({% static 'images/parish_map.png' %});
+}
+
+</style>
+
+
     <div class="home-banner"></div> 
     <div class="sidepanel-left"></div>
     <div class="sidepanel-right"></div>
 
-    <div class="centerpanel">
-        <ul>
-            <li><a class="centerpanel" href="{% url 'search' searchtype='parish' %}">Parish</a></li>
-            <li><a class="centerpanel" href="{% url 'search' searchtype='person' %}">Person</a> </li>
-        </ul>
-    </div>
+
+    <div class="searchoptions" id="search1"><a href="{% url 'search' searchtype='parish' %}">Search Parish</a></div>
+    <div class="searchoptions" id="search2"><a href="{% url 'search' searchtype='person' %}">Search Person</a></div>
+    <div class="searchoptions" id="search3"></div>
 
 {% endblock %}
