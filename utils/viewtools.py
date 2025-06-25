@@ -3195,7 +3195,7 @@ def sealsearchfilter(manifestation_object, form):
 	if qlocation.isdigit():
 		if int(qlocation) > 0:
 			manifestation_object = manifestation_object.filter(
-				fk_support__fk_part__fk_event__locationreference__fk_locationname__fk_location__fk_region=qlocation)
+				fk_support__fk_part__fk_event__fk_event_locationreference__fk_locationname__fk_location__fk_region=qlocation)
 
 	if qtimegroup.isdigit():
 		if int(qtimegroup) > 0:
