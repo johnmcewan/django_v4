@@ -10,6 +10,8 @@ from django.db import models
 from django.forms import ModelForm
 from django.utils.safestring import mark_safe
 from django.contrib.auth.models import User
+from django.utils import timezone
+
 from django.conf import settings
 
 import uuid
@@ -427,6 +429,18 @@ class Digisiguser(models.Model):
 	class Meta:
 		managed = False
 		db_table = 'digisig_user'
+
+class Digisigpagevisit(models.Model):
+	id_pagevisit = models.AutoField(primary_key=True)
+	pagevisit_user = models.IntegerField(blank=True, null=True)
+	pagevisit_entitynumber = models.IntegerField(blank=True, null=True)
+	pagevisit_timestamp = models.DateTimeField(default=timezone.now)
+	pagevisit_site = models.IntegerField(blank=True, null=True)
+
+	class Meta:
+		managed = False
+		db_table = 'digisig_pagevisit'
+
 
 class Entity(models.Model):
 	pk_entity = models.AutoField(primary_key=True)

@@ -32,8 +32,22 @@ def index_info():
 
 	return(manifestation_total, seal_total, item_total, catalogue_total)
 
+@sync_to_async
+def registervisit(request, digisig_entity_number):
 
-#### exhitions
+	## record visit if it is not the admin....
+	if request.user.id > 1:
+		 Digisigpagevisit.objects.create(
+			pagevisit_user = request.user.id,
+			pagevisit_entitynumber = digisig_entity_number,
+			pagevisit_timestamp = datetime.now(),
+			pagevisit_site = 1
+			)
+	
+	return()
+
+
+#### exhibitions
 @sync_to_async
 def exhibitgenerate():
 

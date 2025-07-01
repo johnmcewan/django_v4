@@ -53,7 +53,7 @@ import pickle
 	# exhibit
 
 ## regulate how long pages are cached
-cache_timeout = (60 * 60)
+cache_timeout = (60 * 60) # Cache for 1 hour
 
 
 # from django.core.cache import cache
@@ -69,8 +69,6 @@ cache_timeout = (60 * 60)
 # def clear_my_cache(request):
 #     cache.delete('my_cached_data')
 #     return HttpResponse("Cache cleared!")
-
-
 
 # Create your views here.
 
@@ -846,20 +844,18 @@ async def entity_fail(request, entity_phrase):
 	return HttpResponse("%s is not an entity I know about." % entity_phrase)
 
 
-############################## Actor #############################
-
-#@method_decorator(login_required(login_url='/login/'), name='dispatch')
-#@method_decorator(sync_to_async(login_required(login_url='/login/')), name='dispatch')
-
+############################## ENTITY #############################
 
 class EntityView(View):
 	
 	@method_decorator(login_required(login_url='/login/'))
-	# @method_decorator(ratelimit(key='user', rate='5/m'))
 	async def dispatch(self, request, *args, **kwargs):
 		return await super().dispatch(request, *args, **kwargs)
 
 	async def get(self, request, entity_type, digisig_entity_number):
+
+		visitor = await registervisit(request, digisig_entity_number)
+
 		if entity_type == 'actor':
 			return await self.actor_page(request, digisig_entity_number)
 		elif entity_type == 'collection':
@@ -880,6 +876,7 @@ class EntityView(View):
 			return await self.term_page(request, digisig_entity_number)
 		else:
 			raise Http404("Invalid entity type")
+
 
 
 ################################ Actor ######################################
