@@ -206,7 +206,7 @@
 			<table id="entity1" style="display:none;">
 			{% for representation in representation_dic.representation_objectset %}
 				{% if forloop.counter|divisibleby:2 %}<tr class="even">{% else %}<tr class="odd">{% endif %}
-					<th colspan="3"><h4><a class="headingbtn" href="{% url 'entity' representation.id_representation %}">Representation details</a></h4></td>
+					<th colspan="3"><h4><a class="headingbtn" href="{% url 'entity' representation_dic.id_representation %}">Representation details</a></h4></td>
 				</th>
 
 				{% if forloop.counter|divisibleby:2 %}<tr class="even">{% else %}<tr class="odd">{% endif %}
