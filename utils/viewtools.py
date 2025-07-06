@@ -2181,7 +2181,17 @@ def representationmetadata(representation_case):
 	representation_dic["id_representation"] = representation_case.id_representation
 
 	#what type of entity is depicted? (Manifestation, Document....)
-	digisigentity = str(representation_case.fk_digisig)
+	digisigentity = representation_case.fk_digisig
+
+	if digisigentity is None:
+		digisigentity = representation_case.fk_manifestation.id_manifestation
+	if digisigentity is None:
+		digisigentity = representation_case.fk_part.id_part
+	if digisigentity is None:
+		digisigentity = representation_case.fk_sealdescription.id_sealdescription
+
+	digisigentity = str(digisigentity)
+
 	representation_dic["entity_type"] = int(digisigentity[7:])
 	
 	if int(digisigentity[7:]) == 2: 
