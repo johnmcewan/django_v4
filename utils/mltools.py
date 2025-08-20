@@ -13,7 +13,7 @@ import pandas as pd
 from sklearn.tree import DecisionTreeRegressor
 
 # data
-from sealquery.models import * 
+from digisig.models import * 
 
 # custom internal tools
 from utils.generaltools import *
