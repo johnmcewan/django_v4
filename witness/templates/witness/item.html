@@ -144,8 +144,9 @@
 				<th class="indent"> Description (Repository)</th>
 				<td> {{event_dic.part_object.part_description}}</td>
 			</tr>
-
-			{% for reference in event_dic.referenceset %}
+<!-- 
+			EVENT_DIC2 does not exist -- I just added 2 as a quick fix to make code work aug 2025
+			{% for reference in event_dic2.referenceset %}
 			<tr> 
 				{% if reference.fk_individual.id_individual != 10000019 %}
 				<th class="indent"></th>
@@ -157,7 +158,7 @@
 				<td> {{reference.fk_referenceoffice}}</td>
 				{% endif %}
 			</tr>
-		 	{% endfor %}
+		 	{% endfor %} -->
 
 	 </table>
 	</div>

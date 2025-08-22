@@ -4156,6 +4156,30 @@ def externallinkgenerator(entity_number):
 	externallinkset = Externallink.objects.filter(internal_entity=entity_number).values('external_link')
 	return (externallinkset)    
 
+###REVISE 
+@sync_to_async
+def place_object_creator(witness_entity_number):
+
+	part_object = Part.objects.select_related(
+			'fk_item').select_related(
+			'fk_event').select_related(
+			'fk_item__fk_repository').get(id_part=witness_entity_number)
+
+	pagetitle = part_object.fk_item.fk_repository.repository_fulltitle + " " + part_object.fk_item.shelfmark
+
+	event_dic = {}
+	event_object = part_object.fk_event
+	item_object = part_object.fk_item
+	event_dic["part_object"] = part_object
+	event_dic = eventset_datedata(event_object, event_dic)
+	event_dic = eventset_locationdata(event_object, event_dic)
+	event_dic = eventset_references(event_object, event_dic)
+
+	place_object = event_dic["location"]
+
+	return(place_object, pagetitle, item_object, event_dic)
+
+
 @sync_to_async
 def partobjectforitem_define(entity_number):
 
