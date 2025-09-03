@@ -1659,6 +1659,18 @@ def collection_chart2():
 
 
 @sync_to_async
+def map_locationset_item(listofevents):
+
+	base_filters = Q(locationname__locationreference__fk_locationstatus=1)
+	base_filters &= Q(locationname__locationreference__fk_event__in=listofevents)
+
+	locationset = Location.objects.filter(base_filters).annotate(
+		count=Count('locationname__locationreference__fk_event')
+	)
+
+	return(locationset)
+
+@sync_to_async
 # def map_locationset(qcollection):
 #   if (qcollection == 30000287):
 #       locationset = Location.objects.filter(
@@ -2390,9 +2402,11 @@ def itemform_options(form):
 		entry = (s['fk_repository'], s['fk_repository_id__repository_fulltitle'])
 		if entry not in repositories_all_options:
 			repositories_all_options.append(entry)  
-				
+
+	repositories_choices = sorted(repositories_all_options, key=lambda item: item[1])
+
 	form.fields['series'].choices = series_all_options
-	form.fields['repository'].choices = repositories_all_options
+	form.fields['repository'].choices = repositories_choices
 
 	return (form)
 
@@ -4183,6 +4197,14 @@ def place_object_creator(witness_entity_number):
 @sync_to_async
 def partobjectforitem_define(entity_number):
 
+	### set of dictionaries and lists that will be populated
+	item_dic= {}
+	part_dic= {}
+	reference_dic= {}
+	manifestationpart = {}
+	listofparts = []
+	listofevents = []
+
 	#### prepare parts
 	part_object = Part.objects.filter(
 		fk_item=entity_number).order_by(
@@ -4199,12 +4221,13 @@ def partobjectforitem_define(entity_number):
 		'fk_event__enddate',
 		'fk_event__repository_location')
 
-	part_dic= {}
-	reference_dic= {}
-	manifestationpart = {}
-	listofparts = []
-	listofitems = []
-	listofevents = []
+	## prepare item overview info
+	firstpart = part_object.first()
+
+	item_dic['id_item'] = firstpart['fk_item']
+	item_dic['pagetitle'] = firstpart['fk_item__fk_repository__repository_fulltitle'] + " " + firstpart['fk_item__shelfmark']
+	item_dic["repository_location"] = firstpart['fk_event__repository_location']
+	item_dic['fk_repository'] = firstpart['fk_item__fk_repository__repository_fulltitle']
 
 	for p in part_object:
 		part_temp_dic = {}
@@ -4222,7 +4245,7 @@ def partobjectforitem_define(entity_number):
 		part_temp_dic["repository_location"] = p['fk_event__repository_location']
 
 		listofparts.append(p['id_part'])
-		listofitems.append(p['fk_item'])
+		#listofitems.append(p['fk_item'])
 		listofevents.append(p['fk_event'])
 
 		part_dic[p['id_part']] = part_temp_dic
@@ -4288,51 +4311,51 @@ def partobjectforitem_define(entity_number):
 	#   for l in links_dic:
 	#       part_dic[l.]
 
-	location_object = Location.objects.filter(
-		locationname__locationreference__fk_event__in=listofevents, locationname__locationreference__location_reference_primary = False).values(
-		'locationname__locationreference__fk_event',
-		'location',
-		'id_location',
-		'longitude',
-		'latitude').first()
+	# location_object = Location.objects.filter(
+	# 	locationname__locationreference__fk_event__in=listofevents, locationname__locationreference__location_reference_primary = False).values(
+	# 	'locationname__locationreference__fk_event',
+	# 	'location',
+	# 	'id_location',
+	# 	'longitude',
+	# 	'latitude').first()
 
-	l = location_object
+	# l = location_object
 
-	searchvalue = int(location_object['locationname__locationreference__fk_event'])
+	# searchvalue = int(location_object['locationname__locationreference__fk_event'])
 
-	for key, part_info in part_dic.items():
+	# for key, part_info in part_dic.items():
 		 
-		if searchvalue == part_info['fk_event']:
+	# 	if searchvalue == part_info['fk_event']:
 
-			mapdic = {"type": "FeatureCollection"}
-			properties = {}
-			geometry = {}
-			location = {}
-			placelist = []
+	# 		mapdic = {"type": "FeatureCollection"}
+	# 		properties = {}
+	# 		geometry = {}
+	# 		location = {}
+	# 		placelist = []
 
-			location= {"type": "Point", "coordinates":[ location_object['longitude'], location_object['latitude'] ]}
-			location_dict = {'location': location_object['location'], 'latitude': location_object['latitude'], 'longitude': location_object['longitude']} 
+	# 		location= {"type": "Point", "coordinates":[ location_object['longitude'], location_object['latitude'] ]}
+	# 		location_dict = {'location': location_object['location'], 'latitude': location_object['latitude'], 'longitude': location_object['longitude']} 
 
-			properties = {"id_location": location_object['id_location'], "location": location}
-			geometry = {"type": "Point", "coordinates": [location_object['longitude'] , location_object['latitude']]}
-			location = {"type": "Feature", "properties": properties, "geometry": geometry}
-			placelist.append(location)
+	# 		properties = {"id_location": location_object['id_location'], "location": location}
+	# 		geometry = {"type": "Point", "coordinates": [location_object['longitude'] , location_object['latitude']]}
+	# 		location = {"type": "Feature", "properties": properties, "geometry": geometry}
+	# 		placelist.append(location)
 
-			mapdic["features"] = placelist
+	# 		mapdic["features"] = placelist
 
-			part_info["location"] = location
-			part_info["location_name"] = location_object['location'] 
-			part_info["location_id"] = location_object['id_location'] 
-			part_info["location_latitude"] = location_object['longitude'] 
-			part_info["location_latitude"] = location_object['latitude']
-			part_info['location_dict'] = location_dict
-			part_info['mapdic'] = mapdic
+	# 		part_info["location"] = location
+	# 		part_info["location_name"] = location_object['location'] 
+	# 		part_info["location_id"] = location_object['id_location'] 
+	# 		part_info["location_latitude"] = location_object['longitude'] 
+	# 		part_info["location_latitude"] = location_object['latitude']
+	# 		part_info['location_dict'] = location_dict
+	# 		part_info['mapdic'] = mapdic
 
-		### to avoid forms breaking where location info is not present 6/5/2025
-		else:
-			part_info['mapdic'] = {} 
+	# 	### to avoid forms breaking where location info is not present 6/5/2025
+	# 	else:
+	# 		part_info['mapdic'] = {} 
 
-			print(searchvalue, " partinfo", part_info['fk_event'])
+			#print(searchvalue, " partinfo", part_info['fk_event'])
 
 	## find seals associated with the parts
 	manifestation_set = Manifestation.objects.filter(
@@ -4365,7 +4388,7 @@ def partobjectforitem_define(entity_number):
 		searchvalue = partneedingmanifestation['id_part'] 
 		partneedingmanifestation['manifestation_set'] = manifestationpart[searchvalue]
 
-	return (part_dic)
+	return (part_dic, listofevents, item_dic)
 
 @sync_to_async
 def manifestationobject_define(digisig_entity_number):

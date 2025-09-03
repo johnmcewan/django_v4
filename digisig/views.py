@@ -535,9 +535,6 @@ async def search(request, searchtype):
 		location_set = await location_displaysetgenerate(listofevents)
 		manifestation_displayset = await finalassembly_displaysetgenerate(manifestation_display_dic, location_set, description_set)
 
-	# return manifestation_displayset
-
-
 		context = {
 			'pagetitle': pagetitle, 
 			'manifestation_set': manifestation_displayset,
@@ -1005,16 +1002,20 @@ class EntityView(View):
 
 	async def item_page(self, request, digisig_entity_number):
 
-		part_dic = await partobjectforitem_define(digisig_entity_number)
+		part_dic, listofevents, item_dic = await partobjectforitem_define(digisig_entity_number)
+
+		locationset = await map_locationset_item(listofevents)
+		location_dict, center_long, center_lat = await mapgenerator2(locationset)
 
 		for key, part_info in part_dic.items():
-			# template = loader.get_template('digisig/item.html')
 		
 			context = {
 				'pagetitle': part_info['pagetitle'],
 				'part_object': part_info,
-				'mapdic': part_info['mapdic'],
-				#'mapdic': part_info.get('mapdic', {})
+				'location_dict': location_dict,
+				'center_long': center_long,
+				'center_lat': center_lat,
+				# 'mapdic': part_info['mapdic'],
 				}
 		
 		return render(request, 'digisig/item.html', context)

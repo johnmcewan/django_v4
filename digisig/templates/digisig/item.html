@@ -93,11 +93,10 @@
 			
 		</table>
 
-		{% if part_object.location_id != 50015247 %} 
 		<div class="item_map">
 			<div id="mapid"> </div>
 		</div>
-		{% endif %}	
+
 	</div>
 
 	<div class="entity-permalink" id="entity-permalink">
@@ -220,29 +219,32 @@
 	</div>
 
 
-{{ mapdic|json_script:"mapdata" }}
+{{ location_dict|json_script:"mapdata1" }}
 
 <script>
+// This code could be rendered much more concise -- plenty of duplication here -- May/2022
+
 function onEachFeature(feature, layer) {
     // does this feature have a property named popupContent?
     if (feature.properties && feature.properties.popupContent) {
         layer.bindPopup(feature.properties.popupContent);
     }
-}
+	}
 
-	const longitude = '{{ part_object.location_longitude|safe }}';
-	const latitude = '{{ part_object.location_latitude|safe }}';
+	var geojsonFeature1 = JSON.parse(document.getElementById('mapdata1').textContent);
+	var placeslen = Object.keys(geojsonFeature1).length;
 
-	var geojsonFeature = JSON.parse(document.getElementById('mapdata', {scrollWheelZoom:false}).textContent);
-	var mymap = L.map('mapid').setView([latitude,longitude], 4);	
-	// var layer = new L.StamenTileLayer("watercolor");
-	var layer = new L.tileLayer('https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png', {
+	if (placeslen > 1) { 
+		var map1 = L.map('mapid', {scrollWheelZoom:false}).setView([45,15], 4);
+		var layer1 = new L.tileLayer('https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png', {
 	attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
 	subdomains: 'abcd',
 	maxZoom: 20
 });
-	mymap.addLayer(layer);
-	L.geoJSON(geojsonFeature, {onEachFeature: onEachFeature}).addTo(mymap);
+	
+		map1.addLayer(layer1);
+		L.geoJSON(geojsonFeature1, {onEachFeature: onEachFeature}).addTo(map1);
+	}
 
 </script>
 
