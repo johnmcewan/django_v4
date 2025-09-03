@@ -4185,7 +4185,8 @@ def partobjectforitem_define(entity_number):
 
 	#### prepare parts
 	part_object = Part.objects.filter(
-		fk_item=entity_number).values(
+		fk_item=entity_number).order_by(
+		"id_part").values(
 		'id_part',
 		'part_description',
 		'fk_item',
@@ -4330,6 +4331,8 @@ def partobjectforitem_define(entity_number):
 		### to avoid forms breaking where location info is not present 6/5/2025
 		else:
 			part_info['mapdic'] = {} 
+
+			print(searchvalue, " partinfo", part_info['fk_event'])
 
 	## find seals associated with the parts
 	manifestation_set = Manifestation.objects.filter(

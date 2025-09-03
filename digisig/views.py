@@ -1009,6 +1009,7 @@ class EntityView(View):
 
 		for key, part_info in part_dic.items():
 			# template = loader.get_template('digisig/item.html')
+		
 			context = {
 				'pagetitle': part_info['pagetitle'],
 				'part_object': part_info,
