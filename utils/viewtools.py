@@ -4228,6 +4228,7 @@ def partobjectforitem_define(entity_number):
 	item_dic['pagetitle'] = firstpart['fk_item__fk_repository__repository_fulltitle'] + " " + firstpart['fk_item__shelfmark']
 	item_dic["repository_location"] = firstpart['fk_event__repository_location']
 	item_dic['fk_repository'] = firstpart['fk_item__fk_repository__repository_fulltitle']
+	item_dic['shelfmark'] = firstpart['fk_item__shelfmark']
 
 	for p in part_object:
 		part_temp_dic = {}
@@ -4293,7 +4294,6 @@ def partobjectforitem_define(entity_number):
 		reference_dic_temp['fk_referencerole']= referencecase['fk_referencerole__referencerole']
 		reference_dic_temp['fk_individualoffice']= referencecase['fk_individualoffice']
 		reference_dic_temp['fk_event'] = referencecase['fk_event']
-
 
 		reference_dic[referencecase['fk_event']].update ({referencecase['pk_referenceindividual']: reference_dic_temp})
 

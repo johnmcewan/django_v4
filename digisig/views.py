@@ -1007,16 +1007,18 @@ class EntityView(View):
 		locationset = await map_locationset_item(listofevents)
 		location_dict, center_long, center_lat = await mapgenerator2(locationset)
 
-		for key, part_info in part_dic.items():
+		# for key, part_info in part_dic.items():
 		
-			context = {
-				'pagetitle': part_info['pagetitle'],
-				'part_object': part_info,
-				'location_dict': location_dict,
-				'center_long': center_long,
-				'center_lat': center_lat,
-				# 'mapdic': part_info['mapdic'],
-				}
+		print (part_dic)
+
+		context = {
+			# 'pagetitle': part_info['pagetitle'],
+			'part_object': part_dic,
+			'item_dic': item_dic,
+			'location_dict': location_dict,
+			'center_long': center_long,
+			'center_lat': center_lat,
+			}
 		
 		return render(request, 'digisig/item.html', context)
 

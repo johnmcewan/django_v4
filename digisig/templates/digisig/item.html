@@ -14,7 +14,7 @@
 	<div class="sidepanel-right"></div>
 
 	<div class="main-title">
-		<h1>{{pagetitle}}</h1>
+		<h1>{{item_dic.pagetitle}}</h1>
 	</div>
 
 	<div class="mainpage"></div>
@@ -22,18 +22,15 @@
 	<div class="entity_detail" id="entity_detail">		
 		<h3>
 			Item details 
-			{% if authenticationstatus == "authenticated" %}
-			<button class="permalink"><a href="{% url 'edit_item' digisig_entity_number=part_object.id_item %}">Edit</a></button>
-			{% endif %} 
 			<button onclick="toggle('entity-permalink')" class="permalink entity">Permalink</button>
 		</h3>
 		
 		<table>
 			<tr>
 				<th>Held by</th>
-				<td>{{part_object.fk_repository}}</td>	
+				<td>{{item_dic.fk_repository}}</td>	
 
-				{% if part_object.id_representation != Null %}
+				{% if item_dic.id_representation != Null %}
 				
 				<td rowspan="6">
 
@@ -55,8 +52,7 @@
 			</tr>
 			<tr>
 				<th>Reference <a class="help" href="{% url 'entity' digisig_entity_number=10001567 %}" target="_blank"><i class="fas fa-question-circle"></i></a></th>
-				<td>{{part_object.shelfmark}}
-				</td>
+				<td>{{item_dic.shelfmark}}</td>
 			</tr>
 
 			{% if part_object.year1 != null %}
@@ -105,7 +101,7 @@
 		<button onclick="toggle('entity-permalink')" class="closebutton">X</button>
 		<form action="#">
 			<label>Copy this URL to link to this page:</label>
-			<input id="input" class="text" name="" value="http://www.digisig.org/entity/{{part_object.fk_item}}" type="text" readonly>
+			<input id="input" class="text" name="" value="http://www.digisig.org/entity/{{item_dic.id_item}}" type="text" readonly>
 		</form>
 		</div>
 	</div>
@@ -118,7 +114,21 @@
 
 		<div>
 		<table id="entity1" style="display:none;">
-		{% for m in part_object.manifestation_set.values %}
+		{% for p in part_object.values %}
+			<tr>
+				<th class="indent">Part Number</th>
+				<td>{{p.id_part}}</td>
+			</tr>
+			<tr>
+				<th class="indent">Rep. Location</th>
+				<td>{{p.repository_location}}</td>
+			</tr>
+			<tr>
+				<th class="indent">Date</th>
+				<td>{{p.year1}} {{p.year2}}</td>
+			</tr>
+
+		{% for m in p.manifestation_set.values %}
 			{% if forloop.counter|divisibleby:2 %}<tr class="even">{% else %}<tr class="odd">{% endif %}
 				<th colspan="2"><h4><a class="headingbtn"  href="{% url 'entity' m.id_manifestation %}">{{m.imagestate_term}} details</a></h4></th>
  			</tr>
@@ -172,6 +182,8 @@
 			</tr>
 
  		{% endfor %}
+		{% endfor %}
+
 		</table>
 		</div>
 	</div>
@@ -231,11 +243,14 @@ function onEachFeature(feature, layer) {
     }
 	}
 
+	const longitude = '{{ center_long|safe }}';
+	const latitude = '{{ center_lat|safe }}';
+
 	var geojsonFeature1 = JSON.parse(document.getElementById('mapdata1').textContent);
 	var placeslen = Object.keys(geojsonFeature1).length;
 
 	if (placeslen > 1) { 
-		var map1 = L.map('mapid', {scrollWheelZoom:false}).setView([45,15], 4);
+		var map1 = L.map('mapid', {scrollWheelZoom:false}).setView([latitude,longitude], 4);
 		var layer1 = new L.tileLayer('https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png', {
 	attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
 	subdomains: 'abcd',
