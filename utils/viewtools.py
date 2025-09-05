@@ -4197,15 +4197,16 @@ def place_object_creator(witness_entity_number):
 @sync_to_async
 def partobjectforitem_define(entity_number):
 
-	### set of dictionaries and lists that will be populated
+### set of dictionaries and lists that will be populated
 	item_dic= {}
 	part_dic= {}
 	reference_dic= {}
+	sealdescription_dic = {}
 	manifestationpart = {}
 	listofparts = []
 	listofevents = []
 
-	#### prepare parts
+#### prepare parts
 	part_object = Part.objects.filter(
 		fk_item=entity_number).order_by(
 		"id_part").values(
@@ -4246,7 +4247,6 @@ def partobjectforitem_define(entity_number):
 		part_temp_dic["repository_location"] = p['fk_event__repository_location']
 
 		listofparts.append(p['id_part'])
-		#listofitems.append(p['fk_item'])
 		listofevents.append(p['fk_event'])
 
 		part_dic[p['id_part']] = part_temp_dic
@@ -4254,8 +4254,8 @@ def partobjectforitem_define(entity_number):
 		reference_dic.update({p['fk_event']: {} })
 		manifestationpart.update({p['id_part']: {} })
 
-	### prepare representations of part
-	representation_part = Representation.objects.filter(fk_digisig__in=listofparts).select_related('fk_connection')
+### prepare representations of part
+	representation_part = Representation.objects.filter(fk_part__in=listofparts).select_related('fk_connection')
 
 	try:
 		for t in representation_part:
@@ -4271,7 +4271,7 @@ def partobjectforitem_define(entity_number):
 	except:
 		print ('no image of PART available')
 
-	### prepare references
+### prepare references
 	referenceset = Referenceindividual.objects.filter(
 		fk_event__in=listofevents).order_by(
 		"fk_referencerole__role_order", "pk_referenceindividual").values(
@@ -4285,7 +4285,6 @@ def partobjectforitem_define(entity_number):
 		)
 	
 	for referencecase in referenceset:
-
 		reference_dic_temp = {}
 		reference_dic_temp['pk_referenceindividual']= referencecase['pk_referenceindividual']
 		reference_dic_temp['fk_individual']= referencecase['fk_individual']
@@ -4294,70 +4293,14 @@ def partobjectforitem_define(entity_number):
 		reference_dic_temp['fk_referencerole']= referencecase['fk_referencerole__referencerole']
 		reference_dic_temp['fk_individualoffice']= referencecase['fk_individualoffice']
 		reference_dic_temp['fk_event'] = referencecase['fk_event']
-
 		reference_dic[referencecase['fk_event']].update ({referencecase['pk_referenceindividual']: reference_dic_temp})
 
 	for partneedingreference in part_dic.values():
 		searchvalue = partneedingreference['fk_event'] 
 		partneedingreference['reference_set'] = reference_dic[searchvalue]
 
-	# try:
-	#   externallinkset = Externallink.objects.filter(internal_entity_in=listofitems)
 
-	#   links_dic = {}
-	#   for e in externallinkset:
-	#       links_dic[e.internal_entity].update({e.id_external_link}:{external_link})
-
-	#   for l in links_dic:
-	#       part_dic[l.]
-
-	# location_object = Location.objects.filter(
-	# 	locationname__locationreference__fk_event__in=listofevents, locationname__locationreference__location_reference_primary = False).values(
-	# 	'locationname__locationreference__fk_event',
-	# 	'location',
-	# 	'id_location',
-	# 	'longitude',
-	# 	'latitude').first()
-
-	# l = location_object
-
-	# searchvalue = int(location_object['locationname__locationreference__fk_event'])
-
-	# for key, part_info in part_dic.items():
-		 
-	# 	if searchvalue == part_info['fk_event']:
-
-	# 		mapdic = {"type": "FeatureCollection"}
-	# 		properties = {}
-	# 		geometry = {}
-	# 		location = {}
-	# 		placelist = []
-
-	# 		location= {"type": "Point", "coordinates":[ location_object['longitude'], location_object['latitude'] ]}
-	# 		location_dict = {'location': location_object['location'], 'latitude': location_object['latitude'], 'longitude': location_object['longitude']} 
-
-	# 		properties = {"id_location": location_object['id_location'], "location": location}
-	# 		geometry = {"type": "Point", "coordinates": [location_object['longitude'] , location_object['latitude']]}
-	# 		location = {"type": "Feature", "properties": properties, "geometry": geometry}
-	# 		placelist.append(location)
-
-	# 		mapdic["features"] = placelist
-
-	# 		part_info["location"] = location
-	# 		part_info["location_name"] = location_object['location'] 
-	# 		part_info["location_id"] = location_object['id_location'] 
-	# 		part_info["location_latitude"] = location_object['longitude'] 
-	# 		part_info["location_latitude"] = location_object['latitude']
-	# 		part_info['location_dict'] = location_dict
-	# 		part_info['mapdic'] = mapdic
-
-	# 	### to avoid forms breaking where location info is not present 6/5/2025
-	# 	else:
-	# 		part_info['mapdic'] = {} 
-
-			#print(searchvalue, " partinfo", part_info['fk_event'])
-
-	## find seals associated with the parts
+## find seals associated with the parts
 	manifestation_set = Manifestation.objects.filter(
 		fk_support__fk_part__in=listofparts).values(
 		'label_manifestation_repository',
@@ -4387,6 +4330,26 @@ def partobjectforitem_define(entity_number):
 	for partneedingmanifestation in part_dic.values():
 		searchvalue = partneedingmanifestation['id_part'] 
 		partneedingmanifestation['manifestation_set'] = manifestationpart[searchvalue]
+
+### locate associated seal descriptions
+	sealdescription_set = Sealdescription.objects.filter(
+		fk_part__in=listofparts).values(
+		'id_sealdescription',
+		'fk_part',
+		)
+
+	for sd in sealdescription_set:
+		part_dic[sd['fk_part']]['id_sealdescription'] = sd['id_sealdescription'] 
+
+	# try:
+	#   externallinkset = Externallink.objects.filter(internal_entity_in=listofitems)
+
+	#   links_dic = {}
+	#   for e in externallinkset:
+	#       links_dic[e.internal_entity].update({e.id_external_link}:{external_link})
+
+	#   for l in links_dic:
+	#       part_dic[l.]
 
 	return (part_dic, listofevents, item_dic)
 

@@ -1003,16 +1003,10 @@ class EntityView(View):
 	async def item_page(self, request, digisig_entity_number):
 
 		part_dic, listofevents, item_dic = await partobjectforitem_define(digisig_entity_number)
-
 		locationset = await map_locationset_item(listofevents)
 		location_dict, center_long, center_lat = await mapgenerator2(locationset)
-
-		# for key, part_info in part_dic.items():
 		
-		print (part_dic)
-
 		context = {
-			# 'pagetitle': part_info['pagetitle'],
 			'part_object': part_dic,
 			'item_dic': item_dic,
 			'location_dict': location_dict,

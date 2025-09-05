@@ -1402,6 +1402,7 @@ class Sealdescription(models.Model):
 	sealsize_inch_vert_frac_p1 = models.DecimalField(max_digits=65535, decimal_places=65535, blank=True, null=True)
 	sealsize_inch_vert_frac_p2 = models.DecimalField(max_digits=65535, decimal_places=65535, blank=True, null=True)
 	location = models.TextField(blank=True, null=True)
+	fk_part = models.ForeignKey('Part', models.DO_NOTHING, db_column='fk_part', related_name= 'fk_partsealdescription', blank=True, null=True)
 
 	class Meta:
 		managed = False

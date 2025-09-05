@@ -109,23 +109,15 @@
 
 	<div class="entity_seals" id="entity_seals">
 		<div class="div-caption">
-			Impressions, matrices, casts <button id="entitybutton1" onclick="tbtoggle('entity1', 'entitybutton1')" class="entity">+</button>
+			Parts <button id="entitybutton1" onclick="tbtoggle('entity1', 'entitybutton1')" class="entity">+</button>
 		</div>
 
 		<div>
 		<table id="entity1" style="display:none;">
 		{% for p in part_object.values %}
 			<tr>
-				<th class="indent">Part Number</th>
-				<td>{{p.id_part}}</td>
-			</tr>
-			<tr>
-				<th class="indent">Rep. Location</th>
-				<td>{{p.repository_location}}</td>
-			</tr>
-			<tr>
-				<th class="indent">Date</th>
-				<td>{{p.year1}} {{p.year2}}</td>
+				<th class="indent">Part {{p.id_part}}</th>	
+				<td>{{p.repository_location}}, {{p.year1}}-{{p.year2}}</td>
 			</tr>
 
 		{% for m in p.manifestation_set.values %}
