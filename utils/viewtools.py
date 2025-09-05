@@ -2385,7 +2385,7 @@ def representationmetadata_sealdescription(representation_case, representation_d
 def itemform_options(form):
 
 	series_all_options = [('', 'None')]
-	repositories_all_options = [('', 'None')]
+	repositories_all_options = []
 
 	series_set = Series.objects.exclude(
 		series_name__istartswith="z").order_by(
@@ -2403,7 +2403,11 @@ def itemform_options(form):
 		if entry not in repositories_all_options:
 			repositories_all_options.append(entry)  
 
+	# sort the choices alphabetically
 	repositories_choices = sorted(repositories_all_options, key=lambda item: item[1])
+
+	# add the none option to the beginning of the list
+	repositories_choices.insert(0, ('', 'None'))
 
 	form.fields['series'].choices = series_all_options
 	form.fields['repository'].choices = repositories_choices
@@ -4205,6 +4209,7 @@ def partobjectforitem_define(entity_number):
 	manifestationpart = {}
 	listofparts = []
 	listofevents = []
+	listofmanifestations = []
 
 #### prepare parts
 	part_object = Part.objects.filter(
@@ -4255,18 +4260,19 @@ def partobjectforitem_define(entity_number):
 		manifestationpart.update({p['id_part']: {} })
 
 ### prepare representations of part
+	
 	representation_part = Representation.objects.filter(fk_part__in=listofparts).select_related('fk_connection')
 
 	try:
 		for t in representation_part:
 			#for all images
 			connection = t.fk_connection
-			part_dic[t.fk_digisig]["connection"] = t.fk_connection
-			part_dic[t.fk_digisig]["connection_thumb"] = t.fk_connection.thumb
-			part_dic[t.fk_digisig]["connection_medium"] = t.fk_connection.medium
-			part_dic[t.fk_digisig]["representation_filename"] = t.representation_filename_hash
-			part_dic[t.fk_digisig]["representation_thumbnail"] = t.representation_thumbnail_hash
-			part_dic[t.fk_digisig]["id_representation"] = t.id_representation 
+			part_dic[t.fk_part]["connection"] = t.fk_connection
+			part_dic[t.fk_part]["connection_thumb"] = t.fk_connection.thumb
+			part_dic[t.fk_part]["connection_medium"] = t.fk_connection.medium
+			part_dic[t.fk_part]["representation_filename_hash"] = t.representation_filename_hash
+			part_dic[t.fk_part]["representation_thumbnail_hash"] = t.representation_thumbnail_hash
+			part_dic[t.fk_part]["id_representation"] = t.id_representation 
 
 	except:
 		print ('no image of PART available')
@@ -4314,6 +4320,20 @@ def partobjectforitem_define(entity_number):
 		'fk_support__fk_number_currentposition__number',
 		)
 
+	# determine if there are images for the manifestations
+	listofmanifestations = [item['id_manifestation'] for item in manifestation_set]
+
+	representation_manifestation = Representation.objects.filter(
+		fk_manifestation__in=listofmanifestations).values(
+			'fk_connection',
+			'fk_connection__thumb',
+			'fk_connection__medium',
+			'representation_filename_hash',
+			'representation_thumbnail_hash',
+			'id_representation',
+			'fk_manifestation',
+			)
+
 	for manifestationcase in manifestation_set:
 		manifestation_dic = {}
 		manifestation_dic['fk_seal'] = manifestationcase['fk_face__fk_seal']
@@ -4324,6 +4344,15 @@ def partobjectforitem_define(entity_number):
 		manifestation_dic['fk_attachment'] = manifestationcase['fk_support__fk_attachment__attachment']
 		manifestation_dic['number'] = manifestationcase['fk_support__fk_number_currentposition__number']
 		manifestation_dic['fk_position'] = manifestationcase['fk_position__position']
+
+		for case in representation_manifestation:
+			if case['fk_manifestation'] == manifestationcase['id_manifestation']: 
+				manifestation_dic["connection"] = case['fk_connection']
+				manifestation_dic["connection_thumb"] = case['fk_connection__thumb']
+				manifestation_dic["connection_medium"] = case['fk_connection__medium']
+				manifestation_dic["representation_filename_hash"] = case['representation_filename_hash']
+				manifestation_dic["representation_thumbnail_hash"] = case['representation_thumbnail_hash']
+				manifestation_dic["id_representation"] = case['id_representation'] 
 
 		manifestationpart[manifestationcase['fk_support__fk_part']].update ({manifestationcase['id_manifestation']: manifestation_dic})
 

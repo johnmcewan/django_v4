@@ -55,35 +55,35 @@
 				<td>{{item_dic.shelfmark}}</td>
 			</tr>
 
-			{% if part_object.year1 != null %}
+			{% if item_dic.year1 != null %}
 			<tr>		
 				<th>Date (Repository)</th>
-				<td>{{part_object.year1}}
-					{% if part_object.year2 > part_object.year1 %} - {{part_object.year2}} {% endif %}
+				<td>{{item_dic.year1}}
+					{% if item_dic.year2 > item_dic.year1 %} - {{item_dic.year2}} {% endif %}
 				</td>
 			</tr>
 			{% endif %}
 
-			{% if part_object.year3 != null %}
+			{% if item_dic.year3 != null %}
 			<tr>
 				<th>Date (Digisig)</th>
-				<td>{{part_object.year3}}
-					{% if part_object.year4 > part_object.year3 %} - {{part_object.year4}} {% endif %}
+				<td>{{item_dic.year3}}
+					{% if item_dic.year4 > item_dic.year3 %} - {{item_dic.year4}} {% endif %}
 				</td>
 			</tr>
 			{% endif %}
 
 			<tr>		
-				{% if part_object.repository_location != null %}
+				{% if item_dic.repository_location != null %}
 				<th>Location (Repository)</th>
-				<td>{{part_object.repository_location}}</td>
+				<td>{{item_dic.repository_location}}</td>
 				{% endif %}
 			</tr>
 
 			<tr>
-				{% if part_object.location_name != null %}
+				{% if item_dic.location_name != null %}
 				<th>Location (Digisig)</th>
-				<td><a href="{% url 'entity' part_object.location_id %}">{{part_object.location_name}}</td>
+				<td><a href="{% url 'entity' part_object.location_id %}">{{item_dic.location_name}}</td>
 				{% endif %}
 			</tr>
 			
@@ -129,18 +129,18 @@
 
 				<th class="indent">Support Status</th>
 				<td>{{m.fk_supportstatus}}</td>
-
+ 
 				<td rowspan="5">
 					<div class="figure">
 						{% if m.representation_thumbnail_hash != null %}
 						<figure>
-							<img class="modalimage" id="modalimagebase{{forloop.counter}}" src="{{m.thumb}}{{m.representation_thumbnail_hash}}" alt="{{m.id_representation}}" onclick="image({{forloop.counter}})">
+							<img class="modalimage" id="modalimagebase{{forloop.counter}}" src="{{m.connection_thumb}}{{m.representation_thumbnail_hash}}" alt="{{m.id_representation}}" onclick="image({{forloop.counter}})">
 						</figure>
 
 						<!-- The Modal -->
 						<div id="myModal{{forloop.counter}}" class="modal" style="display: none;">
 						  <span class="close" onclick="modalclose({{forloop.counter}})">&times;</span>
-						  <img class="modal-content" id="modalimg{{forloop.counter}}" src="{{m.medium}}{{m.representation_filename_hash}}" alt="{{m.id_representation}}">
+						  <img class="modal-content" id="modalimg{{forloop.counter}}" src="{{m.connection_medium}}{{m.representation_filename_hash}}" alt="{{m.id_representation}}">
 						  <div class="modal-caption" id="caption{{forloop.counter}}"><a href="{% url 'entity' m.id_representation %}">Representation details</a></div>
 						</div>
 						{% endif %}
@@ -189,23 +189,25 @@
 		<div>
 		<table id="entity2" style="display:none;">
 
+		{% for p in part_object.values %}
+
 			<tr> 
 				<th class="indent"> Part </th>
-				<td> {{part_object.id_part}}</td>
+				<td> {{p.id_part}}</td>
 			</tr>
 
 			<tr> 
 				<th class="indent"> Event </th>
-				<td> {{part_object.fk_event}}</td>
+				<td> {{p.fk_event}}</td>
 			</tr>
 
 
 			<tr> 
 				<th class="indent"> Description (Repository)</th>
-				<td> {{part_object.part_description}}</td>
+				<td> {{p.part_description}}</td>
 			</tr>
 
-			{% for key, reference in part_object.reference_set.items %}
+			{% for key, reference in p.reference_set.items %}
 			<tr> 
 				{% if reference.fk_individual != 10000019 %}
 				<th class="indent"></th>
@@ -217,6 +219,7 @@
 			</tr>
 		 	{% endfor %}
 
+		{% endfor %}
 	 </table>
 	</div>
 
