@@ -929,18 +929,16 @@ class EntityView(View):
 #https://allwin-raju-12.medium.com/reverse-relationship-in-django-f016d34e2c68
 
 	async def collection_page(self, request, digisig_entity_number):
+		
 		pagetitle = 'Collection'
-
-		#defaults
 		qcollection = int(digisig_entity_number)
 		
-		### This code prepares collection info box and the data for charts on the collection page
+		collection_dic, sealdescription_set = await collection_cases(qcollection)
 
+		### This code prepares collection info box and the data for charts on the collection page
 		form = CollectionForm_digisig(request.POST or None)
 		collection_choices = await digisigcollection_options(form)
-
-		collection, collection_dic, sealdescription_set = await collection_details(qcollection)
-
+		collection, collection_dic = await collection_details(qcollection, collection_dic)
 		contributor_dic = await sealdescription_contributorgenerate(collection, collection_dic)
 
 		### generate the collection info data for chart 1

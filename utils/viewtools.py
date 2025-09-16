@@ -1589,36 +1589,49 @@ def roundedoval(height, width):
 	return(returnarea)
 
 @sync_to_async
-def collection_details(qcollection):
+def collection_cases(qcollection):
+
+	collection_dic = {}
+	
+	sealdescription_query = Sealdescription.objects.filter(fk_seal__gt=1)
+
+	if (qcollection != 30000287):
+		sealdescription_query = Sealdescription.objects.filter(
+			fk_seal__gt=1).filter(
+			fk_collection=qcollection)
+
+	collection_dic["totalsealdescriptions"] = sealdescription_query.values(
+		'fk_collection', 'sealdescription_identifier'
+	).distinct().count()
+
+	collection_dic["totalseals"] = sealdescription_query.values(
+		"fk_seal").distinct().count()
+
+	sealdescription_set = sealdescription_query.values("fk_seal")
+
+	return (collection_dic, sealdescription_set)
+
+@sync_to_async
+def collection_details(qcollection, collection_dic):
 
 	collection = Collection.objects.get(id_collection=qcollection)
 
-	collection_dic = {}
 	collection_dic["id_collection"] = int(qcollection)
 	collection_dic["collection_thumbnail"] = collection.collection_thumbnail
 	collection_dic["collection_publicationdata"] = collection.collection_publicationdata
 	collection_dic["collection_fulltitle"] = collection.collection_fulltitle
 	collection_dic["notes"] = collection.notes
 
-	sealdescription_set = Sealdescription.objects.filter(fk_seal__gt=1).select_related('fk_seal')
-
 	#if collection is set then limit the scope of the dataset
 	if (qcollection == 30000287):
 		collection_dic["collection_title"] = 'All Collections'
 		pagetitle = 'All Collections'
-		collection_dic["totalsealdescriptions"] = sealdescription_set.count()
-		collection_dic["totalseals"] = sealdescription_set.distinct('fk_seal').count()
 
 	else:
 		collection_dic["collection_title"] = collection.collection_title
 		pagetitle = collection.collection_title
-		sealdescription_set = sealdescription_set.filter(fk_collection=qcollection)
-		collection_dic["totalsealdescriptions"] = sealdescription_set.distinct(
-			'sealdescription_identifier').count()
-		collection_dic["totalseals"] = sealdescription_set.distinct(
-			'fk_seal').count()
 
-	return(collection, collection_dic, sealdescription_set)
+	return(collection, collection_dic)
 
 @sync_to_async
 def collection_counts(sealdescription_set):
