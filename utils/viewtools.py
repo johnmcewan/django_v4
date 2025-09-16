@@ -1945,9 +1945,9 @@ def mapgenerator2(location_object):
 		value5 = loc.latitude
 
 		if type(loc.longitude) == int or type(loc.longitude) == float:
-			lat_values.append(loc.latitude)
-		if type(loc.latitude) == int or type(loc.latitude) == float:
 			long_values.append(loc.longitude)
+		if type(loc.latitude) == int or type(loc.latitude) == float:
+			lat_values.append(loc.latitude)
 
 		popupcontent = '<a href="entity/' + str(value1) + '">' + str(value2) + '</a>'
 
