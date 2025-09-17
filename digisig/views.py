@@ -931,50 +931,43 @@ class EntityView(View):
 	async def collection_page(self, request, digisig_entity_number):
 		
 		pagetitle = 'Collection'
-		qcollection = int(digisig_entity_number)
-		
-		collection_dic, sealdescription_set = await collection_cases(qcollection)
 
 		### This code prepares collection info box and the data for charts on the collection page
 		form = CollectionForm_digisig(request.POST or None)
 		collection_choices = await digisigcollection_options(form)
-		collection, collection_dic = await collection_details(qcollection, collection_dic)
-		contributor_dic = await sealdescription_contributorgenerate(collection, collection_dic)
 
-		### generate the collection info data for chart 1
-		actorscount, datecount, classcount, facecount = await collection_counts(sealdescription_set)
+		### Information about the collection
+		qcollection = int(digisig_entity_number)		
+		collection_dic = await collection_cases(qcollection)
+		collection_dic = await collection_details(collection_dic)
+		collection_dic = await sealdescription_contributorgenerate(collection_dic)
 
-		actors = await calpercent(collection_dic["totalseals"], actorscount)
-		date = await calpercent(collection_dic["totalseals"], datecount)
-		fclass = await calpercent(facecount, classcount)
+		### generate data for chart 1
+		actors = await calpercent(collection_dic["totalseals"], collection_dic["actorscount"])
+		date = await calpercent(collection_dic["totalseals"], collection_dic["datecount"])
+		fclass = await calpercent(collection_dic["facecount"], collection_dic["classcount"])
 	 
 		data1 = [actors, date, fclass]
 		labels1 = ["actor", "date", "class"]
 
 		### generate the collection info data for chart 2 -- 'Percentage of seals per class',
-
-		data2, labels2 = await collection_chart2()
+		data2, labels2 = await collection_chart2(collection_dic)
 
 		### generate the collection info data for chart 3  -- 'Percentage of seals by period',
-
 		data3, labels3 = await datedistribution(qcollection)
-
 		maplayer = await collection_loadmaplayer(1)
-
 		regiondisplayset = await map_regionset(qcollection)
-
 		region_dict = await mapgenerator3(regiondisplayset)
 
 		# ### generate the collection info data for chart 5 --  'Percentage of actors per class',
-
 		data5, labels5 = await collection_printgroup(qcollection, collection_dic)
 
 
 		context = {
 			'pagetitle': pagetitle,
-			'collection': collection,
+			#'collection': collection,
 			'collection_dic': collection_dic,
-			'contributor_dic': contributor_dic,
+			#'contributor_dic': contributor_dic,
 			'labels1': labels1,
 			'data1': data1,
 			'labels2': labels2,

@@ -1592,6 +1592,8 @@ def roundedoval(height, width):
 def collection_cases(qcollection):
 
 	collection_dic = {}
+
+	collection_dic["id_collection"] = qcollection
 	
 	sealdescription_query = Sealdescription.objects.filter(fk_seal__gt=1)
 
@@ -1607,23 +1609,31 @@ def collection_cases(qcollection):
 	collection_dic["totalseals"] = sealdescription_query.values(
 		"fk_seal").distinct().count()
 
-	sealdescription_set = sealdescription_query.values("fk_seal")
+	collection_dic["actorscount"] = sealdescription_query.filter(fk_seal__fk_individual_realizer__gt=10000019).count()
 
-	return (collection_dic, sealdescription_set)
+	collection_dic["datecount"] = sealdescription_query.filter(fk_seal__date_origin__gt=1).count()
+
+	collection_dic["classcount"] = sealdescription_query.filter(
+		fk_seal__fk_seal_face__fk_class__isnull=False).exclude(
+		fk_seal__fk_seal_face__fk_class=10000367).exclude(
+		fk_seal__fk_seal_face__fk_class=10001007).count()
+
+	collection_dic["facecount"] = sealdescription_query.filter(fk_seal__fk_seal_face__fk_faceterm=1).distinct('fk_seal__fk_seal_face').count() 
+
+	return (collection_dic)
 
 @sync_to_async
-def collection_details(qcollection, collection_dic):
+def collection_details(collection_dic):
 
-	collection = Collection.objects.get(id_collection=qcollection)
+	collection = Collection.objects.get(id_collection=collection_dic["id_collection"])
 
-	collection_dic["id_collection"] = int(qcollection)
 	collection_dic["collection_thumbnail"] = collection.collection_thumbnail
 	collection_dic["collection_publicationdata"] = collection.collection_publicationdata
 	collection_dic["collection_fulltitle"] = collection.collection_fulltitle
 	collection_dic["notes"] = collection.notes
 
 	#if collection is set then limit the scope of the dataset
-	if (qcollection == 30000287):
+	if (collection_dic["id_collection"] == 30000287):
 		collection_dic["collection_title"] = 'All Collections'
 		pagetitle = 'All Collections'
 
@@ -1631,7 +1641,7 @@ def collection_details(qcollection, collection_dic):
 		collection_dic["collection_title"] = collection.collection_title
 		pagetitle = collection.collection_title
 
-	return(collection, collection_dic)
+	return(collection_dic)
 
 @sync_to_async
 def collection_counts(sealdescription_set):
@@ -1649,19 +1659,30 @@ def collection_counts(sealdescription_set):
 	return(actorscount, datecount, classcount, facecount)
 
 @sync_to_async
-def collection_chart2():
+def collection_chart2(collection_dic):
 
-	result = Terminology.objects.filter(
-		term_type=1).order_by(
-		'term_sortorder').annotate(
-		num_cases=Count("fk_term_interchange__fk_class__fk_class_face"))
+	if (collection_dic["id_collection"] == 30000287):
+		result = Terminology.objects.filter(
+			term_type=1).order_by(
+			'term_sortorder').annotate(
+			num_cases=Count("fk_term_interchange__fk_class__fk_class_face"))
 
-	totalcases = sum([r.num_cases for r in result]) 
+	else:
+		result = Terminology.objects.filter(
+			term_type=1).filter(
+			fk_term_interchange__fk_class__fk_class_face__fk_seal__fk_sealsealdescription__fk_collection=collection_dic['id_collection']).order_by(
+			'term_sortorder').annotate(
+			num_cases=Count("fk_term_interchange__fk_class__fk_class_face"))	
+
+	#totalcases = sum([r.num_cases for r in result]) 
 
 	data2 = []
 	labels2 = []
 
+	totalcases = collection_dic["facecount"]
+
 	for r in result:
+
 		percentageresult = (r.num_cases / totalcases) * 100 
 
 		if percentageresult > 1:
@@ -3336,10 +3357,12 @@ def sealdescription_fetchobject(digisig_entity_number):
 
 #assembles the list of people credited with a work
 @sync_to_async
-def sealdescription_contributorgenerate(collection, contributor_dic):
+def sealdescription_contributorgenerate(collection_dic):
+
+	collectiontarget = collection_dic["id_collection"]
 
 	collectioncontributions = Collectioncontributor.objects.filter(
-		fk_collection=collection).select_related(
+		fk_collection=collectiontarget).select_related(
 		'fk_contributor').select_related(
 		'fk_collectioncontribution')
 
@@ -3362,9 +3385,9 @@ def sealdescription_contributorgenerate(collection, contributor_dic):
 		
 		contribution_set[c.fk_contributor] = contribution
 
-	contributor_dic["contributors"] = contribution_set
+	collection_dic["contributors"] = contribution_set
 
-	return(contributor_dic)
+	return(collection_dic)
 
 @sync_to_async
 def sealdescription_fetchrepresentation(sealdescription_object):
