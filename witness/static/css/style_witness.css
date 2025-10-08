@@ -124,7 +124,6 @@ background-color: #e5ebef;
 }
 
 
-
 .heading {
 	margin-top: 40px;
 }
@@ -200,7 +199,7 @@ background-color: #e5ebef;
 .sidepanel-left,
 .sidepanel-right {
 	grid-row: 5/14;
-	background-color:	#b6abba;
+	background-color:	#black;
 }
 
 .sidepanel-left {
@@ -1007,8 +1006,7 @@ input[type=image] {
 }
 
 #search1,
-#search2,
-#search3 {
+#search2 {
 	border: solid;
 	border-width: 30px;
 	border-color: #f0f3f4;
@@ -1340,22 +1338,6 @@ input[type=image] {
   border-color: transparent transparent #cedae3 transparent;
 }
 
-
-
-/*Open Lime*/
-
-#openlime {
-	position:relative;
-	height: 100%
-	grid-column: 3/7;
-}
-
-#openlime>canvas {
-	width: 100%;
-	height: 100%;
-	/* this is important, it would cause firefox flickering! */
-	overflow: hidden;
-}
 
 /* rules from here are for witness Oct21 2024*/
 

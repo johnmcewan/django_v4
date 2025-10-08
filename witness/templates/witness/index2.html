@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Witnessing London - Modern Design</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Carrois+Gothic&display=swap" rel="stylesheet">
+    <script src="https://kit.fontawesome.com/1bf00dda24.js" crossorigin="anonymous"></script>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Carrois Gothic', Tahoma, sans-serif;
+            background: linear-gradient(135deg, #1a0a2e 0%, #0f051d 100%);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        h1, h2, h3 {
+            font-family: 'Cormorant', Palatino, serif;
+        }
+
+        .hero-section {
+            position: relative;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            background: linear-gradient(135deg, rgba(102, 66, 138, 0.9) 0%, rgba(35, 1, 50, 0.95) 100%);
+        }
+
+        .hero-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: url('data:image/svg+xml,<svg width="100" height="100" xmlns="http://www.w3.org/2000/svg"><defs><pattern id="grid" width="100" height="100" patternUnits="userSpaceOnUse"><path d="M 100 0 L 0 0 0 100" fill="none" stroke="rgba(255,255,255,0.05)" stroke-width="1"/></pattern></defs><rect width="100%" height="100%" fill="url(%23grid)"/></svg>');
+            opacity: 0.3;
+            animation: gridMove 20s linear infinite;
+        }
+
+        @keyframes gridMove {
+            0% { transform: translateY(0); }
+            100% { transform: translateY(100px); }
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 2;
+            text-align: center;
+            margin-bottom: 4rem;
+        }
+
+        .main-title {
+            font-size: clamp(2.5rem, 8vw, 5rem);
+            color: white;
+            margin-bottom: 1rem;
+            font-weight: 700;
+            letter-spacing: 2px;
+            text-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+            animation: fadeInDown 1s ease-out;
+        }
+
+        .subtitle {
+            font-size: clamp(1rem, 3vw, 1.5rem);
+            color: rgba(255, 255, 255, 0.9);
+            font-style: italic;
+            margin-bottom: 3rem;
+            animation: fadeInUp 1s ease-out 0.2s backwards;
+        }
+
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .search-container {
+            display: flex;
+            gap: 2.5rem;
+            justify-content: center;
+            align-items: stretch;
+            flex-wrap: wrap;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1rem;
+            position: relative;
+            z-index: 2;
+        }
+
+        .search-card {
+            flex: 1;
+            min-width: 280px;
+            max-width: 450px;
+            height: 400px;
+            position: relative;
+            border-radius: 20px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
+            animation: fadeInUp 0.8s ease-out backwards;
+        }
+
+        .search-card:nth-child(1) {
+            animation-delay: 0.4s;
+        }
+
+        .search-card:nth-child(2) {
+            animation-delay: 0.6s;
+        }
+
+        .search-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, rgba(4, 200, 4, 0.7) 0%, rgba(2, 150, 2, 0.8) 100%);
+            opacity: 0;
+            transition: opacity 0.5s ease;
+            z-index: 1;
+        }
+
+        .search-card:hover::before {
+            opacity: 1;
+        }
+
+        .search-card:hover {
+            transform: translateY(-15px) scale(1.02);
+            box-shadow: 0 20px 60px rgba(4, 200, 4, 0.4), 0 0 40px rgba(4, 200, 4, 0.2);
+        }
+
+        .card-bg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            transition: transform 0.8s cubic-bezier(0.23, 1, 0.32, 1);
+        }
+
+        .search-card:hover .card-bg {
+            transform: scale(1.1);
+        }
+
+        #search1 .card-bg {
+            background-image: url('data:image/svg+xml,<svg width="400" height="400" xmlns="http://www.w3.org/2000/svg"><rect fill="%23230132" width="400" height="400"/><text x="50%" y="50%" font-size="24" fill="%23ffffff" text-anchor="middle" dominant-baseline="middle" opacity="0.3">Parish Map</text></svg>');
+        }
+
+        #search2 .card-bg {
+            background-image: url('data:image/svg+xml,<svg width="400" height="400" xmlns="http://www.w3.org/2000/svg"><rect fill="%2366428a" width="400" height="400"/><text x="50%" y="50%" font-size="24" fill="%23ffffff" text-anchor="middle" dominant-baseline="middle" opacity="0.3">People Image</text></svg>');
+        }
+
+        .card-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(to bottom, rgba(0,0,0,0.3) 0%, rgba(0,0,0,0.7) 100%);
+            z-index: 2;
+            transition: background 0.5s ease;
+        }
+
+        .search-card:hover .card-overlay {
+            background: linear-gradient(to bottom, rgba(4,200,4,0.2) 0%, rgba(2,100,2,0.6) 100%);
+        }
+
+        .card-content {
+            position: relative;
+            z-index: 3;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            text-align: center;
+        }
+
+        .card-icon {
+            font-size: 4rem;
+            color: white;
+            margin-bottom: 1.5rem;
+            transition: all 0.5s ease;
+            filter: drop-shadow(0 4px 10px rgba(0,0,0,0.5));
+        }
+
+        .search-card:hover .card-icon {
+            transform: scale(1.2) rotate(5deg);
+            color: #04c804;
+        }
+
+        .card-title {
+            font-size: 2rem;
+            font-weight: 700;
+            color: white;
+            margin-bottom: 1rem;
+            transition: all 0.3s ease;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.5);
+        }
+
+        .search-card:hover .card-title {
+            transform: scale(1.05);
+        }
+
+        .card-description {
+            font-size: 1rem;
+            color: rgba(255, 255, 255, 0.9);
+            line-height: 1.6;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.5s ease;
+            max-width: 300px;
+        }
+
+        .search-card:hover .card-description {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .card-button {
+            margin-top: 1.5rem;
+            padding: 0.8rem 2rem;
+            background: white;
+            color: #230132;
+            border: none;
+            border-radius: 50px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        .search-card:hover .card-button {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .card-button:hover {
+            background: #04c804;
+            color: white;
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(4, 200, 4, 0.4);
+        }
+
+        .floating-particles {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            pointer-events: none;
+        }
+
+        .particle {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            animation: float 15s infinite ease-in-out;
+        }
+
+        @keyframes float {
+            0%, 100% {
+                transform: translateY(0) translateX(0);
+                opacity: 0;
+            }
+            10% {
+                opacity: 0.3;
+            }
+            90% {
+                opacity: 0.3;
+            }
+            100% {
+                transform: translateY(-100vh) translateX(50px);
+                opacity: 0;
+            }
+        }
+
+        .nav-header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            padding: 1rem 2rem;
+            background: rgba(35, 1, 50, 0.95);
+            backdrop-filter: blur(10px);
+            z-index: 1000;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 20px rgba(0,0,0,0.3);
+        }
+
+        .nav-logo {
+            font-size: 1.5rem;
+            color: white;
+            font-weight: 700;
+            font-family: 'Cormorant', serif;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+        }
+
+        .nav-links a {
+            color: rgba(255, 255, 255, 0.8);
+            text-decoration: none;
+            transition: color 0.3s ease;
+            font-weight: 500;
+        }
+
+        .nav-links a:hover {
+            color: #04c804;
+        }
+
+        @media (max-width: 768px) {
+            .search-container {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .search-card {
+                min-width: 100%;
+                max-width: 400px;
+            }
+
+            .main-title {
+                font-size: 2.5rem;
+            }
+
+            .subtitle {
+                font-size: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="nav-header">
+        <div class="nav-logo">Witnessing London</div>
+        <div class="nav-links">
+            <a href="#">Home</a>
+            <a href="#">Search</a>
+            <a href="#">About</a>
+        </div>
+    </div>
+
+    <div class="hero-section">
+        <div class="floating-particles" id="particles"></div>
+        
+        <div class="hero-content">
+            <h1 class="main-title">Witnessing London</h1>
+            <p class="subtitle">Explore the social networks of Medieval London</p>
+        </div>
+
+        <div class="search-container">
+            <div class="search-card" id="search1" onclick="window.location.href='#parish'">
+                <div class="card-bg"></div>
+                <div class="card-overlay"></div>
+                <div class="card-content">
+                    <i class="fas fa-map-marked-alt card-icon"></i>
+                    <h2 class="card-title">Search Parish</h2>
+                    <p class="card-description">Explore medieval London through its parishes and discover the geographic networks of the city</p>
+                    <span class="card-button">Explore Parishes</span>
+                </div>
+            </div>
+
+            <div class="search-card" id="search2" onclick="window.location.href='#person'">
+                <div class="card-bg"></div>
+                <div class="card-overlay"></div>
+                <div class="card-content">
+                    <i class="fas fa-users card-icon"></i>
+                    <h2 class="card-title">Search Person</h2>
+                    <p class="card-description">Uncover the stories and connections of individuals who witnessed medieval London's history</p>
+                    <span class="card-button">Find People</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Create floating particles
+        const particlesContainer = document.getElementById('particles');
+        for (let i = 0; i < 20; i++) {
+            const particle = document.createElement('div');
+            particle.className = 'particle';
+            particle.style.width = Math.random() * 10 + 5 + 'px';
+            particle.style.height = particle.style.width;
+            particle.style.left = Math.random() * 100 + '%';
+            particle.style.animationDelay = Math.random() * 15 + 's';
+            particle.style.animationDuration = (Math.random() * 10 + 10) + 's';
+            particlesContainer.appendChild(particle);
+        }
+    </script>
+</body>
+</html>
