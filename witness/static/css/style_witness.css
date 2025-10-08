@@ -100,8 +100,6 @@ a.centerpanel {
 }
 
 
-
-
 a:hover, a.headingbtn:hover {
 	text-decoration: underline;
 	text-decoration-color: #04c804;
@@ -323,6 +321,60 @@ background-color: #e5ebef;
     visibility: visible;
     transform: translateY(0); /* Move back to original position */
 }
+
+
+.global-nav {
+	grid-column: 2/11;
+	grid-row: 2;
+	grid-auto-columns: 50px;
+	position: -webkit-sticky;
+	position: sticky;
+	top:0;
+	background: rgba(35, 1, 50, 0.95);
+	z-index: 2;
+	line-height: 1;
+}
+
+        .nav-header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            padding: 1rem 2rem;
+            background: rgba(35, 1, 50, 0.95);
+            backdrop-filter: blur(10px);
+            z-index: 1000;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 20px rgba(0,0,0,0.3);
+        }
+
+        .nav-logo {
+            font-size: 1.5rem;
+            color: white;
+            font-weight: 700;
+            font-family: 'Cormorant', serif;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+        }
+
+        .nav-links a {
+            color: rgba(255, 255, 255, 0.8);
+            text-decoration: none;
+            transition: color 0.3s ease;
+            font-weight: 500;
+        }
+
+        .nav-links a:hover {
+            color: #04c804;
+        }
+
+
+
 
 /* Banners on various pages */
 

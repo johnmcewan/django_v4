@@ -30,7 +30,7 @@ from asgiref.sync import sync_to_async
 def index(request):
 
 	pagetitle = 'title'
-	template = loader.get_template('witness/index4.html')
+	template = loader.get_template('witness/index.html')
 
 	#londoners_total = Individual.objects.filter(fk_individual_event__gt=1).distinct('id_individual').count()
 

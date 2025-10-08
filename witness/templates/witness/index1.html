@@ -1,0 +1,70 @@
+{% extends "witness/base.html" %}
+
+{% load static %}
+
+{% block content %}
+
+<style>
+
+#search1 {
+    background-image: url({% static 'images/parish_map.png' %});
+}
+
+#search2 {
+    background-image: url({% static 'images/SBH1266_v1.jpg' %});
+    background-size: cover;
+    background-repeat: no-repeat; /* Optional, but recommended */
+    background-position: right; /* Optional, but recommended */
+}
+
+</style>
+
+    <div class="hero-section">
+        <div class="floating-particles" id="particles"></div>
+        
+        <div class="hero-content">
+            <h1 class="main-title">Witnessing London</h1>
+            <p class="subtitle">Explore the social networks of Medieval London</p>
+        </div>
+
+        <div class="search-container">
+            <div class="search-card" id="search1" onclick="window.location.href='#parish'">
+                <div class="card-bg"></div>
+                <div class="card-overlay"></div>
+                <div class="card-content">
+                    <i class="fas fa-map-marked-alt card-icon"></i>
+                    <h2 class="card-title">Search Parish</h2>
+                    <p class="card-description">Explore medieval London through its parishes and discover the geographic networks of the city</p>
+                    <span class="card-button">Explore Parishes</span>
+                </div>
+            </div>
+
+            <div class="search-card" id="search2" onclick="window.location.href='#person'">
+                <div class="card-bg"></div>
+                <div class="card-overlay"></div>
+                <div class="card-content">
+                    <i class="fas fa-users card-icon"></i>
+                    <h2 class="card-title">Search Person</h2>
+                    <p class="card-description">Uncover the stories and connections of individuals who witnessed medieval London's history</p>
+                    <span class="card-button">Find People</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Create floating particles
+        const particlesContainer = document.getElementById('particles');
+        for (let i = 0; i < 20; i++) {
+            const particle = document.createElement('div');
+            particle.className = 'particle';
+            particle.style.width = Math.random() * 10 + 5 + 'px';
+            particle.style.height = particle.style.width;
+            particle.style.left = Math.random() * 100 + '%';
+            particle.style.animationDelay = Math.random() * 15 + 's';
+            particle.style.animationDuration = (Math.random() * 10 + 10) + 's';
+            particlesContainer.appendChild(particle);
+        }
+    </script>
+
+{% endblock %}
