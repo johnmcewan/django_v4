@@ -334,7 +334,6 @@
 </style>
 
 <div class="hero-section-modern">
-    <div class="floating-particles" id="particles"></div>
     
     <div class="hero-content-modern">
         <h1 class="main-title-modern">Witnessing London</h1>
@@ -346,8 +345,7 @@
             <div class="card-bg"></div>
             <div class="card-overlay"></div>
             <div class="card-content">
-                <i class="fas fa-map-marked-alt card-icon"></i>
-                <h2 class="card-title">Search Parish</h2>
+                <h2 class="card-title">Parishes</h2>
                 <p class="card-description">Explore medieval London through its parishes and discover the geographic networks of the city</p>
                 <a href="{% url 'search' searchtype='parish' %}" class="card-button">Explore Parishes</a>
             </div>
@@ -357,30 +355,12 @@
             <div class="card-bg"></div>
             <div class="card-overlay"></div>
             <div class="card-content">
-                <i class="fas fa-users card-icon"></i>
-                <h2 class="card-title">Search People</h2>
+                <h2 class="card-title">People</h2>
                 <p class="card-description">Uncover the stories and connections of individuals who witnessed medieval London's history</p>
                 <a href="{% url 'search' searchtype='person' %}" class="card-button">Find People</a>
             </div>
         </div>
     </div>
 </div>
-
-<script>
-// Create floating particles
-const particlesContainer = document.getElementById('particles');
-if (particlesContainer) {
-    for (let i = 0; i < 20; i++) {
-        const particle = document.createElement('div');
-        particle.className = 'particle';
-        particle.style.width = Math.random() * 10 + 5 + 'px';
-        particle.style.height = particle.style.width;
-        particle.style.left = Math.random() * 100 + '%';
-        particle.style.animationDelay = Math.random() * 15 + 's';
-        particle.style.animationDuration = (Math.random() * 10 + 10) + 's';
-        particlesContainer.appendChild(particle);
-    }
-}
-</script>
 
 {% endblock %}
