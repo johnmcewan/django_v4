@@ -1058,20 +1058,59 @@ def networkgenerator(reference_set):
 
 		nameoriginal = referencenamegenerator(r)
 
-		# nameoriginal = ""
+		valuetarget = 1
+		person = r['fk_individual']
 
-		# if r['fk_individual__fk_descriptor_name__descriptor_modern'] != None:
-		#   nameoriginal =  r['fk_individual__fk_descriptor_name__descriptor_modern']
-		# if r['fk_individual__fk_descriptor_prefix1__prefix_english'] != None:
-		#   nameoriginal = nameoriginal + " " + r['fk_individual__fk_descriptor_prefix1__prefix_english']
-		# if r['fk_individual__fk_descriptor_descriptor1__descriptor_modern'] != None:
-		#   nameoriginal = nameoriginal + " " + r['fk_individual__fk_descriptor_descriptor1__descriptor_modern']
-		# if r['fk_individual__fk_descriptor_prefix2__prefix_english'] != None:
-		#   nameoriginal = nameoriginal + " " + r['fk_individual__fk_descriptor_prefix2__prefix_english']
-		# if r['fk_individual__fk_descriptor_descriptor2__descriptor_modern'] != None:
-		#   nameoriginal = nameoriginal + " " + r['fk_individual__fk_descriptor_descriptor2__descriptor_modern']
-		# if r['fk_individual__fk_descriptor_prefix3__prefix_english'] != None:
-		#   nameoriginal = nameoriginal + " " + r['fk_individual__fk_descriptor_prefix3__prefix_english']
+		if person in personlist:
+			x=personlist.index(person)
+			case = nodelist[x]
+			currentvalue = case['val'] + 1
+			if currentvalue > 1: colour = '#4d4db3'
+			if currentvalue > 3: colour = '#409fbf'
+			if currentvalue > 5: colour = '#c6a339'
+			if currentvalue > 7: colour = '#c68039'
+			if currentvalue > 10: colour = '#d95326'
+			if currentvalue > 15: colour = '#ff0000'
+			nodelist.pop(x)
+			nodelist.insert(x, {'id':person, 'name': nameoriginal, 'val': currentvalue, 'color': colour})
+			# nodelist.insert(x, {'id':person})
+
+		else:
+			personlist.append(person)
+			nodelist.append({'id':person, 'name': nameoriginal, 'val': 1, 'color':'#806c93'})
+
+	for r in reference_dic:
+		targetset = reference_dic[r]
+		numberofpeople = len(reference_dic[r])
+
+		for x in range(numberofpeople):
+			for y in range(x+1, numberofpeople):
+				person1 = targetset[x]
+				person2 = targetset[y]
+				linkslist.append({'source': person1, 'target': person2})
+
+	return (linkslist, nodelist)
+
+### network diagrams
+def networkgenerator2(reference_set):
+
+	linkslist = []
+	nodelist = []
+
+	reference_dic = {}
+	person_dic = {}
+	personlist = []  
+
+	for r in reference_set:
+
+		if r['fk_event'] in reference_dic:
+			eventid = r['fk_event']
+			reference_dic[eventid].append(r['fk_individual'])
+		else:
+			eventid = r['fk_event']
+			reference_dic[eventid] = [r['fk_individual']]
+
+		nameoriginal = referencenamegenerator(r)
 
 		valuetarget = 1
 		person = r['fk_individual']
@@ -1093,7 +1132,6 @@ def networkgenerator(reference_set):
 		else:
 			personlist.append(person)
 			nodelist.append({'id':person, 'name': nameoriginal, 'val': 1, 'color':'#806c93'})
-			# nodelist.append({'id':person})
 
 	for r in reference_dic:
 		targetset = reference_dic[r]
@@ -4575,3 +4613,5 @@ def classdistribution(classset, facecount):
 				labels2.append(case.class_name)
 
 	return(data2, labels2)
+
+

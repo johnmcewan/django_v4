@@ -216,10 +216,6 @@ async def personrelationships_ajax(request, witness_entity_number):
 
 
 
-
-
-
-
 async def parishpersonajax(request, witness_entity_number):
 
 	individual_object = await parish_fetch(witness_entity_number)
@@ -389,7 +385,6 @@ def seal_page(request, witness_entity_number):
 
 	return redirect(targetphrase, 50013947)
 
-
 def personnetwork_page(request, witness_entity_number):
 
 	#default
@@ -405,16 +400,187 @@ def personnetwork_page(request, witness_entity_number):
 		fk_referencerole=1).exclude(fk_individual=10000019).filter(
 		fk_event__in=witnessevents)
 
-	reference_set = referencecollectindividual(reference_set)
 
-	linkslist, nodelist = networkgenerator(reference_set)
+### extra view
 
-	template = loader.get_template('witness/person_graph.html')
+def searchletterbook(request):
+
+	pagetitle = 'title'
+
+	form = DescriptorForm(request.POST or None)
+
+	if request.method == "POST":
+		if form.is_valid():
+			qpagination = form.cleaned_data['pagination']
+			qname = form.cleaned_data['name']
+			qnamelen = len(qname)
+			form = DescriptorForm(request.POST)
+
+	else:
+		qnamelen = 0
+		qname = ""
+		qpagination = 1
+
+
+	individual_object = IndividualMontreal.objects.all().order_by('namephrase')
+
+	if qnamelen > 0:
+		individual_object = individual_object.filter(
+			Q(
+				namephrase__icontains=qname) | Q(
+				fk_descriptor_firstname__descriptor_original__icontains=qname)| Q(
+				fk_descriptor_secondname__descriptor_original__icontains=qname)| Q(
+				fk_descriptor_thirdname__descriptor_original__icontains=qname)) 
+
+	individual_object = Paginator(individual_object, 10).page(qpagination)
+	totalrows = individual_object.paginator.count
+	totaldisplay = str(individual_object.start_index()) + "-" + str(individual_object.end_index())
+
+	pagecountercurrent = qpagination
+	pagecounternext = qpagination + 1
+	pagecounternextnext = qpagination +2  
+
+	individual_set = {}
+
+	for i in individual_object:
+		individual_info = {}
+		individual_info['actor_name'] = i.namephrase
+		individual_info['id_indpropose'] = i.id_indpropose
+		individual_set[i.id_indpropose] = individual_info
+
+
 	context = {
-		'nodelist': nodelist,
-		'linkslist': linkslist,
+		'pagetitle': pagetitle,
+		'individual_set': individual_set,
+		'totalrows': totalrows,
+		'totaldisplay': totaldisplay,
+		'form': form,
+		'pagecountercurrent': pagecountercurrent,
+		'pagecounternext': pagecounternext,
+		'pagecounternextnext': pagecounternextnext,
 		}
 
+	template = loader.get_template('witness/search_letterbook.html')
 	return HttpResponse(template.render(context, request))
 
 
+def personletterbooknetwork_page(request, page_number):
+
+	# default
+	qpersonnetwork = int(page_number) # This is the id_report of the person being centered on.
+
+	# Get letterbook entry IDs (not objects) where person appears
+	reference_set1 = LetterBooksNerData.objects.filter(
+		fk_individual_id=qpersonnetwork
+	).values_list('fk_letterbookentry', flat=True).distinct()
+
+	# Filtering by a list of integer IDs
+	reference_set = LetterBooksNerData.objects.filter(
+		fk_letterbookentry__in=reference_set1
+	).filter(
+	fk_individual_id__fk_descriptor_secondname__isnull=False).values(
+		'fk_letterbookentry',
+		'fk_individual_id', 
+		'fk_individual_id__namephrase', 
+		'fk_individual_id__eventcount'
+	)
+
+	linkslist = []
+	nodelist = []
+
+	# Maps event ID to a SET of canonical Report IDs (fk_report) in that event
+	reference_dic = {} 
+	# Caches person data (namephrase, eventcount) keyed by Report ID (fk_report)
+	person_data_cache = {} 
+	
+	# --- Step 1: Process Events, Cache Report Data, and Map Co-occurrences by Report ID ---
+	for r in reference_set:
+
+		eventid = r['fk_letterbookentry']
+		report_id = r['fk_individual_id']
+		
+		# 1a. Build the event dictionary using the CANONICAL REPORT ID
+		if eventid in reference_dic:
+			# Use add() on a set to prevent duplicates if a person has multiple distinct_names in the same event
+			reference_dic[eventid].add(report_id) 
+		else:
+			reference_dic[eventid] = {report_id}
+
+		# 1b. Cache the data from the report table, keyed by the canonical Report ID (fk_report)
+		if report_id not in person_data_cache:
+			person_data_cache[report_id] = {
+				'namephrase': r['fk_individual_id__namephrase'] or str(report_id),
+				'eventcount': r['fk_individual_id__eventcount'] or 1
+			}
+
+
+	# --- Step 2: Build the Final Nodelist ---
+	
+	# Iterate through the cached report IDs to build the final nodelist once.
+	for report_id, data in person_data_cache.items():
+			
+		node_id = report_id 
+		label = data['namephrase']
+		value = data['eventcount']
+
+		# Define color logic based on the *canonical* person's total eventcount
+		colour = '#806c93' # Default
+		if node_id == qpersonnetwork:
+			 colour = '#259E6A' # Highlight the central person (new addition)
+		elif value > 15: colour = '#ff0000'
+		elif value > 10: colour = '#d95326'
+		elif value > 7: colour = '#c68039'
+		elif value > 5: colour = '#c6a339'
+		elif value > 3: colour = '#409fbf'
+		elif value > 1: colour = '#4d4db3'
+
+
+		# Build the node dictionary
+		nodelist.append({
+			'id': node_id, 
+			'name': label, 
+			'val': value, 
+			'color': colour
+		})
+		
+
+	# --- Step 3: Generate Links (Co-occurrence) ---
+	
+	# Iterate through events. reference_dic already contains canonical Report IDs.
+	for canonical_report_ids_set in reference_dic.values():
+		
+		# Convert the set of canonical Report IDs to a list for indexed iteration
+		canonical_report_ids = list(canonical_report_ids_set)
+		numberofpeople = len(canonical_report_ids)
+
+		# Skip events involving only one person
+		if numberofpeople < 2:
+			continue
+
+		# Create links for every unique pair of canonical Report IDs in this event
+		for x in range(numberofpeople):
+			for y in range(x + 1, numberofpeople):
+				person1 = canonical_report_ids[x]
+				person2 = canonical_report_ids[y]
+				
+				# Links are already between canonical Report IDs
+				linkslist.append({'source': person1, 'target': person2})
+
+
+	print(f"Central person ID: {qpersonnetwork}")
+	print(f"Central person in cache: {qpersonnetwork in person_data_cache}")
+	print(f"Total events found: {len(reference_dic)}")
+	print(f"Total unique people: {len(person_data_cache)}")
+
+
+	# --- Step 4: Render ---
+
+	template = loader.get_template('witness/person_graph_letterbook.html')
+	context = {
+		'nodelist': nodelist,
+		'linkslist': linkslist,
+		# Add the central person's ID (qpersonnetwork) to context if needed for highlighting
+		'central_person_id': qpersonnetwork
+	}
+
+	return HttpResponse(template.render(context, request))

@@ -1634,3 +1634,49 @@ class TimegroupC(models.Model):
     class Meta:
         managed = False
         db_table = 'timegroup_c'
+
+
+
+#### some extra models for the lettebook project
+## temporary for NOv 2025
+
+class LetterBooksNerData(models.Model):
+    id_nerdata = models.AutoField(primary_key=True)
+    nerdata_word = models.TextField()
+    nerdata_score = models.DecimalField(max_digits=65535, decimal_places=65535, blank=True, null=True)
+    nerdata_entitygroup = models.TextField()
+    fk_letterbookentry = models.IntegerField(blank=True, null=True)
+    fk_distinctnames = models.ForeignKey('Letterdistinctnames', models.DO_NOTHING, related_name='fk_distinctnames', db_column='fk_distinctnames', blank=True, null=True)
+    nerdata_startcharacter = models.IntegerField(blank=True, null=True)
+    nerdata_endcharacter = models.IntegerField(blank=True, null=True)
+    nerdata_sonof = models.TextField() 
+    fk_individual_id = models.ForeignKey('IndividualMontreal', models.DO_NOTHING, related_name='fk_individual_id', db_column='fk_individual_id', blank=True, null=True)
+ 
+    class Meta:
+        db_table = '"research"."2025_letterbooks_nerdata"'
+        managed = False
+
+class Letterdistinctnames(models.Model):
+    id_distinctname = models.AutoField(primary_key=True)
+    nerdata_word = models.TextField()
+    #fk_report = models.ForeignKey('ReportMontreal', models.DO_NOTHING, related_name='fk_report', db_column='fk_report', blank=True, null=True)
+ 
+    class Meta:
+        db_table = '"research"."2025_letterbooks_distinctnames"'
+        managed = False
+
+class IndividualMontreal(models.Model):
+    id_indpropose = models.AutoField(primary_key=True)
+    fk_descriptor_firstname = models.ForeignKey('Descriptor', models.DO_NOTHING, related_name='fk_descriptor_firstname', db_column='fk_descriptor_firstname', blank=True, null=True)
+    fk_descriptor_secondname = models.ForeignKey('Descriptor', models.DO_NOTHING, related_name='fk_descriptor_secondname', db_column='fk_descriptor_secondname', blank=True, null=True)
+    fk_descriptor_thirdname = models.ForeignKey('Descriptor', models.DO_NOTHING, related_name='fk_descriptor_thirdname', db_column='fk_descriptor_thirdname', blank=True, null=True)
+    fk_descriptor_fourthname = models.ForeignKey('Descriptor', models.DO_NOTHING, related_name='fk_descriptor_fourthname', db_column='fk_descriptor_fourthname', blank=True, null=True)
+    namephrase = models.TextField()
+    yearstart = models.IntegerField(blank=True, null=True) 
+    yearend = models.IntegerField(blank=True, null=True)
+    eventcount = models.IntegerField(blank=True, null=True) 
+    fk_report = models.IntegerField(blank=True, null=True)
+
+    class Meta:
+        db_table = '"letterbook_2025_montreal"."individualproposed"'
+        managed = False

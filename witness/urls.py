@@ -19,6 +19,12 @@ urlpatterns = [
 	path('exhibit', views.exhibit, name='exhibit'),
 
 
+	#temporary for letterbook exploration
+	path('page/letterbook/graph/<int:page_number>/', views.personletterbooknetwork_page, name='personletterbooknetwork_page'),
+	path('page/letterbook/search', views.searchletterbook, name='searchletterbook'),
+
+
+
 	re_path(r'page/person/(?P<witness_entity_number>[0-9]{8})', views.person_page, name='person_page'),
 	re_path(r'page/person/graph/(?P<witness_entity_number>[0-9]{8})', views.personnetwork_page, name='personnetwork_page'),
 	re_path(r'person_ajax/(?P<witness_entity_number>[0-9]{8})', views.person_ajax, name='person_ajax'),
@@ -33,6 +39,7 @@ urlpatterns = [
 	re_path(r'page/part/(?P<witness_entity_number>[0-9]{8})', views.part_page, name='part_page'),
 	re_path(r'page/seal/(?P<witness_entity_number>[0-9]{8})', views.seal_page, name='seal_page'),
 	re_path(r'entity/(?P<witness_entity_number>[0-9]{8})', views.entity, name='entity'),
+
 
 ] #+ debug_toolbar_urls()
 # ]

@@ -202,3 +202,10 @@ collection2_options = []
 
 class LondonparishForm(forms.Form):
 	londonparish = forms.ChoiceField(label='London Parish', choices=[], required=True)
+
+
+#### for letterbook project 
+
+class DescriptorForm(forms.Form):
+	name = forms.CharField(label='id_descriptor', max_length=100, required=False, widget=forms.TextInput(attrs={'placeholder': 'Example: John'}))
+	pagination = forms.IntegerField(initial=1, widget=forms.HiddenInput)
