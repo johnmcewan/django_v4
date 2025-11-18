@@ -400,6 +400,18 @@ def personnetwork_page(request, witness_entity_number):
 		fk_referencerole=1).exclude(fk_individual=10000019).filter(
 		fk_event__in=witnessevents)
 
+	reference_set = referencecollectindividual(reference_set)
+
+	linkslist, nodelist = networkgenerator(reference_set)
+
+	template = loader.get_template('witness/person_graph.html')
+	context = {
+		'nodelist': nodelist,
+		'linkslist': linkslist,
+		}
+
+	return HttpResponse(template.render(context, request))
+
 
 ### extra view
 
