@@ -178,10 +178,9 @@ async def person_page(request, witness_entity_number):
 
 	mapparishes, ref_list = await mapparishesdata2(witness_entity_number)
 
-	# print (ref_list)
-
 	# list of references to the actor
-	reference_list = await referenceset_references5(witness_entity_number, ref_list)
+	#reference_list = await referenceset_references5(witness_entity_number, ref_list)
+	reference_list = []
 
 	context = {
 		'pagetitle': pagetitle,

@@ -788,7 +788,8 @@ def parish_individuallistfetch(individual_object):
 def mapparishesdata2(witness_entity_number):
 
 	reference_set = Referenceindividual.objects.filter(
-		fk_individual=witness_entity_number).values(
+		fk_individual=witness_entity_number).filter(
+		fk_individualoffice=47).values(
 	'fk_event__fk_event_locationreference__fk_locationname__fk_location__pk_location',
 	'fk_event__fk_event_locationreference__fk_locationname__fk_location__location',
 	'pk_referenceindividual')
