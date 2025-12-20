@@ -2364,9 +2364,6 @@ def representationmetadata_manifestation(manifestation_case, representation_dic)
 	representation_dic['repository_fulltitle'] = manifestation['fk_support__fk_part__fk_item__fk_repository__repository_fulltitle']
 	representation_dic["id_individual"] = manifestation['fk_face__fk_seal__fk_individual_realizer']
 
-	# sealdescription_objectset = Sealdescription.objects.select_related('fk_collection').filter(fk_seal = seal.id_seal)
-	# representation_dic["sealdescription_objectset"] = sealdescription_objectset
-
 	return(representation_dic)
 
 @sync_to_async
@@ -2438,9 +2435,6 @@ def representationmetadata_part(manifestation_case, representation_dic):
 		# Handle the case where region_objectset is None
 		representation_dic["region_label"] = None  # Or some other default value
 		print("Warning: region_objectset is None, setting region_label to None.")
-
-
-	# representation_dic["region_label"] = region_objectset['region_label']
 
 	return(representation_dic)
 

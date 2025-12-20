@@ -1010,10 +1010,7 @@ class EntityView(View):
 ############################ Manifestation #####################
 
 	async def manifestation_page(self, request, digisig_entity_number): 
-		####manifestation_dic = await manifestation_createdic(manifestation_object)
 		pagetitle = 'title'
-
-		# manifestation_object = await manifestationobject_define(digisig_entity_number)
 
 		manifestation_set, totalmanifestation_count = await manifestation_searchsetgenerate(digisig_entity_number, searchtype="manifestation")
 		representation_set = await representationsetgenerate2(manifestation_set, primacy=True)
@@ -1026,7 +1023,6 @@ class EntityView(View):
 		first_item = next(iter(manifestation_display_dic.items()))
 		first_key, manifestation_dic = first_item
 
-		#template = loader.get_template('digisig/manifestation.html')
 		context = {
 				'pagetitle': pagetitle,
 				'manifestation_info': manifestation_info,
@@ -1125,23 +1121,19 @@ class EntityView(View):
 			representation_dic = await representationmetadata_part(manifestation_case, representation_dic)
 			representation_dic['outname'], actor_id = await actorfinder(manifestation_case)
 
-			# representation_dic = await representationmetadata_part(representation_object, representation_dic)
-			#representation_dic = await representationmetadata_manifestation(representation_object, representation_dic)
-
 		if entitytype == 3:
 			representation_dic = await representationmetadata_sealdescription(representation_object, representation_dic)
-
+ 
 		if entitytype == 8:
 			representation_dic = await representationmetadata_partquery(searchvalue, representation_dic)
-			
-			#representation_dic = await representationmetadata_part(representation_object, representation_dic)
+		
+		print (representation_dic)
 
 		context = {
 			'pagetitle': pagetitle,
 			'representation_dic': representation_dic,
 			}
 
-		#template = loader.get_template('digisig/representation.html')
 		return render(request, 'digisig/representation.html', context)
 
 
