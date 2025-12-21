@@ -2574,6 +2574,7 @@ def item_displaysetgenerate(item_pageobject):
 		representation_dic["connection"] = r['fk_connection__thumb']
 		representation_dic["medium"] = r['representation_filename']
 		representation_dic["thumb"] = r['representation_thumbnail_hash']
+		##### BUG #### this breaks the RTIs
 		representation_dic["id_representation"] = r['id_representation'] 
 		item_set[targetitem]["part"][targetpart].update({"representation": representation_dic})
 

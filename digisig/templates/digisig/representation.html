@@ -298,15 +298,11 @@
 
 
 <script>
-var choice1 = document.getElementById("choice").innerHTML;
-var choice2 = document.getElementById("RTItest").innerHTML;
-console.log(choice2);
-console.log(typeof(choice2));
+var choice1 = document.getElementById("choice").innerHTML.trim();
+var choice2 = document.getElementById("RTItest").innerHTML.trim();
 
 if (choice2=="RTI") {
 let rti = rtiselect(choice1);
-
-console.log(choice1);
 
 const 	dzi = rti[0],
 		info = rti[1];
