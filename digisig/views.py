@@ -1127,8 +1127,6 @@ class EntityView(View):
 		if entitytype == 8:
 			representation_dic = await representationmetadata_partquery(searchvalue, representation_dic)
 		
-		print (representation_dic)
-
 		context = {
 			'pagetitle': pagetitle,
 			'representation_dic': representation_dic,

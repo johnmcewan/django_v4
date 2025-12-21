@@ -2286,11 +2286,11 @@ def representationmetadata(representation_case):
 	if int(digisigentity[7:]) == 3:
 		representation_dic["entity_link"] = representation_case.fk_sealdescription.id_sealdescription
 
-	#what type of image? (Photograph, RTI....)
-	representation_dic["representation_type"] = representation_case.fk_representation_type.representation_type
-
 	#where is the image stored?
 	connection = representation_case.fk_connection
+
+	#what type of image? (Photograph, RTI....)
+	representation_dic["representation_type"] = representation_case.fk_representation_type.representation_type
 
 	if representation_case.fk_representation_type.pk_representation_type == 2:
 		print ("found RTI:", representation_case.id_representation)
@@ -2298,11 +2298,13 @@ def representationmetadata(representation_case):
 		representation_dic["representation_folder"] = representation_case.representation_folder
 		try:
 			thumbnailRTI_object = get_object_or_404(Representation, fk_digisig=representation_case.fk_digisig, primacy=1)
+			##### here is the bug --- it is reassigning the case to the thumbnail 
 			representation_case = thumbnailRTI_object
 		except:
 			print ("An exception occurred in fetching representation case for the thumbnail of the RTI", representation_dic)
 
 	#basic info for displaying image
+
 	representation_dic = representation_fetchinfo(representation_dic, representation_case)
 
 	#image dimensions
@@ -2574,7 +2576,6 @@ def item_displaysetgenerate(item_pageobject):
 		representation_dic["connection"] = r['fk_connection__thumb']
 		representation_dic["medium"] = r['representation_filename']
 		representation_dic["thumb"] = r['representation_thumbnail_hash']
-		##### BUG #### this breaks the RTIs
 		representation_dic["id_representation"] = r['id_representation'] 
 		item_set[targetitem]["part"][targetpart].update({"representation": representation_dic})
 
@@ -3441,13 +3442,14 @@ def sealdescription_fetchrepresentation(sealdescription_object):
 
 	return(sealdescription_dic)
 
-def representation_fetchinfo(description_dic, representation_set):
+def representation_fetchinfo(description_dic, representation_case):
 
-	description_dic["thumb"] = representation_set.fk_connection.thumb
-	description_dic["medium"] = representation_set.fk_connection.medium
-	description_dic["representation_thumbnail_hash"] = representation_set.representation_thumbnail_hash
-	description_dic["representation_filename_hash"] = representation_set.representation_filename_hash 
-	description_dic["id_representation"] = representation_set.id_representation
+	description_dic["thumb"] = representation_case.fk_connection.thumb
+	description_dic["medium"] = representation_case.fk_connection.medium
+	description_dic["representation_thumbnail_hash"] = representation_case.representation_thumbnail_hash
+	description_dic["representation_filename_hash"] = representation_case.representation_filename_hash 
+	## this line is commmented out because id rep is now set at start of representationmetadata and reassigning breaks RTI
+	#description_dic["id_representation"] = representation_case.id_representation
 
 	return(description_dic)
 
