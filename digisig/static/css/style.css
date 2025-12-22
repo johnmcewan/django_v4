@@ -1319,3 +1319,50 @@ input[type=image] {
 	/* this is important, it would cause firefox flickering! */
 	overflow: hidden;
 }
+
+
+
+
+
+
+/* Container for all seal cards */
+.seal-container {
+    display: flex;
+    flex-direction: column;
+    gap: 20px; /* Space between different seals */
+    background-color: white;
+    padding: 10px;
+}
+
+/* Individual Seal Card */
+.seal-card {
+    display: grid;
+    grid-template-columns: 150px 1fr; /* Fixed width for image column ensures vertical alignment */
+    grid-gap: 20px;
+    border-bottom: 1px solid #cedae3;
+    padding-bottom: 15px;
+}
+
+/* Alignment for the image */
+.seal-image {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+}
+
+.seal-image figure {
+    margin: 0;
+}
+
+/* Style for the text labels to mimic the old 'th' look */
+.detail-row {
+    margin-bottom: 5px;
+    line-height: 1.5;
+}
+
+.detail-row .label {
+    font-family: Cormorant, Palatino, serif; /* Matches your header style */
+    font-weight: bold;
+    display: inline-block;
+    width: 120px;
+}
