@@ -1337,7 +1337,7 @@ input[type=image] {
 /* Individual Seal Card */
 .seal-card {
     display: grid;
-    grid-template-columns: 150px 1fr; /* Fixed width for image column ensures vertical alignment */
+    grid-template-columns: auto 150px; /* Fixed width for image column ensures vertical alignment */
     grid-gap: 20px;
     border-bottom: 1px solid #cedae3;
     padding-bottom: 15px;

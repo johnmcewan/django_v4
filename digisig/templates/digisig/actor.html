@@ -47,37 +47,39 @@
 			Seal details ({{totaldisplay}} of {{totalrows}})<button id="entitybutton1" onclick="tbtoggle('entity1', 'entitybutton1')" class="entity">+</button>
 		</div>
 
+		<div id="entity1" class="seal-container" style="display:none;">
+		    {% for m in manifestation_set.values %}
+		    <div class="seal-card">
 
-<div id="entity1" class="seal-container" style="display:none;">
-    {% for m in manifestation_set.values %}
-    <div class="seal-card">
-        <div class="seal-image">
-            {% if m.representation_thumbnail_hash != null %}
-            <figure>
-                <img class="modalimage" id="modalimagebase{{forloop.counter}}" 
-                     src="{{m.thumb}}{{m.representation_thumbnail_hash}}" 
-                     alt="{{m.id_representation}}" onclick="image({{forloop.counter}})">
-            </figure>
-            {% endif %}
-        </div>
+		        <div class="seal-details">
+		            <div class="detail-row"><span class="label">Held by:</span> {{m.repository_fulltitle}}</div>
+		            <div class="detail-row"><span class="label">Part of item:</span> 
+		                <a href="{% url 'item_page' entity_type='item' digisig_entity_number=m.id_item %}">{{m.shelfmark}}</a>
+		                {% if m.number != 'Undetermined'%}(seal {{m.number}}){% endif %}
+		            </div>
+		            {% if m.label_manifestation_repository != null %}
+		            <div class="detail-row"><span class="label">Reference:</span> {{m.label_manifestation_repository}}</div>
+		            {% endif %}
+		            <div class="detail-row"><span class="label">Example of:</span> 
+		                <a href="{% url 'seal_page' entity_type='seal' digisig_entity_number=m.id_seal %}">Seal details</a>
+		            </div>
+		        </div>
 
-        <div class="seal-details">
-            <div class="detail-row"><span class="label">Held by:</span> {{m.repository_fulltitle}}</div>
-            <div class="detail-row"><span class="label">Part of item:</span> 
-                <a href="{% url 'item_page' entity_type='item' digisig_entity_number=m.id_item %}">{{m.shelfmark}}</a>
-                {% if m.number != 'Undetermined'%}(seal {{m.number}}){% endif %}
-            </div>
-            {% if m.label_manifestation_repository != null %}
-            <div class="detail-row"><span class="label">Reference:</span> {{m.label_manifestation_repository}}</div>
-            {% endif %}
-            <div class="detail-row"><span class="label">Example of:</span> 
-                <a href="{% url 'seal_page' entity_type='seal' digisig_entity_number=m.id_seal %}">Seal details</a>
-            </div>
-        </div>
-    </div>
-    {% endfor %}
-</div>
+		        <div class="seal-image">
+		            {% if m.representation_thumbnail_hash != null %}
+		            <figure>
+		                <img class="modalimage" id="modalimagebase{{forloop.counter}}" 
+		                     src="{{m.thumb}}{{m.representation_thumbnail_hash}}" 
+		                     alt="{{m.id_representation}}" onclick="image({{forloop.counter}})">
+		            </figure>
+		            {% endif %}
+		        </div>
 
+
+		    </div>
+		    {% endfor %}
+		</div>
+	</div>
 
 	{% if relationshipnumber > 0 %}
 	<div class="entity_relationship" id="entity_relationship">
@@ -125,11 +127,6 @@
 			</table>
 		</div>
 	</div>
-
-
-<script>
-
-</script>
 
 
 {% endblock %}
