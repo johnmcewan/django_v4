@@ -7,6 +7,7 @@
 	<div class="sidepanel-left"></div>
 	<div class="sidepanel-right"></div>
 
+
 	<div class="main-title"><h1>{{pagetitle}}</h1></div>
 
 	<div class="mainpage"></div>
@@ -127,82 +128,84 @@
 
 	<div class="searchresults">
 
-	<div class="seal-container">
-
 		{% for m in manifestation_set.values %}
-		<div class="seal-card">
+		<div class="heading">
+			<h4><a class="headingbtn" href="{% url 'entity' digisig_entity_number=m.id_manifestation %}">{{m.imagestate_term}}</a></h4>
+		</div>
+		
+		<div></div>
 
-			<div class="seal-details">
-				<div class="detail-row">
-					<div class="heading">
-						<h4><a class="headingbtn" href="{% url 'entity' digisig_entity_number=m.id_manifestation %}">{{m.imagestate_term}}</a></h4>
-					</div>
-				</div>
-			
-				<div class="detail-row"><span class="label">Held by:</span>
-				{{m.repository_fulltitle}}</div>
-				
-				<div class="detail-row"><span class="label">Part of item:</span>
-					<a href="{% url 'item_page' entity_type='item' digisig_entity_number=m.id_item %}">{{m.shelfmark}}</a>
-					{% if m.number != 'Undetermined'%}(seal {{m.number}}){% endif %}		
-				</div>
+		<div>
+			<table>
+			<tr>
+				<th class="indent">Held by </th>
+				<td>{{m.repository_fulltitle}}</td>
+			</tr>
 
-				{% if m.label_manifestation_repository != null %}
-				<div class="detail-row"><span class="label">Reference </span>
-					<a class="help" href="{% url 'entity' digisig_entity_number=10001567 %}" target="_blank"><i class="fas fa-question-circle"></i></a>{{m.label_manifestation_repository}}
-				</div>
-				{% endif %}
+			<tr>
+				<th class="indent">Part of item</th>
+				<td><a href="{% url 'item_page' entity_type='item' digisig_entity_number=m.id_item %}">{{m.shelfmark}}</a>
+				{% if m.number != 'Undetermined'%}(seal {{m.number}}){% endif %}
+				</td>
+			</tr>
 
+			{% if m.label_manifestation_repository != null %}
+			<tr>
+				<th class="indent">Reference<a class="help" href="{% url 'entity' digisig_entity_number=10001567 %}" target="_blank"><i class="fas fa-question-circle"></i></a></th>
+				<td>{{m.label_manifestation_repository}}
+				</td>
+			</tr>
+			{% endif %}
+
+			<tr>
 				{% if m.repository_location != null %}
-				<div class="detail-row"><span class="label">Place:</span>
-				<a href="{% url 'place_page' entity_type='place' digisig_entity_number=m.id_location %}">{{m.repository_location}}</a>
-				</div>
-					{% endif %}
-		
+				<th class="indent">Place </th>
+				<td><a href="{% url 'place_page' entity_type='place' digisig_entity_number=m.id_location %}">{{m.repository_location}}</a></td>
+				{% endif %}
+			</tr>
+			<tr>
 				{% if m.repository_startdate != null %}
-				<div class="detail-row"><span class="label">Date</span>
-				{{m.repository_startdate}}
-					{% if m.repository_enddate != null %}- {{m.repository_enddate}}{% endif %}
-				</div>
+				<th class="indent">Date</th>
+				<td>{{m.repository_startdate}}
+				{% if m.repository_enddate != null %}- {{m.repository_enddate}}{% endif %}</td>
 				{% endif %}
+			</tr>
 
-				<div class="detail-row"><span class="label">Example of </span>
-				<a href="{% url 'seal_page' entity_type='seal' digisig_entity_number=m.id_seal %}">Seal details</a>
-				</div>
+			<tr>
+				<th class="indent">Example of </th>
+				<td><a href="{% url 'seal_page' entity_type='seal' digisig_entity_number=m.id_seal %}">Seal details</a></td>
+			</tr>
 
-				{% for key, value in m.sealdescription.items %}
-				<div class="detail-row"><span class="label">
-						{% if forloop.first %} Described in {% endif %}
-					</span>
-					<a href="{% url 'sealdescription_page' entity_type='sealdescription' digisig_entity_number=value.sealdescription_id %}">{{value.collection}} ({{value.identifier}})</a>
-				</div>
-				{% endfor %}
-			</div>
-
-		<div class="seal-image">	
-			<div class="figure">
-				{% if m.representation_thumbnail_hash != null %}
-				<figure>
-					<img class="modalimage" id="modalimagebase{{forloop.counter}}" loading="lazy" src="{{m.thumb}}{{m.representation_thumbnail_hash}}" alt="{{m.id_representation}}" onclick="image({{forloop.counter}})">
-				</figure>
-
-				<!-- The Modal -->
-				<div id="myModal{{forloop.counter}}" class="modal" style="display: none;">
-				  <span class="close" onclick="modalclose({{forloop.counter}})">&times;</span>
-				  <img class="modal-content" id="modalimg{{forloop.counter}}" src="{{m.medium}}{{m.representation_filename_hash}}" alt="{{m.id_representation}}">
-				  <div class="modal-caption" id="caption{{forloop.counter}}"><a href="{% url 'entity' m.id_representation %}">Representation details</a></div>
-				</div>
-				{% endif %}
-			</div>
+			{% for key, value in m.sealdescription.items %}
+			<tr>
+				<th class="indent">
+					{% if forloop.first %} Described in {% endif %}
+				</th>
+				<td><a href="{% url 'sealdescription_page' entity_type='sealdescription' digisig_entity_number=value.sealdescription_id %}">{{value.collection}} ({{value.identifier}})</a></td>
+			</tr>
+			{% endfor %}
+			</table>
 		</div>
+
+
+		<div class="figure">
+			{% if m.representation_thumbnail_hash != null %}
+			<figure>
+				<img class="modalimage" id="modalimagebase{{forloop.counter}}" loading="lazy" src="{{m.thumb}}{{m.representation_thumbnail_hash}}" alt="{{m.id_representation}}" onclick="image({{forloop.counter}})">
+			</figure>
+
+			<!-- The Modal -->
+			<div id="myModal{{forloop.counter}}" class="modal" style="display: none;">
+			  <span class="close" onclick="modalclose({{forloop.counter}})">&times;</span>
+			  <img class="modal-content" id="modalimg{{forloop.counter}}" src="{{m.medium}}{{m.representation_filename_hash}}" alt="{{m.id_representation}}">
+			  <div class="modal-caption" id="caption{{forloop.counter}}"><a href="{% url 'entity' m.id_representation %}">Representation details</a></div>
+			</div>
+			{% endif %}
 		</div>
-		
+
 		{% endfor %}
 		
 
-
-	</div>
-	</div>
 
 		<div class= "pagination">
 			{% if pagecountercurrent > 1 %}
@@ -213,8 +216,8 @@
 		<button id="page_button_2" onclick="page_button(3)">{{pagecounternextnext}}</button>
 		<button id="page_button_next" onclick="page_button(1)">Next</button>
 		</div>
-	
 	</div>
+</div>
 
 <script>
 
