@@ -478,6 +478,12 @@ background-color: #e5ebef;
 	grid-gap: 5px;
 }
 
+.searchresultsc {
+	grid-column: 2;
+}
+
+
+
 .results2 {
 	grid-column:5/10;
 	grid-row: 5;
