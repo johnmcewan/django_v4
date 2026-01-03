@@ -3,8 +3,6 @@
 {% load static %}
 {% block content %}
 
-
-
 	<div class="search-catalogue-banner"></div>
 	<div class="sidepanel-left"></div>
 	<div class="sidepanel-right"></div>
@@ -79,96 +77,110 @@
 			</div>
 		</div>
 
-		<div class="searchresults">
+		<div class="searchresultsc">
 
-		{% for sealdescription in sealdescription_object.values %}
-		<div>
-			<table>
-<!-- Entry -->
-				<tr>
-					<th colspan="2"><h4><a class="headingbtn" href="{% url 'entity' digisig_entity_number=sealdescription.id_sealdescription %}">Seal Description details</a></h4></td>
-				</tr>
-				<tr>
-					<th>Title</th>
-					<td>{{sealdescription.sealdescription_title}}</td>
-				</tr>
-				<tr>
-					<th>Reference</th>
-					<td><a href="{% url 'entity' digisig_entity_number=sealdescription.fk_collection.id_collection %}">{{sealdescription.collection_shorttitle}}</a>, <a href="{% url 'entity' digisig_entity_number=sealdescription.id_sealdescription %}">{{sealdescription.sealdescription_identifier}}</a>
-					{% if sealdescription.catalogue_pagenumber != null %}
-					, p.{{sealdescription.catalogue_pagenumber}}
-					{% endif %}
-					</td>
-				</tr>
+		<div class="seal-container">
+
+			{% for sealdescription in sealdescription_object.values %}
+			<div class="seal-card">
+				<div class="seal-details">
+					<div class="detail-row">
+						<div class="heading">
+							<h4><a class="headingbtn" href="{% url 'entity' digisig_entity_number=sealdescription.id_sealdescription %}">Seal Description details</a></h4>
+						</div>
+					</div>
+
+					<div class="detail-row">
+						<span class="label">Title</span>{{sealdescription.sealdescription_title}}
+					</div>
+				
+					<div class="detail-row">
+						<span class="label">Reference</span>
+						<a href="{% url 'entity' digisig_entity_number=sealdescription.fk_collection.id_collection %}">{{sealdescription.collection_shorttitle}}</a>, <a href="{% url 'entity' digisig_entity_number=sealdescription.id_sealdescription %}">{{sealdescription.sealdescription_identifier}}</a>
+						{% if sealdescription.catalogue_pagenumber != null %}
+						, p.{{sealdescription.catalogue_pagenumber}}
+						{% endif %}
+					</div>
+
 <!-- motif and legend -->
 			{% if sealdescription.motif_reverse != null%}
 				{% if sealdescription.motif_obverse != null %}
-				<tr>
-					<th>Description</th>
-					<td>{{sealdescription.motif_obverse|truncatechars:50}}</td>
-				</tr>
+				<div class="detail-row">
+					<span class="label">Description</span>
+					{{sealdescription.motif_obverse|truncatechars:50}}
+				</div>
 				{% endif %}
+
 				{% if sealdescription.legend_obverse != null %}
-				<tr>
-					<th>Legend</th>
-					<td>{{sealdescription.legend_obverse|truncatechars:50}}</td>
-				</tr>
+				<div class="detail-row">
+					<span class="label">Legend</span>
+					{{sealdescription.legend_obverse|truncatechars:50}}
+				</div>
 				{% endif %}	
+
 				{% if sealdescription.motif_reverse != null %}
-				<tr>
-					<th>Description (Reverse)</th>
-					<td>{{sealdescription.motif_reverse|truncatechars:50}}</td>
-				</tr>
+				<div class="detail-row">
+					<span class="label">Description (Reverse)</span>
+					{{sealdescription.motif_reverse|truncatechars:50}}
+				</div>
 				{% endif %}
+
 				{% if sealdescription.legend_reverse != null %}
-				<tr>
-					<th>Legend (Reverse)</th>
-					<td>{{sealdescription.legend_reverse|truncatechars:50}}</td>
-				</tr>
+				<div class="detail-row">
+					<span class="label">Legend (Reverse)</span>
+					{{sealdescription.legend_reverse|truncatechars:50}}
+				</div>
 				{% endif %}
+
 			{% else %}
 				{% if sealdescription.motif_obverse != null %}
-				<tr>
-					<th>Description</th>
-					<td>{{sealdescription.motif_obverse|truncatechars:50}}</td>
-				</tr>
+				<div class="detail-row">
+					<span class="label">Description</span>
+					{{sealdescription.motif_obverse|truncatechars:50}}
+				</div>
 				{% endif %}
+
 				{% if sealdescription.legend_obverse != null %}
-				<tr>
-					<th>Legend</th>
-					<td>{{sealdescription.legend_obverse|truncatechars:50}}</td>
-				</tr>
+				<div class="detail-row">
+					<span class="label">Legend</span>
+					{{sealdescription.legend_obverse|truncatechars:50}}
+				</div>
 				{% endif %}	
+
 			{% endif %}
 		
 			{% if sealdescription.realizer != null %}
-				<tr>
-					<th>Name</th>
-					<td>{{sealdescription.realizer}}</td>
-				</tr>
+				<div class="detail-row">
+					<span class="label">Name</span>
+					{{sealdescription.realizer}}
+				</div>
 			{% endif %}
-				<tr>
-					<th class="finalrow">Description of</th>
-					<td><a href="{% url 'entity' digisig_entity_number=sealdescription.fk_seal %}">Seal details</a></td>
-				</tr>
-			</table>
-		</div>
 
-		<div>
-			{% if sealdescription.collection_thumbnail %}
-			<figure>
-				<img class="modalimage" id="modalimagebase{{forloop.counter}}" src="{% static 'sealquery/images/collections_cover/'%}{{sealdescription.collection_thumbnail}}" alt="catalogue cover photograph" onclick="image({{forloop.counter}})">
-			</figure>
-
-			<!-- The Modal -->
-			<div id="myModal{{forloop.counter}}" class="modal" style="display: none;">
-			  <span class="close" onclick="modalclose({{forloop.counter}})">&times;</span>
-			  <img class="modal-content" id="modalimg{{forloop.counter}}" src="{% static 'sealquery/images/collections_cover/'%}{{sealdescription.collection_thumbnail}}" alt="catalogue cover photograph">
-			  <div class="modal-caption" id="caption{{forloop.counter}}"><a href="{% url 'entity' digisig_entity_number=sealdescription.fk_collection %}">{{sealdescription.collection_fulltitle}}</a></div>
+				<div class="detail-row">
+					<span class="label">Description of</span>
+					<a href="{% url 'entity' digisig_entity_number=sealdescription.fk_seal %}">Seal details</a>
+				</div>		
 			</div>
-			{% endif %}
+
+				<div class="seal-image">	
+					{% if sealdescription.collection_thumbnail %}
+					<div class="figure">
+						<img class="modalimage" id="modalimagebase{{forloop.counter}}" src="{% static 'sealquery/images/collections_cover/'%}{{sealdescription.collection_thumbnail}}" alt="catalogue cover photograph" onclick="image({{forloop.counter}})">
+					</div>
+
+					<!-- The Modal -->
+					<div id="myModal{{forloop.counter}}" class="modal" style="display: none;">
+					  <span class="close" onclick="modalclose({{forloop.counter}})">&times;</span>
+					  <img class="modal-content" id="modalimg{{forloop.counter}}" src="{% static 'sealquery/images/collections_cover/'%}{{sealdescription.collection_thumbnail}}" alt="catalogue cover photograph">
+					  <div class="modal-caption" id="caption{{forloop.counter}}"><a href="{% url 'entity' digisig_entity_number=sealdescription.fk_collection %}">{{sealdescription.collection_fulltitle}}</a></div>
+					</div>
+					{% endif %}
+				</div>
+
+				</div>
+				{% endfor %}
+			</div>
 		</div>
-		{% endfor %}
 
 
 
@@ -181,8 +193,9 @@
 			<button id="page_button_2" onclick="page_button(3)">{{pagecounternextnext}}</button>
 			<button id="page_button_next" onclick="page_button(1)">Next</button>
 		</div>	
+	
 	</div>
-</div>
+
 
 <script>
 
