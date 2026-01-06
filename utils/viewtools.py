@@ -4232,7 +4232,14 @@ def referenceset_references5(witness_entity_number, ref_dic_locations):
 			reference_row["item_id"] = r['fk_event__part__fk_item__id_item']
 			reference_row["part_id"] = r['fk_event__part__id_part']
 			reference_row["part_url"] = reverse('entity', kwargs={'witness_entity_number': r['fk_event__part__id_part']})
-			reference_row["location"] = ref_dic_locations[r['pk_referenceindividual']]
+			
+			try:
+				reference_row["location"] = ref_dic_locations[r['pk_referenceindividual']]
+			
+			except:
+				reference_row["location"] = "Undetermined"
+
+
 			reference_list.append(reference_row)
 	
 	reference_list = sorted (reference_list, key=lambda x: x["date"])

@@ -173,14 +173,11 @@ async def person_page(request, witness_entity_number):
 	individual_object = await individualsearch2(witness_entity_number)
 	pagetitle= namecompiler(individual_object)
 
-	# list of relationships for each actor
-	# relationship_dic, relationshipnumber = await relationship_dataset(witness_entity_number)
-
 	mapparishes, ref_list = await mapparishesdata2(witness_entity_number)
 
 	# list of references to the actor
-	#reference_list = await referenceset_references5(witness_entity_number, ref_list)
-	reference_list = []
+	reference_list = await referenceset_references5(witness_entity_number, ref_list)
+	#reference_list = []
 
 	context = {
 		'pagetitle': pagetitle,
@@ -204,6 +201,7 @@ async def person_ajax(request, witness_entity_number):
 
 	return (JsonResponse(datareferences, safe=False))
 
+
 async def personrelationships_ajax(request, witness_entity_number):
 
 	# list of relationships for each actor
@@ -212,7 +210,6 @@ async def personrelationships_ajax(request, witness_entity_number):
 	datareferences = json.dumps(relationship_dic)
 
 	return (JsonResponse(datareferences, safe=False))
-
 
 
 async def parishpersonajax(request, witness_entity_number):
