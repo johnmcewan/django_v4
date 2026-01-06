@@ -43,7 +43,7 @@ class Digisigrelationshipview(models.Model):
 
 	class Meta:
 		managed = False
-		db_table = 'digisig_relationship_view'
+		db_table = 'general". "digisig_relationship_view'
 
 
 ### normal tables
@@ -57,7 +57,7 @@ class Access(models.Model):
 
 	class Meta:
 		managed = False
-		db_table = 'access'
+		db_table = 'general". "access'
 
 
 class Approximation(models.Model):
@@ -70,7 +70,7 @@ class Approximation(models.Model):
 
 	class Meta:
 		managed = False
-		db_table = 'approximation'
+		db_table = 'general". "approximation'
 
 
 class Attachment(models.Model):
@@ -82,7 +82,7 @@ class Attachment(models.Model):
 
 	class Meta:
 		managed = False
-		db_table = 'attachment'
+		db_table = 'general". "attachment'
 
 class Catalogue(models.Model):
 	pk_catalogue = models.AutoField(primary_key=True)
@@ -94,7 +94,7 @@ class Catalogue(models.Model):
 
 	class Meta:
 		managed = False
-		db_table = 'catalogue'
+		db_table = 'general". "catalogue'
 
 
 class Certainty(models.Model):
@@ -103,7 +103,7 @@ class Certainty(models.Model):
 
 	class Meta:
 		managed = False
-		db_table = 'certainty'
+		db_table = 'general". "certainty'
 
 
 class Changes(models.Model):
@@ -113,7 +113,7 @@ class Changes(models.Model):
 
 	class Meta:
 		managed = False
-		db_table = 'changes'
+		db_table = 'general". "changes'
 		verbose_name_plural = 'Changes'
 
 
@@ -247,7 +247,7 @@ class Classification(models.Model):
 
 	class Meta:
 		managed = False
-		db_table = 'class'
+		db_table = 'general". "class'
 
 class Classificationparentchild(models.Model):
 	id_classificationparentchild = models.AutoField(primary_key=True)
@@ -258,7 +258,7 @@ class Classificationparentchild(models.Model):
 
 	class Meta:
 		managed = False
-		db_table = 'classification_parentchild'
+		db_table = 'general". "classification_parentchild'
 
 
 
@@ -286,7 +286,7 @@ class Collection(models.Model):
 
 	class Meta:
 		managed = False
-		db_table = 'collection'
+		db_table = 'general". "collection'
 
 class Collectioncontribution(models.Model):
 	id_collectioncontribution = models.AutoField(primary_key=True)
@@ -297,7 +297,7 @@ class Collectioncontribution(models.Model):
 
 	class Meta:
 		managed = False
-		db_table = 'collectioncontribution'
+		db_table = 'general". "collectioncontribution'
 
 
 class Collectioncontributor(models.Model):
@@ -310,7 +310,7 @@ class Collectioncontributor(models.Model):
  
 	class Meta:
 		managed = False
-		db_table = 'collectioncontributor'
+		db_table = 'general". "collectioncontributor'
 
 
 class Colour(models.Model):
@@ -319,7 +319,7 @@ class Colour(models.Model):
 
 	class Meta:
 		managed = False
-		db_table = 'colour'
+		db_table = 'general". "colour'
 
 
 class Connection(models.Model):
@@ -337,7 +337,7 @@ class Connection(models.Model):
 
 	class Meta:
 		managed = False
-		db_table = 'connection'
+		db_table = 'general". "connection'
 
 
 class Contributor(models.Model):
@@ -360,7 +360,7 @@ class Contributor(models.Model):
 
 	class Meta:
 		managed = False
-		db_table = 'contributor'
+		db_table = 'general". "contributor'
 
 
 class Dataset(models.Model):
@@ -369,7 +369,7 @@ class Dataset(models.Model):
 
 	class Meta:
 		managed = False
-		db_table = 'dataset'
+		db_table = 'general". "dataset'
 
 class Descriptor(models.Model):
 	pk_descriptor = models.AutoField(primary_key=True)
@@ -395,7 +395,7 @@ class Descriptor(models.Model):
 
 	class Meta:
 		managed = False
-		db_table = 'descriptor'
+		db_table = 'general". "descriptor'
 
 
 class Descriptortype(models.Model):
@@ -405,7 +405,7 @@ class Descriptortype(models.Model):
 
 	class Meta:
 		managed = False
-		db_table = 'descriptortype'
+		db_table = 'general". "descriptortype'
 
 
 class Digisiguser(models.Model):
@@ -451,7 +451,7 @@ class Entity(models.Model):
 
 	class Meta:
 		managed = False
-		db_table = 'entity'
+		db_table = 'general". "entity'
 
 
 class Event(models.Model):
@@ -487,7 +487,7 @@ class Event(models.Model):
 	fk_dateapprox_repository_end = models.ForeignKey('Approximation', models.DO_NOTHING, related_name="fk_dateapprox_repository_end", db_column='fk_dateapprox_repository_end', blank=True, null=True)
 	class Meta:
 		managed = False
-		db_table = 'event'
+		db_table = 'general". "event'
 
 
 class EventLocation(models.Model):
@@ -496,7 +496,7 @@ class EventLocation(models.Model):
 
 	class Meta:
 		managed = False
-		db_table = 'event_location'
+		db_table = 'general". "event_location'
 
 
 class Externallink(models.Model):
@@ -507,7 +507,7 @@ class Externallink(models.Model):
 
 	class Meta:
 		managed = False
-		db_table = 'externallink'
+		db_table = 'general". "externallink'
 
 
 class Face(models.Model):
@@ -535,7 +535,7 @@ class Face(models.Model):
 
 	class Meta:
 		managed = False
-		db_table = 'face'
+		db_table = 'general". "face'
 
 
 class Faceterm(models.Model):
@@ -547,7 +547,7 @@ class Faceterm(models.Model):
 
 	class Meta:
 		managed = False
-		db_table = 'faceterm'
+		db_table = 'general". "faceterm'
 
 
 class Field(models.Model):
@@ -560,7 +560,7 @@ class Field(models.Model):
 
 	class Meta:
 		managed = False
-		db_table = 'field'
+		db_table = 'general". "field'
 
 
 class Fraction(models.Model):
@@ -570,7 +570,7 @@ class Fraction(models.Model):
 
 	class Meta:
 		managed = False
-		db_table = 'fraction'
+		db_table = 'general". "fraction'
 
 
 class Gender(models.Model):
@@ -579,7 +579,7 @@ class Gender(models.Model):
 
 	class Meta:
 		managed = False
-		db_table = 'gender'
+		db_table = 'general". "gender'
 
 
 class Groupclass(models.Model):
@@ -591,7 +591,7 @@ class Groupclass(models.Model):
 
 	class Meta:
 		managed = False
-		db_table = 'group_class'
+		db_table = 'general". "group_class'
 
 
 class Groupname(models.Model):
@@ -606,7 +606,7 @@ class Groupname(models.Model):
 
 	class Meta:
 		managed = False
-		db_table = 'group_name'
+		db_table = 'general". "group_name'
 
 
 class Grouporder(models.Model):
@@ -619,7 +619,7 @@ class Grouporder(models.Model):
 
 	class Meta:
 		managed = False
-		db_table = 'group_order'
+		db_table = 'general". "group_order'
 
 
 class ImageState(models.Model):
@@ -632,7 +632,7 @@ class ImageState(models.Model):
 
 	class Meta:
 		managed = False
-		db_table = 'image_state'
+		db_table = 'general". "image_state'
 
 
 class Individual(models.Model):
@@ -685,7 +685,7 @@ class Individual(models.Model):
 
 	class Meta:
 		managed = False
-		db_table = 'individual'
+		db_table = 'general". "individual'
 
 
 class Item(models.Model):
@@ -733,7 +733,7 @@ class Item(models.Model):
 
 	class Meta:
 		managed = False
-		db_table = 'item'
+		db_table = 'general". "item'
 
 
 class Jsonstorage(models.Model):
@@ -743,7 +743,7 @@ class Jsonstorage(models.Model):
 
 	class Meta:
 		managed = False
-		db_table = 'jsonstorage'
+		db_table = 'general". "jsonstorage'
 
 
 class Language(models.Model):
@@ -752,7 +752,7 @@ class Language(models.Model):
 
 	class Meta:
 		managed = False
-		db_table = 'language'
+		db_table = 'general". "language'
 
 
 class Legendspecific(models.Model):
@@ -762,7 +762,7 @@ class Legendspecific(models.Model):
 
 	class Meta:
 		managed = False
-		db_table = 'legendspecific'
+		db_table = 'general". "legendspecific'
 
 class Legendtype(models.Model):
 	pk_legendtype = models.AutoField(primary_key=True)
@@ -770,7 +770,7 @@ class Legendtype(models.Model):
 
 	class Meta:
 		managed = False
-		db_table = 'legendtype'
+		db_table = 'general". "legendtype'
 
 
 class Location(models.Model):
@@ -796,7 +796,7 @@ class Location(models.Model):
 
 	class Meta:
 		managed = False
-		db_table = 'location'
+		db_table = 'general". "location'
 
 
 class Locationname(models.Model):
@@ -811,7 +811,7 @@ class Locationname(models.Model):
 
 	class Meta:
 		managed = False
-		db_table = 'locationname'
+		db_table = 'general". "locationname'
 
 class Locationreference(models.Model):
 	pk_location_reference = models.AutoField(primary_key=True)
@@ -830,7 +830,7 @@ class Locationreference(models.Model):
 
 	class Meta:
 		managed = False
-		db_table = 'location_reference'
+		db_table = 'general". "location_reference'
 
 
 
@@ -840,7 +840,7 @@ class Locationstatus(models.Model):
 
 	class Meta:
 		managed = False
-		db_table = 'legendstatus'
+		db_table = 'general". "legendstatus'
 
 
 class Locationtype(models.Model):
@@ -850,7 +850,7 @@ class Locationtype(models.Model):
 
 	class Meta:
 		managed = False
-		db_table = 'locationtype'
+		db_table = 'general". "locationtype'
 
 
 class Manifestation(models.Model):
@@ -893,7 +893,7 @@ class Manifestation(models.Model):
 
 	class Meta:
 		managed = False
-		db_table = 'manifestation'
+		db_table = 'general". "manifestation'
 
 
 class Material(models.Model):
@@ -905,7 +905,7 @@ class Material(models.Model):
 
 	class Meta:
 		managed = False
-		db_table = 'material'
+		db_table = 'general". "material'
 
 
 class Month(models.Model):
@@ -917,7 +917,7 @@ class Month(models.Model):
 
 	class Meta:
 		managed = False
-		db_table = 'month'
+		db_table = 'general". "month'
 
 
 class Nature(models.Model):
@@ -929,7 +929,7 @@ class Nature(models.Model):
 
 	class Meta:
 		managed = False
-		db_table = 'nature'
+		db_table = 'general". "nature'
 
 
 class Number(models.Model):
@@ -942,7 +942,7 @@ class Number(models.Model):
 
 	class Meta:
 		managed = False
-		db_table = 'number'
+		db_table = 'general". "number'
 
 
 class Office(models.Model):
@@ -957,7 +957,7 @@ class Office(models.Model):
 
 	class Meta:
 		managed = False
-		db_table = 'office'
+		db_table = 'general". "office'
 
 
 
@@ -1005,7 +1005,7 @@ class Part(models.Model):
 
 	class Meta:
 		managed = False
-		db_table = 'part'
+		db_table = 'general". "part'
 
 
 class Period(models.Model):
@@ -1024,7 +1024,7 @@ class Period(models.Model):
 
 	class Meta:
 		managed = False
-		db_table = 'period'
+		db_table = 'general". "period'
 
 
 class Position(models.Model):
@@ -1037,7 +1037,7 @@ class Position(models.Model):
 
 	class Meta:
 		managed = False
-		db_table = 'position'
+		db_table = 'general". "position'
 
 
 class Prefix(models.Model):
@@ -1051,7 +1051,7 @@ class Prefix(models.Model):
 
 	class Meta:
 		managed = False
-		db_table = 'prefix'
+		db_table = 'general". "prefix'
 
 class Printgroup(models.Model):
 	pk_printgroup = models.AutoField(primary_key=True)
@@ -1065,7 +1065,7 @@ class Printgroup(models.Model):
 
 	class Meta:
 		managed = False
-		db_table = 'printgroup'
+		db_table = 'general". "printgroup'
 
 
 class Published(models.Model):
@@ -1074,7 +1074,7 @@ class Published(models.Model):
 
 	class Meta:
 		managed = False
-		db_table = 'published'
+		db_table = 'general". "published'
 
 
 class Referenceindividual(models.Model):
@@ -1105,7 +1105,7 @@ class Referenceindividual(models.Model):
 
 	class Meta:
 		managed = False
-		db_table = 'referenceindividual'
+		db_table = 'general". "referenceindividual'
 
 
 class Referencerole(models.Model):
@@ -1120,7 +1120,7 @@ class Referencerole(models.Model):
 
 	class Meta:
 		managed = False
-		db_table = 'referencerole'
+		db_table = 'general". "referencerole'
 
 class Region(models.Model):
 	region_label = models.TextField(blank=True, null=True)
@@ -1136,7 +1136,7 @@ class Region(models.Model):
 
 	class Meta:
 		managed = False
-		db_table = 'region'
+		db_table = 'general". "region'
 
 
 class Regiondisplay(models.Model):
@@ -1151,7 +1151,7 @@ class Regiondisplay(models.Model):
 
 	class Meta:
 		managed = False
-		db_table = 'region_display'
+		db_table = 'general". "region_display'
 
 
 
@@ -1163,7 +1163,7 @@ class RelationshipBranch(models.Model):
 
 	class Meta:
 		managed = False
-		db_table = 'relationship_branch'
+		db_table = 'general". "relationship_branch'
 
 
 class RelationshipEvent(models.Model):
@@ -1176,7 +1176,7 @@ class RelationshipEvent(models.Model):
 
 	class Meta:
 		managed = False
-		db_table = 'relationship_event'
+		db_table = 'general". "relationship_event'
 
 
 class RelationshipNode(models.Model):
@@ -1197,7 +1197,7 @@ class RelationshipNode(models.Model):
 
 	class Meta:
 		managed = False
-		db_table = 'relationship_node'
+		db_table = 'general". "relationship_node'
 
 
 class RelationshipRole(models.Model):
@@ -1212,7 +1212,7 @@ class RelationshipRole(models.Model):
 
 	class Meta:
 		managed = False
-		db_table = 'relationship_role'
+		db_table = 'general". "relationship_role'
 
 
 class Repository(models.Model):
@@ -1228,7 +1228,7 @@ class Repository(models.Model):
 
 	class Meta:
 		managed = False
-		db_table = 'repository'
+		db_table = 'general". "repository'
 
 
 class Representation(models.Model):
@@ -1276,7 +1276,7 @@ class Representation(models.Model):
 
 	class Meta:
 		managed = False
-		db_table = 'representation'
+		db_table = 'general". "representation'
 
 
 class RepresentationType(models.Model):
@@ -1288,7 +1288,7 @@ class RepresentationType(models.Model):
 
 	class Meta:
 		managed = False
-		db_table = 'representation_type'
+		db_table = 'general". "representation_type'
 
 
 class Rightsholder(models.Model):
@@ -1302,7 +1302,7 @@ class Rightsholder(models.Model):
 
 	class Meta:
 		managed = False
-		db_table = 'rightsholder'
+		db_table = 'general". "rightsholder'
 
 
 class Seal(models.Model):
@@ -1360,7 +1360,7 @@ class Seal(models.Model):
 
 	class Meta:
 		managed = False
-		db_table = 'seal'
+		db_table = 'general". "seal'
 		# verbose_name_plural = 'Sealllls'
 
 
@@ -1406,7 +1406,7 @@ class Sealdescription(models.Model):
 
 	class Meta:
 		managed = False
-		db_table = 'sealdescription'
+		db_table = 'general". "sealdescription'
 		
 
 class Sealrole(models.Model):
@@ -1415,7 +1415,7 @@ class Sealrole(models.Model):
 
 	class Meta:
 		managed = False
-		db_table = 'sealrole'
+		db_table = 'general". "sealrole'
 
 
 class Sealtype(models.Model):
@@ -1435,7 +1435,7 @@ class Sealtype(models.Model):
 
 	class Meta:
 		managed = False
-		db_table = 'sealtype'
+		db_table = 'general". "sealtype'
 
 
 class Separator(models.Model):
@@ -1449,7 +1449,7 @@ class Separator(models.Model):
 
 	class Meta:
 		managed = False
-		db_table = 'separator'
+		db_table = 'general". "separator'
 
 
 class Series(models.Model):
@@ -1505,7 +1505,7 @@ class Series(models.Model):
 
 	class Meta:
 		managed = False
-		db_table = 'series'
+		db_table = 'general". "series'
 
 
 class Shape(models.Model):
@@ -1536,7 +1536,7 @@ class Shape(models.Model):
 
 	class Meta:
 		managed = False
-		db_table = 'shape'
+		db_table = 'general". "shape'
 
 class Skosdata(models.Model):
 	id_skos_data = models.AutoField(primary_key=True)
@@ -1546,7 +1546,7 @@ class Skosdata(models.Model):
 
 	class Meta:
 		managed = False
-		db_table = 'skos_data'
+		db_table = 'general". "skos_data'
 
 class Skosvocabulary(models.Model):
 	id_skos_vocabulary = models.AutoField(primary_key=True)
@@ -1557,7 +1557,7 @@ class Skosvocabulary(models.Model):
 
 	class Meta:
 		managed = False
-		db_table = 'skos_vocabulary'
+		db_table = 'general". "skos_vocabulary'
 
 
 class Support(models.Model):
@@ -1581,7 +1581,7 @@ class Support(models.Model):
 
 	class Meta:
 		managed = False
-		db_table = 'support'
+		db_table = 'general". "support'
 
 
 class Supportstatus(models.Model):
@@ -1593,7 +1593,7 @@ class Supportstatus(models.Model):
 
 	class Meta:
 		managed = False
-		db_table = 'support_status'
+		db_table = 'general". "support_status'
 
 
 class TbIndex(models.Model):
@@ -1606,7 +1606,7 @@ class TbIndex(models.Model):
 
 	class Meta:
 		managed = False
-		db_table = 'tb_index'
+		db_table = 'general". "tb_index'
 
 
 class Terminology(models.Model):
@@ -1648,7 +1648,7 @@ class Terminology(models.Model):
 
 	class Meta:
 		managed = False
-		db_table = 'terminology'
+		db_table = 'general". "terminology'
 
 
 class Terminologyexample(models.Model):
@@ -1658,7 +1658,7 @@ class Terminologyexample(models.Model):
 
 	class Meta:
 		managed = False
-		db_table = 'terminology_example'
+		db_table = 'general". "terminology_example'
 
 
 class TimegroupC(models.Model):
@@ -1670,4 +1670,4 @@ class TimegroupC(models.Model):
 
 	class Meta:
 		managed = False
-		db_table = 'timegroup_c'
+		db_table = 'general". "timegroup_c'
