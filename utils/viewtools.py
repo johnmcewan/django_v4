@@ -783,7 +783,6 @@ def parish_individuallistfetch(individual_object):
 
 #   return(mapparishes, ref_list)
 
-#chatgpt refinement
 @sync_to_async
 def mapparishesdata2(witness_entity_number):
 
@@ -4146,10 +4145,10 @@ def referenceset_references4(witness_entity_number, ref_dic_locations):
 
 
 @sync_to_async
-def referenceset_references5(witness_entity_number, ref_dic_locations):
+def referenceset_references5(witness_entity_number):
 
 	eventset= Event.objects.filter(
-			fk_event_event__fk_individual=witness_entity_number).values('pk_event')
+		fk_event_event__fk_individual=witness_entity_number).values('pk_event')
 
 	reference_dic = Referenceindividual.objects.filter(
 		fk_event__in=eventset).select_related(
@@ -4166,7 +4165,8 @@ def referenceset_references5(witness_entity_number, ref_dic_locations):
 	'fk_referencerole__referencerole',
 	'fk_event__part__fk_item__shelfmark',
 	'fk_event__part__fk_item__id_item',
-	'fk_event__part__id_part')
+	'fk_event__part__id_part',
+	'fk_event__fk_event_locationreference__fk_locationname__fk_location__location')
 
 	position_dic = {}
 
@@ -4234,11 +4234,10 @@ def referenceset_references5(witness_entity_number, ref_dic_locations):
 			reference_row["part_url"] = reverse('entity', kwargs={'witness_entity_number': r['fk_event__part__id_part']})
 			
 			try:
-				reference_row["location"] = ref_dic_locations[r['pk_referenceindividual']]
+				reference_row["location"] = r['fk_event__fk_event_locationreference__fk_locationname__fk_location__location']
 			
 			except:
-				reference_row["location"] = "Undetermined"
-
+				reference_row["location"] = "*Undetermined"
 
 			reference_list.append(reference_row)
 	
