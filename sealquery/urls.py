@@ -22,4 +22,4 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('digisig.urls')),
     path('', include('witness.urls')), 
-] + debug_toolbar_urls()
+] #+ debug_toolbar_urls()
