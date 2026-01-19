@@ -4264,8 +4264,8 @@ def place_object_creator(witness_entity_number):
 	pagetitle = part_object.fk_item.fk_repository.repository_fulltitle + " " + part_object.fk_item.shelfmark
 
 	event_dic = {}
-	event_object = part_object.fk_event
 	item_object = part_object.fk_item
+	event_object = part_object.fk_event
 	event_dic["part_object"] = part_object
 	event_dic = eventset_datedata(event_object, event_dic)
 	event_dic = eventset_locationdata(event_object, event_dic)
@@ -4323,6 +4323,10 @@ def partobjectforitem_define(entity_number):
 		part_temp_dic['pagetitle'] = p['fk_item__fk_repository__repository_fulltitle'] + " " + p['fk_item__shelfmark']
 		part_temp_dic['fk_repository'] = p['fk_item__fk_repository__repository_fulltitle']
 		part_temp_dic['shelfmark'] = p['fk_item__shelfmark']
+		part_temp_dic['part_number1'] = p['part_number1']
+		part_temp_dic['part_number2'] = p['part_number2']
+		part_temp_dic['part_alpha1'] = p['part_alpha1']
+		part_temp_dic['part_alpha2'] = p['part_alpha2']
 		part_temp_dic['year1'] = p['fk_event__repository_startdate']
 		part_temp_dic['year2'] = p['fk_event__repository_enddate']
 		part_temp_dic['year3'] = p['fk_event__startdate']

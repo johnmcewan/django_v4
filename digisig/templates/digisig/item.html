@@ -114,10 +114,38 @@
 
 		<div>
 		<table id="entity1" style="display:none;">
+			<tr><th class="indent">Part</th><td>Information</td></th></tr>
 		{% for p in part_object.values %}
 			<tr>
-				<th class="indent">Part {{p.id_part}}</th>	
-				<td>{{p.repository_location}}, {{p.year1}}-{{p.year2}}</td>
+				<th class="indent">{{p.id_part}}</th>	
+				<td>
+					{% if p.part_number1 != null %}
+						{{part_number1}}
+					{% endif %} 
+					{% if p.part_number2 != null %}
+						{{part_number2}}
+					{% endif %} 
+					{% if p.part_alpha1 != null %}
+						{{part_alpha1}}
+					{% endif %} 
+					{% if p.part_alpha2 != null %}
+						{{part_alpha2}}
+					{% endif %} 
+
+
+					{% if p.repository_location != null %}
+						{{p.repository_location}},
+					{% endif %} 
+		
+					{% if p.year1 != null %}
+						{{p.year1}}
+					{% endif %} 
+
+					{% if p.year2 != null %}
+						-{{p.year2}}
+					{% endif %} 
+				</td>
+
 			</tr>
 
 		{% for m in p.manifestation_set.values %}

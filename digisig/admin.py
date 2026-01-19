@@ -902,6 +902,11 @@ class SealtypeAdmin(admin.ModelAdmin):
 	# def has_add_permission(self, request):
 	# 	return True
 
+class SeriesAdmin(admin.ModelAdmin):
+
+	list_display = ('pk_series', 'fk_repository', 'series_name')
+
+
 class SupportAdmin(admin.ModelAdmin):
 
 	list_display = ('id_support', 'fk_item', 'fk_part')
@@ -914,7 +919,7 @@ class ChangeAdmin(admin.ModelAdmin):
 
 	list_display = ('pk_change', 'change', 'change_date')
 	search_fields = ['change_date']
-	#raw_id_fields= ('fk_part',)	
+	
 
 #######################################################################################
 
@@ -940,3 +945,4 @@ admin.site.register(Representation, RepresentationAdmin)
 #admin.site.register(Logdigisigedit, LogAdmin)
 admin.site.register(Support, SupportAdmin)
 admin.site.register(Sealtype, SealtypeAdmin)
+admin.site.register(Series, SeriesAdmin)
