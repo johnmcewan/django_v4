@@ -905,6 +905,7 @@ class SealtypeAdmin(admin.ModelAdmin):
 class SeriesAdmin(admin.ModelAdmin):
 
 	list_display = ('pk_series', 'fk_repository', 'series_name')
+	search_fields = ['pk_series']
 
 
 class SupportAdmin(admin.ModelAdmin):
