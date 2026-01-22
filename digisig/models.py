@@ -1464,6 +1464,9 @@ class Series(models.Model):
 	series_fulltitle = models.TextField(blank=True, null=True)
 	series_description = models.TextField(blank=True, null=True)
 	note = models.TextField(blank=True, null=True)
+
+	fk_separator_series = models.ForeignKey('Separator', models.DO_NOTHING, related_name="fk_separator_series", db_column='fk_separator_series', blank=True, null=True)
+
 	series_a1 = models.TextField(blank=True, null=True)
 	series_n1 = models.IntegerField(blank=True, null=True)
 	series_a2 = models.TextField(blank=True, null=True)
@@ -1474,19 +1477,21 @@ class Series(models.Model):
 	series_n4 = models.IntegerField(blank=True, null=True)
 	series_a5 = models.TextField(blank=True, null=True)
 	series_n5 = models.IntegerField(blank=True, null=True)
-	fk_separator_series = models.ForeignKey('Separator', models.DO_NOTHING, related_name="fk_separator_series", db_column='fk_separator_series', blank=True, null=True)
+
 	fk_separator_a1 = models.ForeignKey('Separator', models.DO_NOTHING, related_name="fk_separator_a1", db_column='fk_separator_a1', blank=True, null=True)
 	fk_separator_n1 = models.ForeignKey('Separator', models.DO_NOTHING, related_name="fk_separator_n1", db_column='fk_separator_n1', blank=True, null=True)
 	fk_separator_a2 = models.ForeignKey('Separator', models.DO_NOTHING, related_name="fk_separator_a2", db_column='fk_separator_a2', blank=True, null=True)
 	fk_separator_n2 = models.ForeignKey('Separator', models.DO_NOTHING, related_name="fk_separator_n2", db_column='fk_separator_n2', blank=True, null=True)
 	fk_separator_a3 = models.ForeignKey('Separator', models.DO_NOTHING, related_name="fk_separator_a3", db_column='fk_separator_a3', blank=True, null=True)
 	fk_separator_n3 = models.ForeignKey('Separator', models.DO_NOTHING, related_name="fk_separator_n3", db_column='fk_separator_n3', blank=True, null=True)
+	
 	identifier_a1 = models.BooleanField(blank=True, null=True)
 	identifier_n1 = models.BooleanField(blank=True, null=True)
 	identifier_a2 = models.BooleanField(blank=True, null=True)
 	identifier_n2 = models.BooleanField(blank=True, null=True)
 	identifier_a3 = models.BooleanField(blank=True, null=True)
 	identifier_n3 = models.BooleanField(blank=True, null=True)
+	
 	fk_separator_event_a1 = models.ForeignKey('Separator', models.DO_NOTHING, related_name="fk_separator_event_a1", db_column='fk_separator_event_a1', blank=True, null=True)
 	fk_separator_event_n1 = models.ForeignKey('Separator', models.DO_NOTHING, related_name="fk_separator_event_n1", db_column='fk_separator_event_n1', blank=True, null=True)
 	fk_separator_event_a2 = models.ForeignKey('Separator', models.DO_NOTHING, related_name="fk_separator_event_a2", db_column='fk_separator_event_a2', blank=True, null=True)
@@ -1495,11 +1500,11 @@ class Series(models.Model):
 	fk_separator_prefix_n1 = models.ForeignKey('Separator', models.DO_NOTHING, related_name="fk_separator_prefix_n1", db_column='fk_separator_prefix_n1', blank=True, null=True)
 	fk_separator_prefix_a2 = models.ForeignKey('Separator', models.DO_NOTHING, related_name="fk_separator_prefix_a2", db_column='fk_separator_prefix_a2', blank=True, null=True)
 	fk_separator_prefix_n2 = models.ForeignKey('Separator', models.DO_NOTHING, related_name="fk_separator_prefix_n2", db_column='fk_separator_prefix_n2', blank=True, null=True)
-	fk_connection = models.DecimalField(max_digits=65535, decimal_places=65535, blank=True, null=True)
 	fk_separator_prefix_a3 = models.ForeignKey('Separator', models.DO_NOTHING, related_name="fk_separator_prefix_a3", db_column='fk_separator_prefix_a3', blank=True, null=True)
 	fk_separator_prefix_n3 = models.ForeignKey('Separator', models.DO_NOTHING, related_name="fk_separator_prefix_n3", db_column='fk_separator_prefix_n3', blank=True, null=True)
 	fk_separator_n1_variant = models.IntegerField(blank=True, null=True)
 	fk_separator_series_v = models.IntegerField(blank=True, null=True)
+	fk_connection = models.DecimalField(max_digits=65535, decimal_places=65535, blank=True, null=True)
 	move = models.BooleanField(blank=True, null=True)
 	representative = models.BooleanField(blank=True, null=True)
 
