@@ -20,6 +20,9 @@ from asgiref.sync import sync_to_async
 
 from django.urls import reverse
 
+from django.db.models import Count, Q, F, Case, When, FloatField, Value
+from django.db.models.functions import Cast, Coalesce
+
 
 @sync_to_async
 def index_info():
@@ -1628,6 +1631,49 @@ def roundedoval(height, width):
 
 @sync_to_async
 def collection_cases(qcollection):
+    collection_dic = {}
+    collection_dic["id_collection"] = qcollection
+    
+    # Base queryset
+    qs = Sealdescription.objects.filter(fk_seal__gt=1)
+
+    if qcollection != 30000287:
+        qs = qs.filter(fk_collection=qcollection)
+
+    # Perform all calculations in a single SQL query
+    metrics = qs.aggregate(
+        total_desc=Count('sealdescription_identifier', distinct=True),
+        total_seals=Count('fk_seal', distinct=True),
+        actors=Count('fk_seal', distinct=True, filter=Q(
+            fk_seal__fk_individual_realizer__gt=10000019
+        )),
+        dates=Count('fk_seal', distinct=True, filter=Q(
+            fk_seal__date_origin__gt=1
+        )),
+        classes=Count('fk_seal', distinct=True, filter=(
+            Q(fk_seal__fk_seal_face__fk_class__isnull=False) & 
+            ~Q(fk_seal__fk_seal_face__fk_class__in=[10000367, 10001007])
+        )),
+        faces=Count('fk_seal__fk_seal_face', distinct=True, filter=Q(
+            fk_seal__fk_seal_face__fk_faceterm=1
+        ))
+    )
+
+    # Map the results back to your dictionary
+    collection_dic.update({
+        "totalsealdescriptions": metrics['total_desc'],
+        "totalseals": metrics['total_seals'],
+        "actorscount": metrics['actors'],
+        "datecount": metrics['dates'],
+        "classcount": metrics['classes'],
+        "facecount": metrics['faces'],
+    })
+
+    return collection_dic
+
+
+@sync_to_async
+def collection_cases_v1(qcollection):
 
 	collection_dic = {}
 
@@ -1919,6 +1965,54 @@ def map_counties(placeset):
 
 @sync_to_async
 def map_regionset(qcollection, qtimechoice=None, qsealtypechoice=None):
+    status_1_filter = Q(region__location__locationname__locationreference__fk_locationstatus=1)
+    
+    dynamic_filters = {}
+    if qtimechoice:
+        dynamic_filters['region__location__locationname__locationreference__fk_event__part__fk_part__fk_support__fk_face__fk_seal__fk_timegroupc'] = qtimechoice
+    if qsealtypechoice:
+        dynamic_filters['region__location__locationname__locationreference__fk_event__part__fk_part__fk_support__fk_face__fk_seal__fk_sealtype'] = qsealtypechoice
+
+    if qcollection == 30000287:
+        count_target = 'region__location__locationname__locationreference__fk_event__part__fk_part__fk_support'
+    else:
+        dynamic_filters['region__location__locationname__locationreference__fk_event__part__fk_part__fk_support__fk_face__fk_seal__fk_sealsealdescription__fk_collection'] = qcollection
+        count_target = 'region__location__locationname__locationreference'
+
+    queryset = Regiondisplay.objects.filter(**dynamic_filters).annotate(
+        # 1. Coalesce the counts so they are 0 instead of NULL
+        total_cases=Coalesce(Count(count_target), Value(0)),
+        number_cases=Coalesce(Count(count_target, filter=status_1_filter), Value(0))
+    )
+
+# .annotate(
+#         # 2. Calculate percentage with safety checks
+#         percentage_status_1=Coalesce(
+#             Case(
+#                 When(total_cases__gt=0, then=(
+#                     Cast(F('status_1_cases'), FloatField()) / 
+#                     Cast(F('total_cases'), FloatField()) * 100
+#                 )),
+#                 default=Value(0.0),
+#                 output_field=FloatField()
+#             ),
+#             Value(0.0) # Final fallback for the percentage itself
+#         )
+#     )
+
+    return queryset.values(
+        'number_cases',  
+        'total_cases', 
+        'id_regiondisplay', 
+        'regiondisplay_label',
+        'regiondisplay_long',
+        'regiondisplay_lat' 
+    )
+
+
+
+@sync_to_async
+def map_regionset_vold(qcollection, qtimechoice=None, qsealtypechoice=None):
 	"""
 	Retrieves a queryset of Regiondisplay objects for mapping regions,
 	filtered by the provided collection ID and optional time and seal type filters.
@@ -1958,6 +2052,26 @@ def map_regionset(qcollection, qtimechoice=None, qsealtypechoice=None):
 	regionset = queryset.values('number_cases', 'id_regiondisplay', 'regiondisplay_label', 'regiondisplay_long', 'regiondisplay_lat')
 
 	return regionset
+
+@sync_to_async
+def location_calculation(regionset):
+
+	total = 0
+	totalregion= 0
+	totalregion_1cases = 0
+
+	for r in regionset['features']:
+		value1 = r['properties']['count']
+		value2 = r['properties']['total']
+
+		totalregion = totalregion + r['properties']['count']
+		totalregion_1cases = totalregion_1cases + r['properties']['total']
+
+	if totalregion > 0:
+		total = (totalregion/totalregion_1cases ) * 100
+
+	return total
+
 
 @sync_to_async
 def mapgenerator(location_object, count_in=0):
@@ -2100,12 +2214,13 @@ def mapgenerator3(regiondisplayset):
 			value3 = r['number_cases']
 			value4 = r['regiondisplay_long']
 			value5 = r['regiondisplay_lat']
+			value6 = r['total_cases']
 
 			popupcontent = str(value2)
 			if value3 > 0:
 				popupcontent = popupcontent + ' ' + str(value3)
 
-			properties = {"id_location": value1, "location": value2, "count": value3, "popupContent": popupcontent}
+			properties = {"id_location": value1, "location": value2, "count": value3, "total": value6, "popupContent": popupcontent}
 			geometry = {"type": "Point", "coordinates": [value4, value5]}
 			location = {"type": "Feature", "properties": properties, "geometry": geometry}
 			regionlist.append(location)
@@ -4323,10 +4438,6 @@ def partobjectforitem_define(entity_number):
 		part_temp_dic['pagetitle'] = p['fk_item__fk_repository__repository_fulltitle'] + " " + p['fk_item__shelfmark']
 		part_temp_dic['fk_repository'] = p['fk_item__fk_repository__repository_fulltitle']
 		part_temp_dic['shelfmark'] = p['fk_item__shelfmark']
-		part_temp_dic['part_number1'] = p['part_number1']
-		part_temp_dic['part_number2'] = p['part_number2']
-		part_temp_dic['part_alpha1'] = p['part_alpha1']
-		part_temp_dic['part_alpha2'] = p['part_alpha2']
 		part_temp_dic['year1'] = p['fk_event__repository_startdate']
 		part_temp_dic['year2'] = p['fk_event__repository_enddate']
 		part_temp_dic['year3'] = p['fk_event__startdate']

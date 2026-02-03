@@ -942,26 +942,28 @@ class EntityView(View):
 		collection_dic = await collection_details(collection_dic)
 		collection_dic = await sealdescription_contributorgenerate(collection_dic)
 
-		### generate data for chart 1
-		actors = await calpercent(collection_dic["totalseals"], collection_dic["actorscount"])
-		date = await calpercent(collection_dic["totalseals"], collection_dic["datecount"])
-		fclass = await calpercent(collection_dic["facecount"], collection_dic["classcount"])
-	 
-		data1 = [actors, date, fclass]
-		labels1 = ["actor", "date", "class"]
-
 		### generate the collection info data for chart 2 -- 'Percentage of seals per class',
 		data2, labels2 = await collection_chart2(collection_dic)
 
 		### generate the collection info data for chart 3  -- 'Percentage of seals by period',
 		data3, labels3 = await datedistribution(qcollection)
 		maplayer = await collection_loadmaplayer(1)
+
+		### generate data for map
 		regiondisplayset = await map_regionset(qcollection)
 		region_dict = await mapgenerator3(regiondisplayset)
 
+		### generate data for chart 1
+		actors = await calpercent(collection_dic["totalseals"], collection_dic["actorscount"])
+		date = await calpercent(collection_dic["totalseals"], collection_dic["datecount"])
+		fclass = await calpercent(collection_dic["facecount"], collection_dic["classcount"])
+		locations = await location_calculation(region_dict)
+
+		data1 = [actors, date, fclass, locations]
+		labels1 = ["actor", "date", "class", "location"]
+
 		# ### generate the collection info data for chart 5 --  'Percentage of actors per class',
 		data5, labels5 = await collection_printgroup(qcollection, collection_dic)
-
 
 		context = {
 			'pagetitle': pagetitle,
