@@ -432,6 +432,8 @@ def searchletterbook(request):
 
 	individual_object = IndividualMontreal.objects.all().order_by('namephrase')
 
+	print (len(individual_object), "Hello")
+
 	if qnamelen > 0:
 		individual_object = individual_object.filter(
 			Q(

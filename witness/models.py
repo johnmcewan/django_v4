@@ -1642,7 +1642,7 @@ class LetterBooksNerData(models.Model):
     fk_individual_id = models.ForeignKey('IndividualMontreal', models.DO_NOTHING, related_name='fk_individual_id', db_column='fk_individual_id', blank=True, null=True)
  
     class Meta:
-        db_table = 'general". ""research"."2025_letterbooks_nerdata"'
+        db_table = 'research". "2025_letterbooks_nerdata'
         managed = False
 
 class Letterdistinctnames(models.Model):
@@ -1651,7 +1651,7 @@ class Letterdistinctnames(models.Model):
     #fk_report = models.ForeignKey('ReportMontreal', models.DO_NOTHING, related_name='fk_report', db_column='fk_report', blank=True, null=True)
  
     class Meta:
-        db_table = 'general". ""research"."2025_letterbooks_distinctnames"'
+        db_table = 'research". "2025_letterbooks_distinctnames'
         managed = False
 
 class IndividualMontreal(models.Model):
@@ -1667,5 +1667,5 @@ class IndividualMontreal(models.Model):
     fk_report = models.IntegerField(blank=True, null=True)
 
     class Meta:
-        db_table = 'general". ""letterbook_2025_montreal"."individualproposed"'
+        db_table = 'letterbook_2025_montreal". "individualproposed'
         managed = False
