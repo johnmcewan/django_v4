@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Digisig | Digital Sigillography Resource</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Playfair+Display:wght@600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-surface-variant": "#564241",
+                        "surface-variant": "#e4e2e1",
+                        "surface-container-highest": "#e4e2e1",
+                        "on-surface": "#1b1c1c",
+                        "on-primary-fixed": "#410008",
+                        "tertiary-container": "#27393a",
+                        "primary-fixed": "#ffdad9",
+                        "primary-fixed-dim": "#ffb3b2",
+                        "outline": "#897171",
+                        "on-tertiary-fixed-variant": "#374a4b",
+                        "on-secondary-container": "#785a17",
+                        "secondary-container": "#fed486",
+                        "on-secondary": "#ffffff",
+                        "on-primary-container": "#f37b7e",
+                        "on-background": "#1b1c1c",
+                        "surface-container-lowest": "#ffffff",
+                        "outline-variant": "#dcc0bf",
+                        "error-container": "#ffdad6",
+                        "surface-container-high": "#eae7e7",
+                        "surface-bright": "#fcf9f8",
+                        "secondary-fixed-dim": "#e9c174",
+                        "secondary-fixed": "#ffdea3",
+                        "on-primary-fixed-variant": "#82252c",
+                        "tertiary": "#112425",
+                        "surface-container-low": "#f6f3f2",
+                        "secondary": "#775a17",
+                        "tertiary-fixed": "#d2e6e7",
+                        "surface": "#fcf9f8",
+                        "on-tertiary": "#ffffff",
+                        "on-error-container": "#93000a",
+                        "inverse-on-surface": "#f3f0f0",
+                        "on-tertiary-container": "#8fa3a4",
+                        "tertiary-fixed-dim": "#b6cacb",
+                        "error": "#ba1a1a",
+                        "surface-dim": "#dcd9d9",
+                        "primary-container": "#6b141d",
+                        "on-secondary-fixed-variant": "#5d4200",
+                        "on-error": "#ffffff",
+                        "primary": "#4b000b",
+                        "inverse-surface": "#303030",
+                        "on-secondary-fixed": "#261900",
+                        "on-tertiary-fixed": "#0b1e1f",
+                        "surface-tint": "#a13d41",
+                        "inverse-primary": "#ffb3b2",
+                        "background": "#fcf9f8",
+                        "surface-container": "#f0eded",
+                        "on-primary": "#ffffff"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "margin-mobile": "16px",
+                        "base": "8px",
+                        "gutter": "24px",
+                        "container-max": "1280px",
+                        "margin-desktop": "48px"
+                    },
+                    "fontFamily": {
+                        "body-md": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "display-lg": ["Playfair Display"],
+                        "label-md": ["Inter"],
+                        "headline-lg-mobile": ["Playfair Display"],
+                        "headline-md": ["Playfair Display"],
+                        "headline-lg": ["Playfair Display"],
+                        "caption": ["Inter"]
+                    },
+                    "fontSize": {
+                        "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                        "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                        "display-lg": ["56px", {"lineHeight": "64px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "label-md": ["14px", {"lineHeight": "20px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                        "headline-lg-mobile": ["32px", {"lineHeight": "40px", "fontWeight": "700"}],
+                        "headline-md": ["28px", {"lineHeight": "36px", "fontWeight": "600"}],
+                        "headline-lg": ["40px", {"lineHeight": "48px", "fontWeight": "700"}],
+                        "caption": ["13px", {"lineHeight": "18px", "fontWeight": "400"}]
+                    }
+                },
+            },
+        }
+    </script>
+<style>.material-symbols-outlined {
+    font-variation-settings: "FILL" 0, "wght" 400, "GRAD" 0, "opsz" 24
+    }
+.historical-texture {
+    background-image: linear-gradient(rgba(252, 249, 248, 0.85), rgba(252, 249, 248, 0.85)), url(https://lh3.googleusercontent.com/aida-public/AB6AXuD1FQGCgvsdDDLNB6wRzSsZSbQEQFUFACmdfRBSbvjV6qPIN50FJ_ti_YfCS4foDo1tn8K6hI_l_-pcjoGzwGAWjZOlf7j18C08HaJqh3o5VEQLHhDa39d9KlaOOQhlybJ-XjQ9BobSLA_BuHmZdtxu887PtQ04_pgALb4Sl6Ui8CvvPPFHaGwkhV6YCR4jRaLve8gE1YMhw49P75Pt8eY-ziBFUa9X7ot1ElH-0YEu4dT4r0flu7s4cnZHBN-BQKzx4yN46iw0gis);
+    background-size: cover;
+    background-position: center
+    }</style>
+</head>
+<body class="bg-background text-on-background font-body-md">
+<!-- TopNavBar -->
+<nav class="dark:bg-surface-dim border-b border-outline-variant opacity-100 docked full-width top-0 z-50 bg-tertiary">
+<div class="flex justify-between items-center px-margin-desktop w-full max-w-container-max mx-auto h-20">
+<div class="flex items-center gap-8">
+<span class="font-display-lg text-headline-md dark:text-on-primary-container text-surface-bright">Digisig</span>
+<div class="hidden md:flex items-center gap-6">
+<a class="font-bold border-b-2 pb-1 font-body-md text-body-md hover:text-primary-container transition-colors duration-200 text-secondary-fixed border-secondary-fixed" href="#">Discover</a>
+<a class="dark:text-on-tertiary-container font-body-md text-body-md hover:text-primary-container transition-colors duration-200 text-surface-variant" href="#">Search</a>
+<a class="dark:text-on-tertiary-container font-body-md text-body-md hover:text-primary-container transition-colors duration-200 text-surface-variant" href="#">Analyze</a>
+<a class="dark:text-on-tertiary-container font-body-md text-body-md hover:text-primary-container transition-colors duration-200 text-surface-variant" href="#">Information</a>
+<a class="dark:text-on-tertiary-container font-body-md text-body-md hover:text-primary-container transition-colors duration-200 text-surface-variant" href="#">About</a>
+<a class="dark:text-on-tertiary-container font-body-md text-body-md hover:text-primary-container transition-colors duration-200 text-surface-variant" href="#">Access</a>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<button class="bg-secondary text-on-secondary px-6 py-2 rounded-lg font-label-md scale-95 active:opacity-80 transition-transform">Donate</button>
+</div>
+</div>
+</nav>
+<!-- Hero Section -->
+<section class="relative py-32 md:py-48 flex flex-col items-center justify-center text-center px-margin-mobile md:px-0" style="background-image: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), url(https://lh3.googleusercontent.com/aida-public/AB6AXuBUp0N950y4_gogLxihP88bghhnCzdETRN3oS3lT6uDrTFgf5Q6Y90qn1qKXHoCKyTe6obwQnk_mvHt0lZJt9H1pk2MtRX04aJGmoHPmIYhArv2ZAo27EJ598KnV_6Dg3LhZmVkuud_9C03E63UV1fYknHTasQhNOcYTwj4ut2-7yJczAD6cQvjz9pKlq9ym43vApAPoaPfa0WdT1QDkw80-gEv0thYxrBPVoZHULfwK8XHfzo7SDN4YBVlAMtNzHqHJf-9fs3KbdA); background-size: cover; background-position: center;">
+<div class="max-w-4xl mx-auto">
+<h1 class="font-display-lg text-headline-lg-mobile md:text-display-lg mb-6 text-surface-bright">Digital Sigillography Resource</h1>
+<p class="font-headline-md text-body-lg mb-12 max-w-2xl mx-auto text-surface-variant">Register of Seal Catalogues, Seal Impressions, and Seal Matrices</p>
+<div class="relative w-full max-w-2xl mx-auto border-b border-secondary shadow-sm bg-surface/90 backdrop-blur-sm">
+<div class="flex items-center px-4 py-4">
+<span class="material-symbols-outlined text-secondary mr-3" data-icon="search">search</span>
+<input class="w-full bg-transparent border-none focus:ring-0 text-body-md font-body-md" placeholder="Search the archive for seals, catalogs, or actors..." type="text"/>
+<button class="text-primary font-bold hover:underline">SEARCH</button>
+</div>
+</div>
+</div>
+</section>
+<!-- Stats Section -->
+<section class="bg-surface-container-low py-16 border-y border-outline-variant/20">
+<div class="max-w-container-max mx-auto px-margin-desktop grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
+<div class="flex flex-col">
+<span class="font-display-lg text-headline-lg text-primary">45,804</span>
+<span class="font-label-md text-on-surface-variant">Seals</span>
+</div>
+<div class="flex flex-col">
+<span class="font-display-lg text-headline-lg text-primary">62,237</span>
+<span class="font-label-md text-on-surface-variant text-balance">Impressions, Matrices &amp; Casts</span>
+</div>
+<div class="flex flex-col">
+<span class="font-display-lg text-headline-lg text-primary">53,882</span>
+<span class="font-label-md text-on-surface-variant">Items</span>
+</div>
+<div class="flex flex-col">
+<span class="font-display-lg text-headline-lg text-primary">48,662</span>
+<span class="font-label-md text-on-surface-variant">Seal Descriptions</span>
+</div>
+</div>
+</section>
+<!-- Search Entry Points (Bento/Grid) -->
+<section class="py-24 max-w-container-max mx-auto px-margin-desktop">
+<h2 class="font-display-lg text-headline-lg text-primary mb-12 text-center">Explore the Collection</h2>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-gutter">
+<!-- Card 1 -->
+<div class="group relative aspect-[4/5] bg-surface overflow-hidden border border-outline-variant/20">
+<img alt="" class="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" data-alt="A highly detailed close-up shot of a medieval wax seal attached to an ancient parchment document. The seal features intricate heraldic designs with deep shadows, emphasizing the physical texture of the aged red wax. The lighting is soft and directional, typical of a professional archival photography studio, highlighting the fine cracks and historical wear against a neutral, cream-colored background." src="https://lh3.googleusercontent.com/aida-public/AB6AXuANn9AlUNlb6wsmErx6_e3fDUiNgHFfa3dQbtkqxfxgF4J0RnVOK161-u0JtMZmuZB-OXUxSv83IiTPW8_AIINWKkuvfGGxxxeUv91waKoQ0FPlMP1rYCzbgyKZfvwGXkyzpo_pyAgxBKbn6eFpoLW11PF9-NoEjSMjL2Ogn_vWOE59m66qOU-PCJuEvsLJiFiMKNUknWQRs4--_UDPUbMPqySWL9jh5dybVWPEoarTxd-TvWNdipV7W0ZPLUQfkLPr8omZU8BfqZ8"/>
+<div class="absolute inset-0 bg-gradient-to-t from-primary/90 to-transparent flex flex-col justify-end p-8 text-on-primary">
+<h3 class="font-display-lg text-headline-md mb-2">Search Seals</h3>
+<p class="font-body-md mb-6 opacity-90">Browse thousands of individual physical seal specimens.</p>
+<a class="inline-flex items-center text-secondary-fixed font-bold hover:gap-2 transition-all" href="#">
+                        EXPLORE NOW <span class="material-symbols-outlined ml-2" data-icon="arrow_forward">arrow_forward</span>
+</a>
+</div>
+</div>
+<!-- Card 2 -->
+<div class="group relative aspect-[4/5] bg-surface overflow-hidden border border-outline-variant/20">
+<img alt="" class="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" data-alt="A macro photograph of an open academic ledger showing rows of meticulous calligraphy and catalog entries from the 19th century. The lighting is bright and even, evoking a clean library atmosphere. The color palette consists of warm paper tones and dark ink, with subtle burgundy accents in the book's binding. The mood is scholarly and archival, emphasizing precision and the bridge between history and modern data." src="https://lh3.googleusercontent.com/aida-public/AB6AXuD4x0MQbSeSD0FQWBtQwUXifEs9RTJ3XnMZPBfDhLZeqX7q0nq_tEGktNNmaehzDRmXRWKok-uAktexpQ4LmZHyNY_G1pX9F6srD17Ix8kOfnQnoK0rB7MyYzYU6B3Oc9LmcjUxivrLgHhzSKj5DgWmBPswpl4UYcZ2k3lu5usle0Jq8rseQvZadLRSOUvbvDrA1C2tfpbZ7B_pWvwGG_LUt4XMO1o5Z6v3nChe96Msd_JmNWwwqYgiY255CanTHoRWSBcK7cm4DS4"/>
+<div class="absolute inset-0 bg-gradient-to-t from-primary/90 to-transparent flex flex-col justify-end p-8 text-on-primary">
+<h3 class="font-display-lg text-headline-md mb-2">Search Seal Descriptions</h3>
+<p class="font-body-md mb-6 opacity-90">Access detailed metadata from historic catalogues.</p>
+<a class="inline-flex items-center text-secondary-fixed font-bold hover:gap-2 transition-all" href="#">
+                        EXPLORE NOW <span class="material-symbols-outlined ml-2" data-icon="arrow_forward">arrow_forward</span>
+</a>
+</div>
+</div>
+<!-- Card 3 -->
+<div class="group relative aspect-[4/5] bg-surface overflow-hidden border border-outline-variant/20">
+<img alt="" class="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" data-alt="A portrait-oriented composition of a metal seal matrix with deep carvings resting on a dark velvet cloth. The metal has a subtle golden sheen under soft, dramatic lighting that creates high contrast on the engraved surface. The background is a rich, dark burgundy, maintaining the brand's aesthetic. The overall mood is one of prestige and timeless historical authority." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAdtc1wjuE3oAYsHzrE59JDAxapAugmMW2rCeqLgRt4vLO2UM5nsI73wWx6Rxwvc88NjFHP0SGtapUEC0Emlp8sIvTCzEM5FrrKK90LFVAJYrflrtP2KwBu_U5SvKHUAUio6Ht7gcIMuUe541t3tVZMSv1tGmrqxJFI5Bl7etwAPWU6pgkgL9WJ4-Sk2NDqMOpaLyjd3Nb3hzmVOyt6PMj13CBYQkSrhWuSpONSOi_661v0SaUvM3D3TRikLMySx7WkM63cWDP4VKM"/>
+<div class="absolute inset-0 bg-gradient-to-t from-primary/90 to-transparent flex flex-col justify-end p-8 text-on-primary">
+<h3 class="font-display-lg text-headline-md mb-2">Search Actors</h3>
+<p class="font-body-md mb-6 opacity-90">Find the owners, creators, and institutions behind the seals.</p>
+<a class="inline-flex items-center text-secondary-fixed font-bold hover:gap-2 transition-all" href="#">
+                        EXPLORE NOW <span class="material-symbols-outlined ml-2" data-icon="arrow_forward">arrow_forward</span>
+</a>
+</div>
+</div>
+</div>
+</section>
+<!-- Introduction Section -->
+<section class="bg-surface py-24">
+<div class="max-w-container-max mx-auto px-margin-desktop">
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+<div>
+<h2 class="font-display-lg text-headline-lg text-primary mb-8">The Digisig Project</h2>
+<div class="space-y-6 text-on-surface-variant font-body-lg">
+<p>Digisig is an experimental resource designed to assist in the discovery and study of historical seals. It brings together data from a wide variety of sources, including museum catalogues, archival finding aids, and archaeological reports.</p>
+<p>Our mission is to provide a unified platform for sigillography research, enabling scholars to analyze the complex relationships between seal matrices, impressions, and the individuals or institutions they represented.</p>
+<p>By digitizing and linking these rich datasets, we preserve a critical part of our cultural heritage for future generations of historians and researchers.</p>
+</div>
+<div class="mt-10 flex gap-4">
+<button class="bg-primary text-on-primary px-8 py-3 rounded-lg font-label-md hover:bg-primary-container transition-colors">Read More</button>
+<button class="border border-secondary text-secondary px-8 py-3 rounded-lg font-label-md hover:bg-secondary/10 transition-colors">Project Team</button>
+</div>
+</div>
+<div class="relative group cursor-pointer aspect-video bg-surface-variant border border-outline-variant/20 rounded-lg overflow-hidden flex items-center justify-center">
+<img alt="" class="absolute inset-0 w-full h-full object-cover opacity-60 grayscale hover:grayscale-0 transition-all duration-700" data-alt="A scholarly wide shot of a prestigious university library interior with floor-to-ceiling wooden bookshelves and warm ambient lighting. In the foreground, a modern digital workstation is displaying a 3D scan of a historical seal, illustrating the intersection of old and new. The room feels quiet, intellectual, and timeless, with a focus on archival preservation and digital innovation." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCDis1EddHJlQuQbXE8Xsvtbdo90lEz1N0dYhU4FfVEWM1ONozRDPfF32KAlGKIdsnsxPHU2epHfNLmSQPcXKkIQRGQYVrkRNycEsQ8EIVxIxbY8EQogMpmvRDIQ3kWkDwi0EfO3v3e6IcRCXGQttG2Ij_mNh9TJHMmM-kgBcwABSa0oSLnQHg8UzwtvjlLEnsNP1kXgxUorkRNYS2dbKEPg499FA3_dUzbLh9csHPo-tvRnLZw_Y7vHtNU_TiCVLcFsaPJrjQ9StM"/>
+<div class="relative z-10 bg-primary/90 text-on-primary w-20 h-20 rounded-full flex items-center justify-center transition-transform group-hover:scale-110">
+<span class="material-symbols-outlined text-4xl" data-icon="play_arrow" data-weight="fill">play_arrow</span>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Footer -->
+<footer class="dark:bg-tertiary-container border-t border-outline-variant mt-auto bg-tertiary">
+<div class="w-full py-16 px-margin-desktop flex flex-col md:flex-row justify-between items-start max-w-container-max mx-auto space-y-8 md:space-y-0">
+<div class="flex flex-col max-w-sm">
+<span class="font-display-lg text-headline-md mb-4 text-secondary-fixed">Digisig</span>
+<p class="font-caption text-caption opacity-80 leading-relaxed text-surface-variant">
+                    © Digisig Digital Preservation Archive. All rights reserved. Licensed under Creative Commons Attribution-NonCommercial 4.0 International.
+                </p>
+<div class="mt-6 flex gap-4">
+<span class="material-symbols-outlined text-secondary-fixed" data-icon="share">share</span>
+<span class="material-symbols-outlined text-secondary-fixed" data-icon="mail">mail</span>
+</div>
+</div>
+<div class="grid grid-cols-2 gap-12">
+<div class="flex flex-col space-y-3">
+<span class="font-label-md uppercase tracking-widest mb-2 text-secondary-fixed">Legal</span>
+<a class="font-caption text-caption opacity-80 hover:text-secondary-container underline transition-opacity duration-300 text-surface-variant" href="#">Privacy Policy</a>
+<a class="font-caption text-caption opacity-80 hover:text-secondary-container underline transition-opacity duration-300 text-surface-variant" href="#">Terms of Service</a>
+</div>
+<div class="flex flex-col space-y-3">
+<span class="font-label-md uppercase tracking-widest mb-2 text-secondary-fixed">Resources</span>
+<a class="font-caption text-caption opacity-80 hover:text-secondary-container underline transition-opacity duration-300 text-surface-variant" href="#">Citation Guide</a>
+<a class="font-caption text-caption opacity-80 hover:text-secondary-container underline transition-opacity duration-300 text-surface-variant" href="#">Contact Us</a>
+</div>
+</div>
+</div>
+</footer>
+</body></html>

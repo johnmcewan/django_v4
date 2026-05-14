@@ -402,20 +402,33 @@ p {
    ============================================================= */
 .hero {
     position: relative;
-    background: var(--surface-container-highest);
-    background-image:
-        linear-gradient(rgba(252, 249, 248, 0.88), rgba(252, 249, 248, 0.92));
+    background-color: var(--tertiary);   /* fallback while image loads */
+    background-size: cover;
+    background-position: center;
     padding: 96px var(--margin-desktop);
     text-align: center;
+    overflow: hidden;
+}
+
+/* Dark overlay so text stays legible over the banner photo */
+.hero::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6));
+    z-index: 0;
+    pointer-events: none;
 }
 
 .hero-inner {
+    position: relative;   /* NEW */
+    z-index: 1;           /* NEW */
     max-width: 880px;
     margin: 0 auto;
 }
 
 .hero h1 {
-    color: var(--primary);
+    color: #FCF9F8; 
     margin-bottom: 16px;
     font-size: 56px;
     line-height: 64px;
@@ -423,7 +436,7 @@ p {
 }
 
 .hero-subtitle {
-    color: var(--on-surface-variant);
+    color: rgba(255, 255, 255, 0.88);
     font-family: 'Inter', sans-serif;
     font-size: 18px;
     line-height: 28px;
@@ -990,4 +1003,167 @@ p {
 .page-content {
     /* Default wrapper for non-home pages that don't supply a hero */
     min-height: 40vh;
+}
+
+
+/* =============================================================
+   LOGIN PAGE
+   ============================================================= */
+
+.login-page {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: calc(100vh - 72px);
+    position: relative;
+    background-color: black;
+    background-size: cover;
+    background-position: center;
+    padding: 48px var(--margin-mobile);
+    background-size: contain;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
+/* Subtle tinted overlay — lets the seal photo show through */
+.login-page::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: rgba(75, 0, 11, 0.10);
+    mix-blend-mode: multiply;
+    z-index: 0;
+    pointer-events: none;
+}
+
+/* --- Glass card --- */
+.login-card {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    max-width: 440px;
+    background: rgba(252, 249, 248, 0.72);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border: 1px solid rgba(220, 192, 191, 0.3);
+    border-radius: var(--radius-xl);
+    padding: 40px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.18);
+}
+
+.login-card-header {
+    text-align: center;
+    margin-bottom: 32px;
+}
+
+.login-card-header h1 {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 40px;
+    line-height: 48px;
+    font-weight: 700;
+    color: var(--primary);
+    margin-bottom: 8px;
+}
+
+.login-card-header p {
+    font-size: 16px;
+    line-height: 24px;
+    color: var(--on-surface-variant);
+}
+
+/* --- Error banner --- */
+.login-error {
+    background: var(--error-container);
+    color: var(--on-error-container);
+    padding: 12px 16px;
+    border-radius: var(--radius);
+    margin-bottom: 24px;
+    font-size: 14px;
+    line-height: 20px;
+}
+
+.login-error p { margin: 0; }
+
+/* --- Form layout --- */
+.login-form {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+.form-field {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.form-field label {
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--on-surface-variant);
+}
+
+.form-field input[type="text"],
+.form-field input[type="password"],
+.form-field input[type="email"] {
+    width: 100%;
+    background: var(--surface-container-lowest);
+    border: none;
+    border-bottom: 1px solid var(--outline);
+    border-radius: 0;
+    padding: 10px 0;
+    font-family: 'Inter', sans-serif;
+    font-size: 16px;
+    color: var(--on-surface);
+    outline: none;
+    transition: border-color 0.2s ease;
+}
+
+.form-field input:focus {
+    border-bottom-color: var(--primary);
+}
+
+/* --- Full-width submit button --- */
+.login-submit {
+    width: 100%;
+    padding: 16px;
+    font-size: 18px;
+    line-height: 28px;
+    font-weight: 500;
+    margin-top: 8px;
+    text-transform: none;
+    letter-spacing: 0;
+}
+
+.login-submit:hover { filter: brightness(1.25); }
+.login-submit:active { transform: scale(0.98); }
+
+/* --- Register link --- */
+.login-footer-link {
+    margin-top: 32px;
+    padding-top: 24px;
+    border-top: 1px solid rgba(220, 192, 191, 0.3);
+    text-align: center;
+}
+
+.login-footer-link p {
+    font-size: 16px;
+    color: var(--on-surface-variant);
+}
+
+.login-footer-link a {
+    color: var(--secondary);
+    font-weight: 700;
+    margin-left: 4px;
+}
+
+.login-footer-link a:hover {
+    color: var(--on-secondary-container);
+}
+
+@media (max-width: 480px) {
+    .login-card { padding: 28px 20px; }
+    .login-card-header h1 { font-size: 32px; line-height: 40px; }
 }
