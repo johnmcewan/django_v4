@@ -151,14 +151,15 @@ def verify_email(request, token):
     return redirect('login')
 
 
-
-@cache_page(cache_timeout)
+#@cache_page(cache_timeout)
 async def index(request):
 
 	pagetitle = 'title'
 	template = loader.get_template('digisig/index.html')
 
 	manifestation_total, seal_total, item_total, catalogue_total = await index_info()
+
+	# user = await request.auser()
 
 	context = {
 		'pagetitle': pagetitle,

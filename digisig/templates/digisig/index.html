@@ -4,52 +4,158 @@
 
 {% block content %}
 
+<!-- Per-card background images — kept inline so Django static resolves -->
 <style>
-
-#search1 {
-    background-image: url({% static 'digisig/images/IMGP9307_3b.jpg' %});
-}
-
-#search2 {
-  background-image: url({% static 'digisig/images/IMGP9870_v3.jpg' %});
-}
-
-#search3 {
-  background-image: url({% static 'digisig/images/SBH1266_v1.jpg' %});
-}
-
+    #card-seals        { background-image: url({% static 'digisig/images/IMGP9307_3b.jpg' %}); }
+    #card-descriptions { background-image: url({% static 'digisig/images/IMGP9870_v3.jpg' %}); }
+    #card-actors       { background-image: url({% static 'digisig/images/SBH1266_v1.jpg' %}); }
 </style>
 
 
-    <div class="home-banner"></div> 
-    <div class="sidepanel-left"></div>
-    <div class="sidepanel-right"></div>
+<!-- =====================================================
+     HERO
+     ===================================================== -->
+<section class="hero">
+    <div class="hero-inner">
+        <h1>Digital Sigillography Resource</h1>
+        <p class="hero-subtitle">Register of Seal Catalogues, Seal Impressions, and Seal Matrices</p>
 
-    <div class="searchoptions" id="search1"><a href="{% url 'search' searchtype='seals' %}">Search Seals</a></div>
-    <div class="searchoptions" id="search2"><a href="{% url 'search' searchtype='sealdescriptions' %}">Search Seal Descriptions</a></div>
-    <div class="searchoptions" id="search3"><a href="{% url 'search' searchtype='actors' %}">Search Actors</a></div>
+        <form class="hero-search" action="{% url 'search' searchtype='seals' %}" method="get" role="search">
+            <div class="hero-search-row">
+                <i class="fas fa-magnifying-glass search-icon" aria-hidden="true"></i>
+                <label class="sr-only" for="hero-search-input">Search the archive</label>
+                <input id="hero-search-input" name="q" type="text" placeholder="Search the archive for seals, catalogs, or actors..." autocomplete="off">
+                <button type="submit" class="hero-search-submit">SEARCH</button>
+            </div>
+        </form>
+    </div>
+</section>
 
-    <div id="digisigstats" style="color:black;">
-        <h2>Contents</h2>
-        <div id="digisigstatsbox">
-            <div> <span id="statistic">{{seal_total}}</span><br>Seals</div>
-            <div> <span id="statistic">{{manifestation_total}}</span><br>Impressions, Matrices and Casts</div>
-            <div> <span id="statistic">{{item_total}}</span><br>Items</div>
-            <div> <span id="statistic">{{catalogue_total}}</span><br>Seal Descriptions</div>
+
+<!-- =====================================================
+     STATS
+     ===================================================== -->
+<section class="stats-section" id="digisigstats">
+    <div class="stats-grid">
+        <div class="stat">
+            <span class="stat-num" data-target="{{ seal_total }}">0</span>
+            <span class="stat-label">Seals</span>
+        </div>
+        <div class="stat">
+            <span class="stat-num" data-target="{{ manifestation_total }}">0</span>
+            <span class="stat-label">Impressions, Matrices &amp; Casts</span>
+        </div>
+        <div class="stat">
+            <span class="stat-num" data-target="{{ item_total }}">0</span>
+            <span class="stat-label">Items</span>
+        </div>
+        <div class="stat">
+            <span class="stat-num" data-target="{{ catalogue_total }}">0</span>
+            <span class="stat-label">Seal Descriptions</span>
         </div>
     </div>
+</section>
 
-    <div id="digisigblock1"></div>
-    <div id="digisigtextblock1">
-        <h2>The Digisig Project</h2>
-        <p>Seals</a> are an important part of cultural heritage, but they can be difficult for reseachers to discover and access using the existing reference works, catalogues and finding aids. Digisig helps researchers discover what seals survive, determine where they are located, and find out who has recorded and described them.</p>
+
+<!-- =====================================================
+     EXPLORE THE COLLECTION — search entry-point cards
+     ===================================================== -->
+<section class="collection-section">
+    <h2 class="section-title">Explore the Collection</h2>
+
+    <div class="card-grid">
+
+        <a class="search-card" id="card-seals" href="{% url 'search' searchtype='seals' %}">
+            <div class="search-card-body">
+                <h3 class="search-card-title">Search Seals</h3>
+                <p class="search-card-desc">Browse thousands of individual physical seal specimens.</p>
+                <span class="search-card-cta">Explore Now <i class="fas fa-arrow-right"></i></span>
+            </div>
+        </a>
+
+        <a class="search-card" id="card-descriptions" href="{% url 'search' searchtype='sealdescriptions' %}">
+            <div class="search-card-body">
+                <h3 class="search-card-title">Search Seal Descriptions</h3>
+                <p class="search-card-desc">Access detailed metadata from historic catalogues.</p>
+                <span class="search-card-cta">Explore Now <i class="fas fa-arrow-right"></i></span>
+            </div>
+        </a>
+
+        <a class="search-card" id="card-actors" href="{% url 'search' searchtype='actors' %}">
+            <div class="search-card-body">
+                <h3 class="search-card-title">Search Actors</h3>
+                <p class="search-card-desc">Find the owners, creators, and institutions behind the seals.</p>
+                <span class="search-card-cta">Explore Now <i class="fas fa-arrow-right"></i></span>
+            </div>
+        </a>
+
     </div>
+</section>
 
-    <div id="digisigtextblock2">
-            <h2></h2> 
-        <div class="youtube-container">
-            <iframe class="youtube-iframe" src="https://www.youtube.com/embed/fAmMXzYXaeU" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+
+<!-- =====================================================
+     THE DIGISIG PROJECT — intro text + video
+     ===================================================== -->
+<section class="project-section">
+    <div class="project-grid">
+
+        <div class="project-text">
+            <h2>The Digisig Project</h2>
+            <p>Seals are an important part of cultural heritage, but they can be difficult for researchers to discover and access using the existing reference works, catalogues and finding aids. Digisig helps researchers discover what seals survive, determine where they are located, and find out who has recorded and described them.</p>
+            <p>By digitizing and linking these rich datasets, we preserve a critical part of our cultural heritage for future generations of historians and researchers.</p>
+            <div class="project-actions">
+                <a class="btn btn-primary" href="{% url 'about' %}">Read More</a>
+                <a class="btn btn-secondary" href="{% url 'information' infotype='contributors' %}">Project Team</a>
+            </div>
         </div>
+
+        <div class="video-frame">
+            <iframe
+                src="https://www.youtube.com/embed/fAmMXzYXaeU"
+                title="Digisig — YouTube video"
+                frameborder="0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                referrerpolicy="strict-origin-when-cross-origin"
+                allowfullscreen></iframe>
+        </div>
+
     </div>
+</section>
+
+
+<!-- =====================================================
+     Count-up animation for stats (unchanged behaviour)
+     ===================================================== -->
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const countUp = (el, target, duration) => {
+        let start = null;
+        const step = (timestamp) => {
+            if (!start) start = timestamp;
+            const progress = Math.min((timestamp - start) / duration, 1);
+            const ease = 1 - Math.pow(1 - progress, 3);
+            el.textContent = Math.round(ease * target).toLocaleString();
+            if (progress < 1) requestAnimationFrame(step);
+        };
+        requestAnimationFrame(step);
+    };
+
+    const statsBlock = document.getElementById('digisigstats');
+    if (!statsBlock) return;
+
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (!entry.isIntersecting) return;
+            document.querySelectorAll('.stat-num[data-target]').forEach(el => {
+                const target = parseInt(el.dataset.target, 10);
+                if (!isNaN(target)) countUp(el, target, 1400);
+            });
+            observer.disconnect();
+        });
+    }, { threshold: 0.3 });
+
+    observer.observe(statsBlock);
+});
+</script>
 
 {% endblock %}

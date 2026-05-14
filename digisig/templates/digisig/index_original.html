@@ -1,0 +1,98 @@
+{% extends "digisig/base.html" %}
+
+{% load static %}
+
+{% block content %}
+
+<style>
+
+#search1 {
+    background-image: url({% static 'digisig/images/IMGP9307_3b.jpg' %});
+}
+
+#search2 {
+  background-image: url({% static 'digisig/images/IMGP9870_v3.jpg' %});
+}
+
+#search3 {
+  background-image: url({% static 'digisig/images/SBH1266_v1.jpg' %});
+}
+
+</style>
+
+
+    <div class="home-banner"></div> 
+    <div class="sidepanel-left"></div>
+    <div class="sidepanel-right"></div>
+
+    <div class="searchoptions" id="search1"><a href="{% url 'search' searchtype='seals' %}">Search Seals</a></div>
+    <div class="searchoptions" id="search2"><a href="{% url 'search' searchtype='sealdescriptions' %}">Search Seal Descriptions</a></div>
+    <div class="searchoptions" id="search3"><a href="{% url 'search' searchtype='actors' %}">Search Actors</a></div>
+
+    <div id="digisigstats">
+        <div class="opt1-cell">
+            <span class="opt1-num" data-target="{{ seal_total }}">0</span>
+            <div class="opt1-bar"></div>
+            <span class="opt1-lbl">Seals</span>
+        </div>
+        <div class="opt1-cell">
+            <span class="opt1-num" data-target="{{ manifestation_total }}">0</span>
+            <div class="opt1-bar"></div>
+            <span class="opt1-lbl">Impressions, Matrices &amp; Casts</span>
+        </div>
+        <div class="opt1-cell">
+            <span class="opt1-num" data-target="{{ item_total }}">0</span>
+            <div class="opt1-bar"></div>
+            <span class="opt1-lbl">Items</span>
+        </div>
+        <div class="opt1-cell">
+            <span class="opt1-num" data-target="{{ catalogue_total }}">0</span>
+            <div class="opt1-bar"></div>
+            <span class="opt1-lbl">Seal Descriptions</span>
+        </div>
+    </div>
+
+
+    <div id="digisigblock1"></div>
+    <div id="digisigtextblock1">
+        <h2>The Digisig Project</h2>
+        <p>Seals</a> are an important part of cultural heritage, but they can be difficult for reseachers to discover and access using the existing reference works, catalogues and finding aids. Digisig helps researchers discover what seals survive, determine where they are located, and find out who has recorded and described them.</p>
+    </div>
+
+    <div id="digisigtextblock2">
+            <h2></h2> 
+        <div class="youtube-container">
+            <iframe class="youtube-iframe" src="https://www.youtube.com/embed/fAmMXzYXaeU" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+        </div>
+    </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const countUp = (el, target, duration) => {
+        let start = null;
+        const step = (timestamp) => {
+            if (!start) start = timestamp;
+            const progress = Math.min((timestamp - start) / duration, 1);
+            const ease = 1 - Math.pow(1 - progress, 3);
+            el.textContent = Math.round(ease * target).toLocaleString();
+            if (progress < 1) requestAnimationFrame(step);
+        };
+        requestAnimationFrame(step);
+    };
+
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (!entry.isIntersecting) return;
+            document.querySelectorAll('.opt1-num[data-target]').forEach(el => {
+                countUp(el, parseInt(el.dataset.target), 1400);
+            });
+            observer.disconnect();
+        });
+    }, { threshold: 0.3 });
+
+    observer.observe(document.getElementById('digisigstats'));
+});
+</script>
+
+
+{% endblock %}
