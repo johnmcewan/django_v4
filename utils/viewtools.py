@@ -2958,8 +2958,8 @@ def sealdescription_displaysetgenerate(sealdescription_object):
 		sealdes_temp['legend_obverse'] = sd.legend_obverse
 		sealdes_temp['legend_reverse'] = sd.legend_reverse
 		sealdes_temp['realizer'] = sd.fk_seal.fk_individual_realizer
-		#sealdes_temp['collection_thumbnail'] = sd.collection_thumbnail
-		#sealdes_temp['collection_fulltitle'] = sd.collection_fulltitle
+		sealdes_temp['collection_thumbnail'] = sd.fk_collection.collection_thumbnail
+		sealdes_temp['collection_fulltitle'] = sd.fk_collection.collection_fulltitle
 		sealdes_temp['fk_collection'] = sd.fk_collection
 
 		sealdescription_displayset[sd.id_sealdescription] = sealdes_temp
