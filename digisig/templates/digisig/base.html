@@ -119,10 +119,6 @@
         </div><!-- /.nav-brand-block -->
 
         <div class="nav-actions">
-            {% if is_authenticated %}
-                <span class="nav-user"><i class="fas fa-user"></i> {{ username }}</span>
-            {% endif %}
-
             <form action="https://www.paypal.com/donate" method="post" target="_top" class="donate-form">
                 <input type="hidden" name="business" value="B6V6EZXPFCVV2" />
                 <input type="hidden" name="no_recurring" value="0" />
@@ -131,6 +127,12 @@
                 <button type="submit" class="donate-btn" title="PayPal - The safer, easier way to pay online!">Donate</button>
                 <img alt="" border="0" src="https://www.paypal.com/en_US/i/scr/pixel.gif" width="1" height="1" />
             </form>
+            {% if is_authenticated %}
+                <span class="nav-user"><i class="fas fa-user"></i>{{ username }}</span>
+            {% else %}
+                 <span class="nav-user"><i class="fas fa-user"></i><a href="{% url 'login' %}">Login</a></span>
+            {% endif %}
+
         </div>
 
     </div><!-- /.nav-inner -->
