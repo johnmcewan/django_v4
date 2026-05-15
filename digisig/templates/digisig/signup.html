@@ -1,26 +1,140 @@
 {% extends "digisig/base.html" %}
 {% load static %}
+
 {% block content %}
 
+<style>
+    /* Widen the card for the longer signup form */
+    .signup-card {
+        max-width: 560px;
+    }
 
-    <div class="home-banner"></div> 
-    <div class="sidepanel-left"></div>
-    <div class="sidepanel-right"></div>
+    /* Two-column row used for first / last name */
+    .form-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 24px;
+    }
 
+    /* Extend existing .form-field rules to cover select and textarea */
+    .form-field select,
+    .form-field textarea {
+        width: 100%;
+        background: transparent;
+        border: none;
+        border-bottom: 1px solid var(--outline);
+        border-radius: 0;
+        padding: 10px 0;
+        font-family: 'Inter', sans-serif;
+        font-size: 16px;
+        color: var(--on-surface);
+        outline: none;
+        transition: border-color 0.2s ease;
+        appearance: none;
+        -webkit-appearance: none;
+        resize: none;
+    }
 
-  <div class="main-title">
-    <h1>Sign Up</h1>
-  </div>
+    .form-field select:focus,
+    .form-field textarea:focus {
+        border-bottom-color: var(--primary);
+    }
 
-  <div class="mainpage"></div>
-  <div class="entity_main">
-      <form method="post">
-        {% csrf_token %}
-        {{ form.as_p }}
-        <button type="submit">Register</button>
-      </form>
-      <p>Already have an account? <a href="{% url 'login' %}">Log in</a></p>
-  </div>
+    /* Subtle caret for select */
+    .form-field-select {
+        position: relative;
+    }
 
+    .form-field-select::after {
+        content: "\f078";          /* fa-chevron-down */
+        font-family: "Font Awesome 6 Free";
+        font-weight: 900;
+        font-size: 12px;
+        color: var(--on-surface-variant);
+        position: absolute;
+        right: 4px;
+        bottom: 12px;
+        pointer-events: none;
+    }
+
+    @media (max-width: 560px) {
+        .form-row {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+
+<section class="login-page login-banner">
+    <div class="login-card signup-card">
+
+        <div class="login-card-header">
+            <h1>Register</h1>
+            <p>Create an account to access Digisig.</p>
+        </div>
+
+        {% if form.errors %}
+        <div class="login-error">
+            <p>Please correct the errors below and try again.</p>
+        </div>
+        {% endif %}
+
+        <form method="post" class="login-form">
+            {% csrf_token %}
+
+            <div class="form-field">
+                <label for="{{ form.username.id_for_label }}">Username</label>
+                {{ form.username }}
+            </div>
+
+            <div class="form-row">
+                <div class="form-field">
+                    <label for="{{ form.first_name.id_for_label }}">First Name</label>
+                    {{ form.first_name }}
+                </div>
+                <div class="form-field">
+                    <label for="{{ form.last_name.id_for_label }}">Last Name</label>
+                    {{ form.last_name }}
+                </div>
+            </div>
+
+            <div class="form-field">
+                <label for="{{ form.email.id_for_label }}">Email Address</label>
+                {{ form.email }}
+            </div>
+
+            <div class="form-field">
+                <label for="{{ form.academicaffiliation.id_for_label }}">Academic Affiliation</label>
+                {{ form.academicaffiliation }}
+            </div>
+
+            <div class="form-field form-field-select">
+                <label for="{{ form.academic_status.id_for_label }}">Academic Status</label>
+                {{ form.academic_status }}
+            </div>
+
+            <div class="form-field">
+                <label for="{{ form.interest.id_for_label }}">Reason for Consulting the Site</label>
+                {{ form.interest }}
+            </div>
+
+            <div class="form-field">
+                <label for="{{ form.password1.id_for_label }}">Password</label>
+                {{ form.password1 }}
+            </div>
+
+            <div class="form-field">
+                <label for="{{ form.password2.id_for_label }}">Confirm Password</label>
+                {{ form.password2 }}
+            </div>
+
+            <button type="submit" class="btn btn-primary login-submit">Register</button>
+        </form>
+
+        <div class="login-footer-link">
+            <p>Already have an account? <a href="{% url 'login' %}">Login here</a></p>
+        </div>
+
+    </div>
+</section>
 
 {% endblock %}

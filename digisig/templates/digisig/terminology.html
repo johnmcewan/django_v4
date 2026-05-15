@@ -4,338 +4,459 @@
 
 {% block content %}
 
-	<div class="search-banner"></div>
-	<div class="sidepanel-left"></div>
-	<div class="sidepanel-right"></div>
+<div class="search-banner"></div>
 
-	<div class="main-title">
-		<h1>Terminology</h1>
-	</div>
+<div class="terminology-page">
+    <div class="terminology-layout">
 
-	<div class="mainpage"></div>
+        <!-- ── Left Sidebar ── -->
+        <aside class="terminology-sidebar">
+            <div class="terminology-sidebar-sticky">
 
-	<div class="entity_detail" id="entity_detail">
-			<p>Digisig brings together information from many different sources, including published seal catalogues, research datasets, and many other types of finding aids. These sources can use contrasting terms for the same concepts.</p>
+                <nav class="term-quick-links">
+                    <h3 class="term-quick-links-title">Quick Links</h3>
+                    <div class="term-quick-links-nav">
+                        <a href="#general"        class="term-nav-link term-nav-link--active">General Terms</a>
+                        <a href="#classification" class="term-nav-link">Classification</a>
+                        <a href="#shapes"         class="term-nav-link">Shapes</a>
+                        <a href="#support"        class="term-nav-link">Support</a>
+                    </div>
+                </nav>
 
-			<p>To ensure that differences in terminology do not affect searches on Digisig, the various sources have been aligned internally with Digisig's own terminology.</p> 
+                <div class="cite-box">
+                    <h4 class="cite-box-title">Cite This Resource</h4>
+                    <p class="cite-box-text"><em>"Sigillography Terminology Lexicon."</em> Digisig: Digital Sigillography Resource, 2024. Accessed via Sigillum Archive.</p>
+                    <button class="cite-copy-btn"
+                            onclick="navigator.clipboard.writeText('&quot;Sigillography Terminology Lexicon.&quot; Digisig: Digital Sigillography Resource, 2024. Accessed via Sigillum Archive.')">
+                        <i class="fas fa-copy"></i> Copy Citation
+                    </button>
+                </div>
 
-			<p>Digisig's terms are listed below. Digisig aims to provide stable representations of sigillographic concepts in accordance with the principles of Linked Open Data. Nonetheless, Digisig is a work in progress and is subject to change.</p>
-	</div>
+            </div>
+        </aside>
 
-	<div class="entity_main">
-		<div class="div-caption">
-			General Terms <button id="generalbutton1" onclick="tbtoggle('general1', 'generalbutton1')">+</button>
-		</div>
+        <!-- ── Main Content ── -->
+        <section class="terminology-content">
 
-		<div id="general1"  style="display:none;">
+            <!-- Page title + intro -->
+            <div class="terminology-intro">
+                <h1 class="display-lg">Terminology</h1>
+                <div class="terminology-intro-text">
+                    <p class="body-lg">Digisig brings together information from many different sources, including published seal catalogues, research datasets, and many other types of finding aids. These sources can use contrasting terms for the same concepts.</p>
+                    <p>To ensure that differences in terminology do not affect searches on Digisig, the various sources have been aligned internally with Digisig's own terminology. Digisig is a work in progress and is subject to change.</p>
+                </div>
+            </div>
 
-		{% for key, val in generalobject.items %}
-		{% with forloop.counter as outer_counter %}
-			<div class="classification" id="general_{{outercounter}}">
+            <!-- ── Section: General Terms ── -->
+            <div class="terminology-section" id="general">
+                <div class="section-heading-row">
+                    <h2 class="headline-lg">General Terms</h2>
+                    <span class="section-heading-rule"></span>
+                </div>
 
-		 		<div class="div-level1 tooltip">
-			 		<div class="tooltip"><a href="{% url 'entity' val.id_term %}" target="_blank">{{val.term_name}}</a></div>
-		 			<div class="tooltiptext">{{val.term_definition}}</div>
-		 		</div>
-				<div></div>
+                <div class="lexicon-grid">
+                    {% for key, val in generalobject.items %}
+                    {% with forloop.counter as outer_counter %}
 
-	 			{% for x, y in val.examples.items %}
-			 	<div>
-			 		<img class="modalimage" id="modalimagebase{{outer_counter}}" src="{{y.small}}" alt="{{x}}" loading="lazy" onclick="image({{outer_counter}})">
-			 	</div>
+                    <div class="lexicon-card">
+                        <h3 class="lexicon-card-title">
+                            <a href="{% url 'entity' val.id_term %}" target="_blank">{{ val.term_name }}</a>
+                        </h3>
+                        <p class="lexicon-card-def">{{ val.term_definition }}</p>
+                        <div class="lexicon-tags">
+                            {% for x, y in val.examples.items %}
+                            <span class="lexicon-tag"
+                                  style="cursor:pointer;"
+                                  onclick="image({{ outer_counter }})">{{ x }}</span>
+                            {% endfor %}
+                        </div>
 
-				<!-- The Modal -->
-				<div id="myModal{{outer_counter}}" class="modal" style="display: none;">
-				  <span class="close" onclick="modalclose({{outer_counter}})">&times;</span>
-				  <img class="modal-content" id="modalimg{{outer_counter}}" src="{{y.medium}}" alt="{{x}}" loading="lazy">
-				  <div class="modal-caption" id="caption{{outer_counter}}"><a href="{% url 'entity' val.id_term %}">Term details</a></div>
-				</div>
-	 			{% endfor %}
+                        {% for x, y in val.examples.items %}
+                        <img class="modalimage" id="modalimagebase{{ outer_counter }}"
+                             src="{{ y.small }}" alt="{{ x }}" loading="lazy"
+                             style="display:none;"
+                             onclick="image({{ outer_counter }})">
+                        <div id="myModal{{ outer_counter }}" class="modal" style="display: none;">
+                            <span class="close" onclick="modalclose({{ outer_counter }})">&times;</span>
+                            <img class="modal-content" id="modalimg{{ outer_counter }}"
+                                 src="{{ y.medium }}" alt="{{ x }}" loading="lazy">
+                            <div class="modal-caption" id="caption{{ outer_counter }}">
+                                <a href="{% url 'entity' val.id_term %}">Term details</a>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
 
-			</div>
-		{% endwith %}
-		{% endfor %}
+                    {% endwith %}
+                    {% endfor %}
+                </div>
+            </div>
 
-		</div>
-	</div>
 
-	<div class="entity_classification" id="entity_classification">
-		<div class="div-caption">
-			Classification <button id="entitybutton1" onclick="tbtoggle('entity1', 'entitybutton1')">+</button>
-		</div>
+            <!-- ── Section: Classification ── -->
+            <div class="terminology-section" id="classification">
+                <div class="section-heading-row">
+                    <h2 class="headline-lg">Classification</h2>
+                    <span class="section-heading-rule"></span>
+                </div>
+                <p class="terminology-section-intro">Digisig's classification system is hierarchical, with parent and child classes. The iconography reflects the taxonomic rigor of sigillographic studies.</p>
 
-		<div id="entity1"  style="display:none;">
+                <div class="class-tree">
 
-			<P> Digisig's classification system is hierarchical, with parent and child classes. Click the '+' button to explore child classes.</P>
-		{% for key, val in classterms.items %}
-		{% with forloop.counter as outer_counter %}
-		 	<div class="classification">
-	 		
-	 			{% if val.children %}
-	 			<div class="div-level">
-	 				<button id="entitybutton2_{{outer_counter}}" onclick="settoggle('entity2_{{outer_counter}}', 'entitybutton2_{{outer_counter}}', 'close2_{{outer_counter}}')">+</button>			
-	 			</div>
-	 			{% endif %}
-			 		
-		 		<div class="div-level1 tooltip">
-			 		<div class="tooltip"><a href="{% url 'entity' val.id_term %}" target="_blank">{{key}}</a></div>
-		 			<div class="tooltiptext">{{val.tooltip}}</div>					 			
-		 		</div>
-			 		
-		 		{% if val.examples %}
-		 		{% for x, y in val.examples.items %}
-		 		{% with forloop.counter as inner_counter %}
+                    {% for key, val in classterms.items %}
+                    {% with forloop.counter as outer_counter %}
 
-			 	<div>
-			 		<img class="modalimage" id="modalimagebase{{outer_counter}}{{inner_counter}}" src="{{y.connection_thumb}}{{y.address_thumb}}" alt="{{x}}" loading="lazy" onclick="image({{outer_counter}}{{inner_counter}})">
-			 	</div>
+                    <div class="class-parent-item">
 
-					<!-- The Modal -->
-				<div id="myModal{{outer_counter}}{{inner_counter}}" class="modal" style="display: none;">
-				  <span class="close" onclick="modalclose({{outer_counter}}{{inner_counter}})">&times;</span>
-				  <img class="modal-content" id="modalimg{{outer_counter}}{{inner_counter}}" src="{{y.connection_medium}}{{y.address_medium}}" alt="{{x}}" loading="lazy">
-				  <div class="modal-caption" id="caption{{outer_counter}}{{inner_counter}}"><a href="{% url 'entity' val.id_term %}">Term details</a></div>
-				</div>
-				{% endwith %}
-				{% endfor %}
-				{% endif %}
+                        <!-- Level 0 — parent row -->
+                        <div class="class-parent-row{% if val.children %} has-children{% endif %}"
+                             {% if val.children %}
+                             id="entitybutton2_{{ outer_counter }}"
+                             onclick="settoggle('entity2_{{ outer_counter }}', 'entitybutton2_{{ outer_counter }}', 'close2_{{ outer_counter }}')"
+                             {% endif %}>
 
-		 	</div>
+                            {% if val.children %}
+                            <i class="fas fa-plus-circle class-expand-icon" id="entitybutton2_{{ outer_counter }}icon"></i>
+                            {% endif %}
 
-			{% for key1, val1 in val.children.items %}
-			{% with forloop.counter as level1_counter %}
-			 	<div class="classification entity2_{{outer_counter}} close2_{{outer_counter}}" style="display:none;">
-			 		<div class="leftarrow-2"><img class="leftarrow" src="{% static 'digisig/images/icons/icons8-left-down-2-48-v2.png' %}" alt="arrow-right"> </div>
+                            <div class="class-parent-text">
+                                <h4 class="class-parent-name">
+                                    <a href="{% url 'entity' val.id_term %}" target="_blank">{{ key }}</a>
+                                </h4>
+                                <p class="class-parent-def">{{ val.tooltip }}</p>
+                            </div>
 
-			 		{% if val1.children %}
-			 		<div class="div-level"><button id="entitybutton3_{{outer_counter}}_{{level1_counter}}" onclick="settoggle('entity3_{{outer_counter}}_{{level1_counter}}', 'entitybutton3_{{outer_counter}}_{{level1_counter}}', 'close3_{{outer_counter}}_{{level1_counter}}')">+</button> </div>
-			 		{% endif %}
-			 		
-			 		<div class="div-level2 tooltip">
-			 			<div><a href="{% url 'entity' val1.id_term %}" target="_blank">{{key1}}</a></div>
-			 			<div><span class="tooltiptext">{{val1.tooltip}}</span></div>
-			 		</div>
-			 		
-			 		{% if val1.examples %}
-			 		{% for x, y in val1.examples.items %}
-			 		{% with forloop.counter as inner_counter %}
+                            {% if val.examples %}
+                            {% for x, y in val.examples.items %}
+                            {% with forloop.counter as inner_counter %}
+                            <img class="class-thumb modalimage"
+                                 id="modalimagebase{{ outer_counter }}{{ inner_counter }}"
+                                 src="{{ y.connection_thumb }}{{ y.address_thumb }}"
+                                 alt="{{ x }}" loading="lazy"
+                                 onclick="event.stopPropagation(); image({{ outer_counter }}{{ inner_counter }})">
+                            {% endwith %}
+                            {% endfor %}
+                            {% endif %}
+                        </div>
 
-				 	<div>
-				 		<img class="modalimage" id="modalimagebase{{outer_counter}}{{level1_counter}}{{inner_counter}}" src="{{y.connection_thumb}}{{y.address_thumb}}" alt="{{x}}" loading="lazy" onclick="image({{outer_counter}}{{level1_counter}}{{inner_counter}})">
-				 	</div>
+                        <!-- Level 0 — modals -->
+                        {% if val.examples %}
+                        {% for x, y in val.examples.items %}
+                        {% with forloop.counter as inner_counter %}
+                        <div id="myModal{{ outer_counter }}{{ inner_counter }}" class="modal" style="display: none;">
+                            <span class="close" onclick="modalclose({{ outer_counter }}{{ inner_counter }})">&times;</span>
+                            <img class="modal-content" id="modalimg{{ outer_counter }}{{ inner_counter }}"
+                                 src="{{ y.connection_medium }}{{ y.address_medium }}" alt="{{ x }}" loading="lazy">
+                            <div class="modal-caption" id="caption{{ outer_counter }}{{ inner_counter }}">
+                                <a href="{% url 'entity' val.id_term %}">Term details</a>
+                            </div>
+                        </div>
+                        {% endwith %}
+                        {% endfor %}
+                        {% endif %}
 
-						<!-- The Modal -->
-					<div id="myModal{{outer_counter}}1{{inner_counter}}" class="modal" style="display: none;">
-					  <span class="close" onclick="modalclose({{outer_counter}}{{level1_counter}}{{inner_counter}})">&times;</span>
-					  <img class="modal-content" id="modalimg{{outer_counter}}{{level1_counter}}{{inner_counter}}" src="{{y.connection_medium}}{{y.address_medium}}" alt="{{x}}" loading="lazy">
-					  <div class="modal-caption" id="caption{{outer_counter}}{{level1_counter}}{{inner_counter}}"><a href="{% url 'entity' val1.id_term %}">Term details</a></div>
-					</div>
 
-		 			{% endwith %}
-		 			{% endfor %}
-		 			{% endif %}
+                        <!-- Level 1 — children container -->
+                        {% if val.children %}
+                        <div class="class-children entity2_{{ outer_counter }} close2_{{ outer_counter }}" style="display:none;">
 
-			 	</div>
+                            {% for key1, val1 in val.children.items %}
+                            {% with forloop.counter as level1_counter %}
 
-				{% for key2, val2 in val1.children.items %}
-				{% with forloop.counter as level2_counter %}
-				 	<div class="classification entity3_{{outer_counter}}_{{level1_counter}} close2_{{outer_counter}} close3_{{outer_counter}}_{{level1_counter}}" style="display:none;">
-				 		
-						<div class="leftarrow-3"><img class="leftarrow" src="{% static 'digisig/images/icons/icons8-left-down-2-48-v2.png' %}" alt="arrow-right"></div>
-				 		
-				 		{% if val2.children %}
-				 		<div class="div-level"><button id="entitybutton4_{{outer_counter}}_{{level1_counter}}_{{level2_counter}}" onclick="settoggle('entity4_{{outer_counter}}_{{level1_counter}}_{{level2_counter}}', 'entitybutton4_{{outer_counter}}_{{level1_counter}}_{{level2_counter}}', 'close4_{{outer_counter}}_{{level1_counter}}_{{level2_counter}}')">+</button></div>
-				 		{% endif %}
-				 		
-				 		<div class="div-level3 tooltip">
-				 			<div><a href="{% url 'entity' val2.id_term %}" target="_blank">{{key2}}</a></div>
-				 			<div><span class="tooltiptext">{{val2.tooltip}}</span></div>
-				 		</div>
-				 		
-				 		{% if val2.examples %}
-			 			{% for x, y in val2.examples.items %}
-			 			{% with forloop.counter as inner_counter %}
+                            <div class="class-child-item">
+                                <div class="class-child-row level-1{% if val1.children %} has-children{% endif %}"
+                                     {% if val1.children %}
+                                     id="entitybutton3_{{ outer_counter }}_{{ level1_counter }}"
+                                     onclick="settoggle('entity3_{{ outer_counter }}_{{ level1_counter }}', 'entitybutton3_{{ outer_counter }}_{{ level1_counter }}', 'close3_{{ outer_counter }}_{{ level1_counter }}')"
+                                     {% endif %}>
+                                    <i class="fas fa-level-down-alt child-arrow"></i>
+                                    <div class="class-child-text">
+                                        <span class="class-child-name">
+                                            {% if val1.children %}
+                                            <i class="fas fa-plus class-expand-sm"></i>
+                                            {% endif %}
+                                            <a href="{% url 'entity' val1.id_term %}" target="_blank">{{ key1 }}</a>
+                                        </span>
+                                        {% if val1.tooltip %}
+                                        <span class="class-child-sep">|</span>
+                                        <span class="class-child-def">{{ val1.tooltip }}</span>
+                                        {% endif %}
+                                    </div>
+                                    {% if val1.examples %}
+                                    {% for x, y in val1.examples.items %}
+                                    {% with forloop.counter as inner_counter %}
+                                    <img class="class-thumb-sm modalimage"
+                                         id="modalimagebase{{ outer_counter }}{{ level1_counter }}{{ inner_counter }}"
+                                         src="{{ y.connection_thumb }}{{ y.address_thumb }}"
+                                         alt="{{ x }}" loading="lazy"
+                                         onclick="event.stopPropagation(); image({{ outer_counter }}{{ level1_counter }}{{ inner_counter }})">
+                                    {% endwith %}
+                                    {% endfor %}
+                                    {% endif %}
+                                </div>
 
-						 	<div>
-						 		<img class="modalimage" id="modalimagebase{{outer_counter}}{{level1_counter}}{{level2_counter}}{{inner_counter}}" src="{{y.connection_thumb}}{{y.address_thumb}}" alt="{{x}}" loading="lazy" onclick="image({{outer_counter}}{{level1_counter}}{{level2_counter}}{{inner_counter}})">
-						 	</div>
+                                <!-- Level 1 — modals -->
+                                {% if val1.examples %}
+                                {% for x, y in val1.examples.items %}
+                                {% with forloop.counter as inner_counter %}
+                                <div id="myModal{{ outer_counter }}{{ level1_counter }}{{ inner_counter }}" class="modal" style="display: none;">
+                                    <span class="close" onclick="modalclose({{ outer_counter }}{{ level1_counter }}{{ inner_counter }})">&times;</span>
+                                    <img class="modal-content" id="modalimg{{ outer_counter }}{{ level1_counter }}{{ inner_counter }}"
+                                         src="{{ y.connection_medium }}{{ y.address_medium }}" alt="{{ x }}" loading="lazy">
+                                    <div class="modal-caption" id="caption{{ outer_counter }}{{ level1_counter }}{{ inner_counter }}">
+                                        <a href="{% url 'entity' val1.id_term %}">Term details</a>
+                                    </div>
+                                </div>
+                                {% endwith %}
+                                {% endfor %}
+                                {% endif %}
 
-								<!-- The Modal -->
-							<div id="myModal{{outer_counter}}{{level1_counter}}{{level2_counter}}{{inner_counter}}" class="modal" style="display: none;">
-							  <span class="close" onclick="modalclose({{outer_counter}}{{level1_counter}}{{level2_counter}}{{inner_counter}})">&times;</span>
-							  <img class="modal-content" id="modalimg{{outer_counter}}{{level1_counter}}{{level2_counter}}{{inner_counter}}" src="{{y.connection_medium}}{{y.address_medium}}" alt="{{x}}" loading="lazy">
-							  <div class="modal-caption" id="caption{{outer_counter}}{{level1_counter}}{{level2_counter}}{{inner_counter}}"><a href="{% url 'entity' val1.id_term %}">Term details</a></div>
-							</div>
+                                <!-- Level 2 — grandchildren -->
+                                {% if val1.children %}
+                                <div class="class-children class-grandchildren entity3_{{ outer_counter }}_{{ level1_counter }} close2_{{ outer_counter }} close3_{{ outer_counter }}_{{ level1_counter }}" style="display:none;">
 
-			 			{% endwith %}
-			 			{% endfor %}
-	 					{% endif %}
+                                    {% for key2, val2 in val1.children.items %}
+                                    {% with forloop.counter as level2_counter %}
 
-				 	</div>
+                                    <div class="class-child-item">
+                                        <div class="class-child-row level-2{% if val2.children %} has-children{% endif %}"
+                                             {% if val2.children %}
+                                             id="entitybutton4_{{ outer_counter }}_{{ level1_counter }}_{{ level2_counter }}"
+                                             onclick="settoggle('entity4_{{ outer_counter }}_{{ level1_counter }}_{{ level2_counter }}', 'entitybutton4_{{ outer_counter }}_{{ level1_counter }}_{{ level2_counter }}', 'close4_{{ outer_counter }}_{{ level1_counter }}_{{ level2_counter }}')"
+                                             {% endif %}>
+                                            <i class="fas fa-circle class-dot-icon"></i>
+                                            <div class="class-child-text">
+                                                <span class="class-child-name">
+                                                    {% if val2.children %}<i class="fas fa-plus class-expand-sm"></i>{% endif %}
+                                                    <a href="{% url 'entity' val2.id_term %}" target="_blank">{{ key2 }}</a>
+                                                </span>
+                                                {% if val2.tooltip %}
+                                                <span class="class-child-def block">{{ val2.tooltip }}</span>
+                                                {% endif %}
+                                            </div>
+                                            {% if val2.examples %}
+                                            {% for x, y in val2.examples.items %}
+                                            {% with forloop.counter as inner_counter %}
+                                            <img class="class-thumb-sm modalimage"
+                                                 id="modalimagebase{{ outer_counter }}{{ level1_counter }}{{ level2_counter }}{{ inner_counter }}"
+                                                 src="{{ y.connection_thumb }}{{ y.address_thumb }}"
+                                                 alt="{{ x }}" loading="lazy"
+                                                 onclick="event.stopPropagation(); image({{ outer_counter }}{{ level1_counter }}{{ level2_counter }}{{ inner_counter }})">
+                                            {% endwith %}
+                                            {% endfor %}
+                                            {% endif %}
+                                        </div>
 
-					{% for key3, val3 in val2.children.items %}
-					{% with forloop.counter as level3_counter %}
-					 	<div class="classification entity4_{{outer_counter}}_{{level1_counter}}_{{level2_counter}} close2_{{outer_counter}} close3_{{outer_counter}}_{{level1_counter}} close4_{{outer_counter}}_{{level1_counter}}_{{level2_counter}}" style="display:none;">
-							<div class="leftarrow-4"><img class="leftarrow" src="{% static 'digisig/images/icons/icons8-left-down-2-48-v2.png' %}" alt="arrow-right"></div>
-					 		
-					 		{% if val3.children %}
-					 		<div class="div-level">
-					 			<button id="entitybutton5_{{outer_counter}}_{{level1_counter}}_{{level2_counter}}_{{level3_counter}}" onclick="settoggle('entity5_{{outer_counter}}_{{level1_counter}}_{{level2_counter}}_{{level3_counter}}', 'entitybutton5_{{outer_counter}}_{{level1_counter}}_{{level2_counter}}_{{level3_counter}}', 'close5_{{outer_counter}}_{{level1_counter}}_{{level2_counter}}_{{level3_counter}}')">+</button>
-					 		</div>
-					 		{% endif %}
-						 
-							<div class="div-level4 tooltip">
-								<div><a href="{% url 'entity' val3.id_term %}" target="_blank">{{key3}}</a></div>
-								<div><span class="tooltiptext">{{val3.tooltip}}</span></div>
-							</div>
+                                        {% if val2.examples %}
+                                        {% for x, y in val2.examples.items %}
+                                        {% with forloop.counter as inner_counter %}
+                                        <div id="myModal{{ outer_counter }}{{ level1_counter }}{{ level2_counter }}{{ inner_counter }}" class="modal" style="display: none;">
+                                            <span class="close" onclick="modalclose({{ outer_counter }}{{ level1_counter }}{{ level2_counter }}{{ inner_counter }})">&times;</span>
+                                            <img class="modal-content" id="modalimg{{ outer_counter }}{{ level1_counter }}{{ level2_counter }}{{ inner_counter }}"
+                                                 src="{{ y.connection_medium }}{{ y.address_medium }}" alt="{{ x }}" loading="lazy">
+                                            <div class="modal-caption" id="caption{{ outer_counter }}{{ level1_counter }}{{ level2_counter }}{{ inner_counter }}">
+                                                <a href="{% url 'entity' val2.id_term %}">Term details</a>
+                                            </div>
+                                        </div>
+                                        {% endwith %}
+                                        {% endfor %}
+                                        {% endif %}
 
-							{% if val3.examples %}
-				 			{% for x, y in val3.examples.items %}
-				 			{% with forloop.counter as inner_counter %}
+                                        <!-- Level 3 -->
+                                        {% if val2.children %}
+                                        <div class="class-children class-great-grandchildren entity4_{{ outer_counter }}_{{ level1_counter }}_{{ level2_counter }} close2_{{ outer_counter }} close3_{{ outer_counter }}_{{ level1_counter }} close4_{{ outer_counter }}_{{ level1_counter }}_{{ level2_counter }}" style="display:none;">
 
-							 	<div>
-							 		<img class="modalimage" id="modalimagebase{{outer_counter}}{{level1_counter}}{{level2_counter}}{{level3_counter}}{{inner_counter}}" src="{{y.connection_thumb}}{{y.address_thumb}}" alt="{{x}}" loading="lazy" onclick="image({{outer_counter}}{{level1_counter}}{{level2_counter}}{{level3_counter}}{{inner_counter}})">
-							 	</div>
+                                            {% for key3, val3 in val2.children.items %}
+                                            {% with forloop.counter as level3_counter %}
 
-									<!-- The Modal -->
-								<div id="myModal{{outer_counter}}{{level1_counter}}{{level2_counter}}{{level3_counter}}{{inner_counter}}" class="modal" style="display: none;">
-								  <span class="close" onclick="modalclose({{outer_counter}}{{level1_counter}}{{level2_counter}}{{level3_counter}}{{inner_counter}})">&times;</span>
-								  <img class="modal-content" id="modalimg{{outer_counter}}{{level1_counter}}{{level2_counter}}{{level3_counter}}{{inner_counter}}" src="{{y.connection_medium}}{{y.address_medium}}" alt="{{x}}" loading="lazy">
-								  <div class="modal-caption" id="caption{{outer_counter}}{{level1_counter}}{{level2_counter}}{{level3_counter}}{{inner_counter}}"><a href="{% url 'entity' val3.id_term %}">Term details</a></div>
-								</div>
+                                            <div class="class-child-item">
+                                                <div class="class-child-row level-3{% if val3.children %} has-children{% endif %}"
+                                                     {% if val3.children %}
+                                                     id="entitybutton5_{{ outer_counter }}_{{ level1_counter }}_{{ level2_counter }}_{{ level3_counter }}"
+                                                     onclick="settoggle('entity5_{{ outer_counter }}_{{ level1_counter }}_{{ level2_counter }}_{{ level3_counter }}', 'entitybutton5_{{ outer_counter }}_{{ level1_counter }}_{{ level2_counter }}_{{ level3_counter }}', 'close5_{{ outer_counter }}_{{ level1_counter }}_{{ level2_counter }}_{{ level3_counter }}')"
+                                                     {% endif %}>
+                                                    <i class="fas fa-circle class-dot-icon class-dot-sm"></i>
+                                                    <div class="class-child-text">
+                                                        <span class="class-child-name">
+                                                            {% if val3.children %}<i class="fas fa-plus class-expand-sm"></i>{% endif %}
+                                                            <a href="{% url 'entity' val3.id_term %}" target="_blank">{{ key3 }}</a>
+                                                        </span>
+                                                        {% if val3.tooltip %}
+                                                        <span class="class-child-def block">{{ val3.tooltip }}</span>
+                                                        {% endif %}
+                                                    </div>
+                                                </div>
 
-				 			{% endwith %}
-				 			{% endfor %}
-			 				{% endif %}
-					 	</div>		
+                                                {% if val3.examples %}
+                                                {% for x, y in val3.examples.items %}
+                                                {% with forloop.counter as inner_counter %}
+                                                <div id="myModal{{ outer_counter }}{{ level1_counter }}{{ level2_counter }}{{ level3_counter }}{{ inner_counter }}" class="modal" style="display: none;">
+                                                    <span class="close" onclick="modalclose({{ outer_counter }}{{ level1_counter }}{{ level2_counter }}{{ level3_counter }}{{ inner_counter }})">&times;</span>
+                                                    <img class="modal-content" id="modalimg{{ outer_counter }}{{ level1_counter }}{{ level2_counter }}{{ level3_counter }}{{ inner_counter }}"
+                                                         src="{{ y.connection_medium }}{{ y.address_medium }}" alt="{{ x }}" loading="lazy">
+                                                    <div class="modal-caption" id="caption{{ outer_counter }}{{ level1_counter }}{{ level2_counter }}{{ level3_counter }}{{ inner_counter }}">
+                                                        <a href="{% url 'entity' val3.id_term %}">Term details</a>
+                                                    </div>
+                                                </div>
+                                                {% endwith %}
+                                                {% endfor %}
+                                                {% endif %}
 
-						{% for key4, val4 in val3.children.items %}
-						{% with forloop.counter as level4_counter %}
-						 	<div class="classification entity5_{{outer_counter}}_{{level1_counter}}_{{level2_counter}}_{{level3_counter}} close2_{{outer_counter}} close3_{{outer_counter}}_{{level1_counter}} close4_{{outer_counter}}_{{level1_counter}}_{{level2_counter}} close5_{{outer_counter}}_{{level1_counter}}_{{level2_counter}}_{{level3_counter}}" style="display:none;">
-						 		
-						 		<div class="leftarrow-5"><img class="leftarrow" src="{% static 'digisig/images/icons/icons8-left-down-2-48-v2.png' %}" alt="arrow-right"></div>
-					 			<div class="div-level5 tooltip">
-					 				<div><a href="{% url 'entity' val4.id_term %}" target="_blank">{{key4}}</a></div>
-					 				<div><span class="tooltiptext">{{val4.tooltip}}</span></div>
-					 			</div>
-					 			
-					 			{% if val4.examples %}
-			 					{% for x, y in val4.examples.items %}
-					 			{% with forloop.counter as inner_counter %}
+                                                <!-- Level 4 -->
+                                                {% if val3.children %}
+                                                <div class="class-children entity5_{{ outer_counter }}_{{ level1_counter }}_{{ level2_counter }}_{{ level3_counter }} close2_{{ outer_counter }} close3_{{ outer_counter }}_{{ level1_counter }} close4_{{ outer_counter }}_{{ level1_counter }}_{{ level2_counter }} close5_{{ outer_counter }}_{{ level1_counter }}_{{ level2_counter }}_{{ level3_counter }}" style="display:none;">
 
-								 	<div>
-								 		<img class="modalimage" id="modalimagebase{{outer_counter}}{{level1_counter}}{{level2_counter}}{{level3_counter}}{{level4_counter}}{{inner_counter}}" src="{{y.connection_thumb}}{{y.address_thumb}}" alt="{{x}}" loading="lazy" onclick="image({{outer_counter}}{{level1_counter}}{{level2_counter}}{{level3_counter}}{{level4_counter}}{{inner_counter}})">
-								 	</div>
+                                                    {% for key4, val4 in val3.children.items %}
+                                                    {% with forloop.counter as level4_counter %}
+                                                    <div class="class-child-item">
+                                                        <div class="class-child-row level-4">
+                                                            <i class="fas fa-circle class-dot-icon class-dot-sm"></i>
+                                                            <div class="class-child-text">
+                                                                <span class="class-child-name">
+                                                                    <a href="{% url 'entity' val4.id_term %}" target="_blank">{{ key4 }}</a>
+                                                                </span>
+                                                                {% if val4.tooltip %}
+                                                                <span class="class-child-def block">{{ val4.tooltip }}</span>
+                                                                {% endif %}
+                                                            </div>
+                                                        </div>
 
-										<!-- The Modal -->
-									<div id="myModal{{outer_counter}}{{level1_counter}}{{level2_counter}}{{level3_counter}}{{level4_counter}}{{inner_counter}}" class="modal" style="display: none;">
-									  <span class="close" onclick="modalclose({{outer_counter}}{{level1_counter}}{{level2_counter}}{{level3_counter}}{{level4_counter}}{{inner_counter}})">&times;</span>
-									  <img class="modal-content" id="modalimg{{outer_counter}}{{level1_counter}}{{level2_counter}}{{level3_counter}}{{level4_counter}}{{inner_counter}}" src="{{y.connection_medium}}{{y.address_medium}}" alt="{{x}}" loading="lazy">
-									  <div class="modal-caption" id="caption{{outer_counter}}{{level1_counter}}{{level2_counter}}{{level3_counter}}{{level4_counter}}{{inner_counter}}"><a href="{% url 'entity' val4.id_term %}">Term details</a></div>
-									</div>
+                                                        {% if val4.examples %}
+                                                        {% for x, y in val4.examples.items %}
+                                                        {% with forloop.counter as inner_counter %}
+                                                        <div id="myModal{{ outer_counter }}{{ level1_counter }}{{ level2_counter }}{{ level3_counter }}{{ level4_counter }}{{ inner_counter }}" class="modal" style="display: none;">
+                                                            <span class="close" onclick="modalclose({{ outer_counter }}{{ level1_counter }}{{ level2_counter }}{{ level3_counter }}{{ level4_counter }}{{ inner_counter }})">&times;</span>
+                                                            <img class="modal-content" id="modalimg{{ outer_counter }}{{ level1_counter }}{{ level2_counter }}{{ level3_counter }}{{ level4_counter }}{{ inner_counter }}"
+                                                                 src="{{ y.connection_medium }}{{ y.address_medium }}" alt="{{ x }}" loading="lazy">
+                                                            <div class="modal-caption" id="caption{{ outer_counter }}{{ level1_counter }}{{ level2_counter }}{{ level3_counter }}{{ level4_counter }}{{ inner_counter }}">
+                                                                <a href="{% url 'entity' val4.id_term %}">Term details</a>
+                                                            </div>
+                                                        </div>
+                                                        {% endwith %}
+                                                        {% endfor %}
+                                                        {% endif %}
+                                                    </div>
+                                                    {% endwith %}
+                                                    {% endfor %}
 
-					 			{% endwith %}
-			 					{% endfor %}
-		 						{% endif %}
+                                                </div>
+                                                {% endif %}
+                                                <!-- /Level 4 -->
 
-							</div>
-						{% endwith %}
-						{% endfor %}
+                                            </div>
+                                            {% endwith %}
+                                            {% endfor %}
 
-					{% endwith %}
-					{% endfor %}
+                                        </div>
+                                        {% endif %}
+                                        <!-- /Level 3 -->
 
-				{% endwith %}
-				{% endfor %}
+                                    </div>
+                                    {% endwith %}
+                                    {% endfor %}
 
-			{% endwith %}
-			{% endfor %}
+                                </div>
+                                {% endif %}
+                                <!-- /Level 2 -->
 
-		{% endwith %}
-		{% endfor %}
-	</div>
+                            </div>
+                            {% endwith %}
+                            {% endfor %}
+
+                        </div>
+                        {% endif %}
+                        <!-- /Level 1 -->
+
+                    </div>
+
+                    {% endwith %}
+                    {% endfor %}
+
+                </div>
+            </div>
+
+
+            <!-- ── Section: Shapes ── -->
+            <div class="terminology-section" id="shapes">
+                <div class="section-heading-row">
+                    <h2 class="headline-lg">Shapes</h2>
+                    <span class="section-heading-rule"></span>
+                </div>
+
+                <div class="shapes-table">
+                    {% for key, val in shapeobject.items %}
+                    {% with forloop.counter as outer_counter %}
+
+                    <div class="shapes-row">
+                        <div class="shapes-name">
+                            <a href="{% url 'entity' val.id_term %}" target="_blank">{{ val.term_name }}</a>
+                        </div>
+                        <div class="shapes-def">{{ val.term_definition }}</div>
+
+                        {% for x, y in val.examples.items %}
+                        <img class="modalimage" id="modalimagebaseshape{{ outer_counter }}"
+                             src="{{ y.small }}" alt="{{ x }}" loading="lazy"
+                             style="display:none;"
+                             onclick="image({{ outer_counter }})">
+                        <div id="myModalshape{{ outer_counter }}" class="modal" style="display: none;">
+                            <span class="close" onclick="modalclose({{ outer_counter }})">&times;</span>
+                            <img class="modal-content" id="modalimgshape{{ outer_counter }}"
+                                 src="{{ y.medium }}" alt="{{ x }}" loading="lazy">
+                            <div class="modal-caption" id="captionshape{{ outer_counter }}">
+                                <a href="{% url 'entity' val.id_term %}">Term details</a>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+
+                    {% endwith %}
+                    {% endfor %}
+                </div>
+            </div>
+
+
+            <!-- ── Section: Support ── -->
+            <div class="terminology-section" id="support">
+                <div class="section-heading-row">
+                    <h2 class="headline-lg">Support</h2>
+                    <span class="section-heading-rule"></span>
+                </div>
+
+                <div class="support-grid">
+                    {% for key, val in natureobject.items %}
+                    {% with forloop.counter as outer_counter %}
+
+                    <div class="support-card">
+                        <h5 class="support-card-name">
+                            <a href="{% url 'entity' val.id_term %}" target="_blank">{{ val.term_name }}</a>
+                        </h5>
+                        <p class="support-card-def">{{ val.term_definition }}</p>
+
+                        {% for x, y in val.examples.items %}
+                        <img class="modalimage" id="modalimagebasenature{{ outer_counter }}"
+                             src="{{ y.small }}" alt="{{ x }}" loading="lazy"
+                             style="display:none;"
+                             onclick="image2({{ outer_counter }}, 'nature')">
+                        <div id="myModalnature{{ outer_counter }}" class="modal" style="display: none;">
+                            <span class="close" onclick="modalclose2({{ outer_counter }}, 'nature')">&times;</span>
+                            <img class="modal-content" id="modalimgnature{{ outer_counter }}"
+                                 src="{{ y.medium }}" alt="{{ x }}" loading="lazy">
+                            <div class="modal-caption" id="captionnature{{ outer_counter }}">
+                                <a href="{% url 'entity' val.id_term %}">Term details</a>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+
+                    {% endwith %}
+                    {% endfor %}
+                </div>
+            </div>
+
+        </section>
+        <!-- /Main Content -->
+
+    </div>
 </div>
-
-
-	<div class="entity_item" id="entity_item">
-		<div class="div-caption">
-			Shapes <button id="shapebutton1" onclick="tbtoggle('shape1', 'shapebutton1')">+</button>
-		</div>
-
-		<div id="shape1"  style="display:none;">
-
-		{% for key, val in shapeobject.items %}
-		{% with forloop.counter as outer_counter %}
-			<div class="classification" id="shape_{{outercounter}}">
-
-		 		<div class="div-level1 tooltip">
-					<div class="tooltip"><a href="{% url 'entity' val.id_term %}" target="_blank">{{val.term_name}}</a></div>
-			 		<div class="tooltiptext">{{val.term_definition}}</div>
-		 		</div>
-
-				 <div></div>
-
-
-	 			{% for x, y in val.examples.items %}
-			 	<div>
-			 		<img class="modalimage" id="modalimagebase{{outer_counter}}" src="{{y.small}}" alt="{{x}}" loading="lazy" onclick="image({{outer_counter}})">
-			 	</div>
-
-				<!-- The Modal -->
-				<div id="myModal{{outer_counter}}" class="modal" style="display: none;">
-				  <span class="close" onclick="modalclose({{outer_counter}})">&times;</span>
-				  <img class="modal-content" id="modalimg{{outer_counter}}" src="{{y.medium}}" alt="{{x}}" loading="lazy">
-				  <div class="modal-caption" id="caption{{outer_counter}}"><a href="{% url 'entity' val.id_term %}">Term details</a></div>
-				</div>
-	 			{% endfor %}
-
-			</div>
-		{% endwith %}
-		{% endfor %}
-
-		</div>
-
-	</div>
-
-
-
-	<div class="entity_representation" id="entity_representation">
-		<div class="div-caption">
-			Support <button id="supportbutton1" onclick="tbtoggle('support1', 'supportbutton1')">+</button>
-		</div>
-
-		<div id="support1"  style="display:none;">
-
-			{% for key, val in natureobject.items %}
-			{% with forloop.counter as outer_counter %}
-			<div class="classification" id="nature_{{outer_counter}}">
-
-				<div class="div-level1 tooltip">
-					<div class="tooltip"><a href="{% url 'entity' val.id_term %}" target="_blank">{{val.term_name}}</a></div>
-			 		<div class="tooltiptext">{{val.term_definition}}</div>
-		 		</div>
-
-		 		<div></div>
-
-	 			{% for x, y in val.examples.items %}
-			 	<div>
-			 		<img class="modalimage" id="modalimagebasenature{{outer_counter}}" src="{{y.small}}" alt="{{x}}" loading="lazy" onclick="image2({{outer_counter}}, 'nature')">
-			 	</div>
-
-				<!-- The Modal -->
-				<div id="myModalnature{{outer_counter}}" class="modal" style="display: none;">
-				  <span class="close" onclick="modalclose2({{outer_counter}}, 'nature')">&times;</span>
-				  <img class="modal-content" id="modalimgnature{{outer_counter}}" src="{{y.medium}}" alt="{{x}}" loading="lazy">
-				  <div class="modal-caption" id="captionnature{{outer_counter}}"><a href="{% url 'entity' val.id_term %}">Term details</a></div>
-				</div>
-	 			{% endfor %}
-
-		</div>
-		{% endwith %}
-		{% endfor %}
-
-	</div>
-</div>
-
 
 {% endblock %}

@@ -4,462 +4,391 @@
 
 {% block content %}
 
-
 <!-- Chart.js -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-<!-- Leaflet stuff -->
+<!-- Leaflet -->
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
-
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 
 
-	<div class="home-banner"></div>
-	<div class="sidepanel-left"></div>
-	<div class="sidepanel-right"></div>
+<!-- ═══════════════════════════════════════════════════════════
+     COLLECTION HEADER
+     ═══════════════════════════════════════════════════════════ -->
+<section class="coll-header">
+    <div class="coll-header-inner">
 
-	<div class="main-title">
-		<h1>{{pagetitle}}</h1>
-	</div>
+        <!-- Left: title + metadata + notes -->
+        <div class="coll-header-text">
 
-	<div class="mainpage" id="mainpage"></div>
+            <div class="coll-title-row">
+                <h1 class="display-lg">{{pagetitle}}</h1>
+                <button class="coll-permalink-btn" onclick="navigator.clipboard.writeText('http://www.digisig.org/entity/{{collection_dic.id_collection}}')">
+                    <i class="fas fa-link"></i> Permalink
+                </button>
+            </div>
 
-	<div class="entity-permalink" id="entity-permalink">
-		<div class="permalinkinfo" id="permalinkinfo">
-		Permalink
-		<button onclick="toggle('entity-permalink')" class="closebutton">X</button>
-		<form action="#">
-			<label>Copy this URL to link to this page:</label>
-			<input id="input" class="text" name="" value="http://www.digisig.org/entity/{{collection_dic.id_collection}}" type="text" readonly>
-		</form>
-		</div>
-	</div>
+            <div class="coll-meta-grid">
 
-	<div class="entity_detail" id="entity_detail">
-		<h3>Collection details <button onclick="toggle('entity-permalink')" class="permalink">Permalink</button></h3> 
-		<table>
-			<tr>
-				<th>Title</th>
-				<td>{{collection_dic.collection_title}}</td>
-				{% if collection_dic.collection_thumbnail != null %}
-				<td rowspan="4">
-					<div>
-						<figure>
-							<img class="modalimage" id="modalimagebase1" src="{% static 'digisig/images/collections_cover/'%}{{collection_dic.collection_thumbnail}}" alt="catalogue cover photograph" onclick="image(1)">
-						</figure>
+                {% for key, value in collection_dic.contributors.items %}
+                <div class="coll-meta-item">
+                    <span class="coll-meta-label">{% cycle 'Credit' '' '' '' '' '' '' '' '' %}</span>
+                    <p class="coll-meta-value">
+                        {{value.contribution}} {{value.name}}
+                        {% if value.uricontributor %}
+                        <a href="{{value.uricontributor}}" target="_blank" class="coll-meta-link">External Link</a>
+                        {% endif %}
+                    </p>
+                </div>
+                {% endfor %}
+                {% resetcycle %}
 
-						<!-- The Modal -->
-	 					<div id="myModal1" class="modal" style="display: none;">
-						  <span class="close" onclick="modalclose(1)">&times;</span>
-						  <img class="modal-content" id="modalimg1" src="{% static 'sealquery/images/collections_cover/'%}{{collection_dic.collection_thumbnail}}" alt="catalogue cover photograph">
-						  <div class="modal-caption" id="caption1">{{collection_dic.collection_fulltitle}}</div>
-						</div>
-					</div>
-				</td>
-				{% endif %}
-			</tr>
+                <div class="coll-meta-item">
+                    <span class="coll-meta-label">Publication details</span>
+                    <p class="coll-meta-value">{{collection_dic.collection_publicationdata}}</p>
+                </div>
 
-			{% for key, value in collection_dic.contributors.items %}
-			<tr>
-				<th>{% cycle 'Credit' '' '' '' '' '' '' '' '' %}</th>
-				<td>
-					{{value.contribution}} {{value.name}}
-				{% if value.uricontributor %}
-				<a href="{{value.uricontributor}}" target="_blank">External Link</a>
-				{% endif %}
-				</td> 
-			</tr>
-			{% endfor %}
-			{% resetcycle %}
+                <div class="coll-meta-item">
+                    <div class="coll-stat-pair">
+                        <div>
+                            <span class="coll-meta-label">Total Entries</span>
+                            <p class="coll-stat-num">{{collection_dic.totalsealdescriptions}}</p>
+                        </div>
+                        <div>
+                            <span class="coll-meta-label">Total Seals</span>
+                            <p class="coll-stat-num">{{collection_dic.totalseals}}</p>
+                        </div>
+                    </div>
+                </div>
 
-			<tr>
-				<th>Publication details</th>
-				<td>{{collection_dic.collection_publicationdata}}</td>
-			</tr>
-			<tr>
-				<th>Total Entries</th>
-				<td>{{collection_dic.totalsealdescriptions}}</td>
-			<tr>
-			<tr>
-				<th>Total Seals</th>
-				<td>{{collection_dic.totalseals}}</td>
-			</tr>
-			<tr>
-				<th>Notes</th>
-				<td>{{collection_dic.notes}}</td>
-			</tr>
+            </div>
 
+            {% if collection_dic.notes %}
+            <div class="coll-notes-box">
+                <span class="coll-meta-label">Archival Notes</span>
+                <p class="coll-notes-text">{{collection_dic.notes}}</p>
+            </div>
+            {% endif %}
 
-		</table>
-	</div>
+        </div>
 
-	<div class="entity_chartfilter" id="entity_chartfilter">
-		<div>
-			<h2>Select</h2>		
-			<form id="form" action="/information/collections" method="post">
-		    	{% csrf_token %}
-		    	{{ form.non_field_errors }}
-		    	<div class="fieldWrapper">
-				    {{ form.collection.errors }}
-				    <label for="{{ form.collection.id_for_label }}">Collection <a class="help" href="{% url 'entity' digisig_entity_number=10001607 %}" target="_blank"><i class="fas fa-question-circle"></i></a></label>
-				    {{ form.collection }}
-				</div>
-				<div class="fieldWrapper">
-		    		<input class="submit" type="submit" value="Submit">
-		    	</div>
-			</form>
-		</div>
-	</div>
+        <!-- Right: cover image -->
+        {% if collection_dic.collection_thumbnail != null %}
+        <div class="coll-header-cover">
+            <div class="coll-cover-frame">
+                <img class="modalimage" id="modalimagebase1"
+                     src="{% static 'digisig/images/collections_cover/'%}{{collection_dic.collection_thumbnail}}"
+                     alt="catalogue cover photograph"
+                     onclick="image(1)">
+                <div class="coll-cover-overlay">
+                    <i class="fas fa-search-plus"></i>
+                </div>
+            </div>
+            <p class="coll-cover-caption">{{collection_dic.collection_fulltitle}}</p>
 
-	<div class="entity_chart" id="entity_chart">
-		<canvas id="Chart1"></canvas>
-	</div>
+            <!-- The Modal -->
+            <div id="myModal1" class="modal" style="display: none;">
+                <span class="close" onclick="modalclose(1)">&times;</span>
+                <img class="modal-content" id="modalimg1"
+                     src="{% static 'sealquery/images/collections_cover/'%}{{collection_dic.collection_thumbnail}}"
+                     alt="catalogue cover photograph">
+                <div class="modal-caption" id="caption1">{{collection_dic.collection_fulltitle}}</div>
+            </div>
+        </div>
+        {% endif %}
 
-	<div class="entity_seals" id="entity_seals">
-		<div class="div-caption">
-			Classification <button id="entitybutton1" onclick="tbtoggle('Chart2', 'entitybutton1')" class="entity">+</button>
-		</div>
-		<div>
-			<canvas id="Chart2" style="display:none;"></canvas>
-		</div>
-	</div>
+    </div>
+</section>
 
 
-	<div class="entity_event" id="entity_event">
-		<div class="div-caption">
-			Temporal Distribution <button id="entitybutton2" onclick="tbtoggle('Chart3', 'entitybutton2')" class="entity">+</button>
-		</div>
-		<div>
-			<canvas id="Chart3" style="display:none;"></canvas>
-		</div>
-	</div>
+<!-- ═══════════════════════════════════════════════════════════
+     BENTO ANALYTICS GRID
+     ═══════════════════════════════════════════════════════════ -->
+<section class="coll-analytics">
+    <div class="bento-grid">
+
+        <!-- ── Row 1 ─────────────────────────────────────────── -->
+
+        <!-- Catalog Filter (4 cols) -->
+        <div class="bento-card bento-col-4">
+            <div class="coll-filter-body">
+                <div>
+                    <h3 class="headline-md">Catalog Filter</h3>
+                    <p class="coll-filter-desc">Refine the metadata analysis by selecting a specific subset from our archives.</p>
+
+                    <form id="form" action="/information/collections" method="post">
+                        {% csrf_token %}
+                        {{ form.non_field_errors }}
+                        <div class="coll-filter-field">
+                            <label class="coll-filter-label" for="{{ form.collection.id_for_label }}">
+                                Collection
+                                <a class="help" href="{% url 'entity' digisig_entity_number=10001607 %}" target="_blank"><i class="fas fa-question-circle"></i></a>
+                            </label>
+                            {{ form.collection }}
+                        </div>
+                        <button class="btn btn-primary coll-filter-submit" type="submit">Submit Query</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Entry Completeness (8 cols) -->
+        <div class="bento-card bento-col-8">
+            <h3 class="headline-md coll-chart-title-center">Entry Completeness by Metadata Field</h3>
+            <div class="coll-completeness-chart">
+                <canvas id="Chart1"></canvas>
+            </div>
+            <p class="coll-chart-footnote">Measured as a percentage of total records with non-null values.</p>
+        </div>
 
 
-	<div class="entity_manifestations" id="entity_manifestations">
-		<div class="div-caption">
-			Spatial Distribution <button id="entitybutton3" onclick="maptoggle('mapid2', 'entitybutton3')" class="entity">+</button>
-		</div>
-		<div id="mapid2" style="display:none;"></div>
-	</div>
+        <!-- ── Row 2 ─────────────────────────────────────────── -->
+
+        <!-- Classification Distribution (6 cols) -->
+        <div class="bento-card bento-col-6">
+            <h3 class="headline-md">Classification Distribution</h3>
+            <div class="coll-chart-body">
+                <canvas id="Chart2"></canvas>
+            </div>
+        </div>
+
+        <!-- Spatial + Temporal stacked (6 cols) -->
+        <div class="bento-col-6 bento-stack">
+
+            <!-- Spatial Distribution -->
+            <div class="bento-card bento-card-grow">
+                <h3 class="headline-md">Spatial Distribution</h3>
+                <div class="coll-map-wrap" id="mapid2"></div>
+            </div>
+
+            <!-- Temporal Distribution -->
+            <div class="bento-card">
+                <h3 class="headline-md">Temporal Distribution</h3>
+                <div class="coll-chart-compact">
+                    <canvas id="Chart3"></canvas>
+                </div>
+            </div>
+        </div>
 
 
-	<div class="entity_relationship" id="entity_relationship">
-		<div class="div-caption">
-			Actors <button id="entitybutton4" onclick="tbtoggle('Chart5', 'entitybutton4')" class="entity">+</button>
-		</div>
-		<div>
-			<canvas id="Chart5" style="display:none;"></canvas>
-		</div>
-	</div>
+        <!-- ── Row 3 ─────────────────────────────────────────── -->
 
-	{{ region_dict|json_script:"mapdata" }}
+        <!-- Corporate Actor Identity (12 cols) -->
+        <div class="bento-card bento-col-12">
+            <h3 class="headline-md coll-actors-title">Corporate Actor Identity</h3>
+            <div class="coll-chart-body">
+                <canvas id="Chart5"></canvas>
+            </div>
+        </div>
 
+    </div>
+</section>
+
+
+{{ region_dict|json_script:"mapdata" }}
+
+
+<!-- ═══════════════════════════════════════════════════════════
+     CHART SCRIPTS
+     ═══════════════════════════════════════════════════════════ -->
 <script>
 
-var ctx1 = document.getElementById('Chart1').getContext('2d');
-var chart1 = new Chart(ctx1, {
-    // The type of chart we want to create
+/* ── Chart theming ── */
+var chartColors = {
+    bar: '#6b141d',
+    barHover: '#82252c',
+    grid: 'rgba(137, 113, 113, 0.12)',
+    tick: '#564241',
+    labelSec: '#775a17'
+};
+
+Chart.defaults.font.family = 'Inter, system-ui, sans-serif';
+
+var commonOptions = {
+    indexAxis: 'y',
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+        legend: { display: false },
+        title:  { display: false }
+    },
+    scales: {
+        x: {
+            grid:  { color: chartColors.grid, drawBorder: false },
+            ticks: { color: chartColors.tick, font: { size: 12 } }
+        },
+        y: {
+            grid:  { display: false },
+            ticks: { color: chartColors.labelSec, font: { size: 13, weight: 600 }, autoSkip: false }
+        }
+    }
+};
+
+function makeDataset(data) {
+    return {
+        backgroundColor: chartColors.bar,
+        hoverBackgroundColor: chartColors.barHover,
+        borderWidth: 0,
+        borderRadius: 2,
+        borderSkipped: false,
+        barPercentage: 0.7,
+        data: data
+    };
+}
+
+/* Chart 1: Completeness */
+new Chart(document.getElementById('Chart1').getContext('2d'), {
     type: 'bar',
-    // The data for our dataset
     data: {
         labels: [ {% for i in labels1 %} '{{i}}', {% endfor %} ],
-        datasets: [{
-        	axis: 'y',
-            backgroundColor: "#8e5ea2",
-            borderColor: "#8e5ea2",
-            data: [ {% for i in data1 %} {{i}}, {% endfor %} ]
-        		}]
-        },
+        datasets: [ makeDataset([ {% for i in data1 %} {{i}}, {% endfor %} ]) ]
+    },
     options: {
-    	indexAxis: 'y',
-    	plugins: {
-    		legend: {
-    			display:false,
-	    		},
-	    	title: {
-	    	display: true,
-	    		text: 'Percentage of complete entries in Digisig, by field, for the selected collection',
-	    	}
-			},
-    	}
+        ...commonOptions,
+        scales: {
+            ...commonOptions.scales,
+            y: {
+                ...commonOptions.scales.y,
+                ticks: {
+                    ...commonOptions.scales.y.ticks,
+                    font: { size: 13, weight: 700 },
+                    color: '#775a17'
+                }
+            },
+            x: {
+                ...commonOptions.scales.x,
+                max: 100,
+                ticks: { ...commonOptions.scales.x.ticks, callback: function(v){ return v+'%'; } }
+            }
+        }
+    }
 });
 
-
-var ctx2 = document.getElementById('Chart2').getContext('2d');
-var chart2 = new Chart(ctx2, {
-    // The type of chart we want to create
+/* Chart 2: Classification */
+new Chart(document.getElementById('Chart2').getContext('2d'), {
     type: 'bar',
-    // The data for our dataset
     data: {
         labels: [ {% for i in labels2 %} '{{i}}', {% endfor %} ],
-        datasets: [{
-        	axis: 'y',
-            backgroundColor: "#8e5ea2",
-            borderColor: "#8e5ea2",
-            data: [ {% for i in data2 %} {{i}}, {% endfor %} ]
-        		}]
-        },
-    options: {
-    	indexAxis: 'y',
-    	scales: {
-		    y: {
-		      ticks: {
-		        autoSkip: false,
-		      }
-		  }
-		},
-    	plugins: {
-    		legend: {
-    			display:false,
-	    		},
-	    	title: {
-	    	display: true,
-	    		text: 'Percentage of seals by class (minimum 1% of total)',
-	    	}
-			},
-    	}
+        datasets: [ makeDataset([ {% for i in data2 %} {{i}}, {% endfor %} ]) ]
+    },
+    options: commonOptions
 });
 
-
-var ctx3 = document.getElementById('Chart3').getContext('2d');
-var chart3 = new Chart(ctx3, {
-    // The type of chart we want to create
+/* Chart 3: Temporal — vertical bars */
+new Chart(document.getElementById('Chart3').getContext('2d'), {
     type: 'bar',
-    // The data for our dataset
     data: {
         labels: [ {% for i in labels3 %} '{{i}}', {% endfor %} ],
-        // ticks: {
-        // 	autoSkip: false,
-        // 	maxTicksLimit: 40
-        // },
-        datasets: [{
-        	axis: 'y',
-            backgroundColor: "#8e5ea2",
-            borderColor: "#8e5ea2",
-            data: [ {% for i in data3 %} {{i}}, {% endfor %} ]
-        		}]
-        },
+        datasets: [ makeDataset([ {% for i in data3 %} {{i}}, {% endfor %} ]) ]
+    },
     options: {
-    	indexAxis: 'y',
-    	plugins: {
-    		legend: {
-    			display:false,
-	    		},
-	    	title: {
-	    	display: true,
-	    		text: 'Number of seals by century',
-	    	}
-			},
-    	}
+        ...commonOptions,
+        indexAxis: 'x',
+        scales: {
+            x: {
+                grid:  { display: false },
+                ticks: { color: chartColors.labelSec, font: { size: 12, weight: 600 } }
+            },
+            y: {
+                grid:  { color: chartColors.grid, drawBorder: false },
+                ticks: { color: chartColors.tick, font: { size: 12 } }
+            }
+        }
+    }
 });
 
-
-// var ctx4 = document.getElementById('Chart4').getContext('2d');
-// var chart4 = new Chart(ctx4, {
-//     // The type of chart we want to create
-//     type: 'bar',
-//     // The data for our dataset
-//     data: {
-//         labels: [ {% for i in labels4 %} '{{i}}', {% endfor %} ],
-//         datasets: [{
-//         	axis: 'y',
-//             backgroundColor: "#8e5ea2",
-//             borderColor: "#8e5ea2",
-//             data: [ {% for i in data4 %} {{i}}, {% endfor %} ]
-//         		}]
-//         },
-//     options: {
-//     	indexAxis: 'y',
-//     	plugins: {
-//     		legend: {
-//     			display:false,
-// 	    		},
-// 	    	title: {
-// 	    	display: true,
-// 	    		text: 'Portion of cases with per region',
-// 	    	}
-// 			},
-//     	}
-// });
-
-
-var ctx5 = document.getElementById('Chart5').getContext('2d');
-var chart5 = new Chart(ctx5, {
-    // The type of chart we want to create
+/* Chart 5: Actors */
+new Chart(document.getElementById('Chart5').getContext('2d'), {
     type: 'bar',
-    // The data for our dataset
     data: {
         labels: [ {% for i in labels5 %} '{{i}}', {% endfor %} ],
-        datasets: [{
-        	axis: 'y',
-            backgroundColor: "#8e5ea2",
-            borderColor: "#8e5ea2",
-            data: [ {% for i in data5 %} {{i}}, {% endfor %} ]
-        		}]
-        },
-    options: {
-    	indexAxis: 'y',
-    	plugins: {
-    		legend: {
-    			display:false,
-	    		},
-	    	title: {
-	    	display: true,
-	    		text: 'Percentage of seals identified with corporate actors, by class of corporate actor',
-	    	}
-			},
-    	}
+        datasets: [ makeDataset([ {% for i in data5 %} {{i}}, {% endfor %} ]) ]
+    },
+    options: commonOptions
 });
-
-
-// clear all user inputs from the select boxes in the form 
-	function myFunction() {
-		document.getElementById("id_collection").value = '';
-	}
 
 </script>
 
 
+<!-- ═══════════════════════════════════════════════════════════
+     MAP SCRIPT
+     ═══════════════════════════════════════════════════════════ -->
 <script>
 
-// function onEachFeature(feature, layer) {
-//    // does this feature have a property named popupContent?
-//     if (feature.properties && feature.properties.popupContent) {
-//         layer.bindPopup(feature.properties.popupContent);
-//     }
-// }
+var geojsonFeature1 = JSON.parse(document.getElementById('mapdata').textContent);
+var map = L.map('mapid2', { scrollWheelZoom: false }).setView([52, 0], 5);
 
-// the second map
-	var geojsonFeature1 = JSON.parse(document.getElementById('mapdata').textContent);
-	var map = L.map('mapid2', {scrollWheelZoom:false}).setView([52,0], 5);
+L.tileLayer('https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png', {
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>',
+    subdomains: 'abcd',
+    maxZoom: 20
+}).addTo(map);
 
-	var layer = new L.tileLayer('https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png', {
-	attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
-	subdomains: 'abcd',
-	maxZoom: 20
-});
-	
-	map.addLayer(layer);
+var info = L.control();
+info.onAdd = function () {
+    this._div = L.DomUtil.create('div', 'info');
+    this.update();
+    return this._div;
+};
+info.update = function (props) {
+    this._div.innerHTML = '<h4>Cases per area</h4>' + (props ?
+        '<b>' + props.location + '</b><br />' + props.count + ' cases' : 'Hover over an area');
+};
+info.addTo(map);
 
-	// control that shows state info on hover
-	var info = L.control();
+function getColor(d) {
+    return d > 8000 ? '#4b000b' :
+        d > 6000  ? '#6b141d' :
+        d > 4000  ? '#82252c' :
+        d > 2000  ? '#a13d41' :
+        d > 1000  ? '#c45a5e' :
+        d > 500   ? '#dca0a0' :
+        d > 100   ? '#f0d0cf' :
+        d > 50    ? '#fbe8e7' : '#fdf4f3';
+}
 
-	info.onAdd = function (map) {
-		this._div = L.DomUtil.create('div', 'info');
-		this.update();
-		return this._div;
-	};
+function style(feature) {
+    return { weight: 2, opacity: 1, color: 'white', dashArray: '3', fillOpacity: 0.7, fillColor: getColor(feature.properties.count) };
+}
 
-	info.update = function (props) {
-		this._div.innerHTML = '<h4>Cases per area</h4>' +  (props ?
-			'<b>' + props.location + '</b><br />' + props.count + ' cases' : 'Hover over an area');
-	};
+function highlightFeature(e) {
+    var layer = e.target;
+    layer.setStyle({ weight: 5, color: '#666', dashArray: '', fillOpacity: 0.7 });
+    if (!L.Browser.ie && !L.Browser.opera && !L.Browser.edge) layer.bringToFront();
+    info.update(layer.feature.properties);
+}
 
-	info.addTo(map);
+var geojson;
+function resetHighlight(e) { geojson.resetStyle(e.target); info.update(); }
+function zoomToFeature(e) { map.fitBounds(e.target.getBounds()); }
+function onEachFeature(feature, layer) {
+    layer.on({ mouseover: highlightFeature, mouseout: resetHighlight, click: zoomToFeature });
+}
 
-	// get color depending on population density value
-	function getColor(d) {
-		return d > 8000 ? '#49006a' :
-			d > 6000  ? '#7a0177' :
-			d > 4000  ? '#ae017e' :
-			d > 2000  ? '#dd3497' :
-			d > 1000   ? '#f768a1' :
-			d > 500   ? '#fa9fb5' :
-			d > 100   ? '#fcc5c0' :  
-			d > 50   ? '#fde0dd' : '#fff7f3';
-	}
+var legend = L.control({ position: 'bottomright' });
+legend.onAdd = function () {
+    var div = L.DomUtil.create('div', 'info legend');
+    var grades = [0, 50, 100, 500, 1000, 2000, 4000, 6000, 8000];
+    var labels = [];
+    for (var i = 0; i < grades.length; i++) {
+        var from = grades[i], to = grades[i + 1];
+        labels.push('<i style="background:' + getColor(from + 1) + '"></i> ' + from + (to ? '&ndash;' + to : '+'));
+    }
+    div.innerHTML = labels.join('<br>');
+    return div;
+};
+legend.addTo(map);
 
-	function style(feature) {
-		return {
-			weight: 2,
-			opacity: 1,
-			color: 'white',
-			dashArray: '3',
-			fillOpacity: 0.7,
-			fillColor: getColor(feature.properties.count)
-		};
-	}
-
-	function highlightFeature(e) {
-		var layer = e.target;
-
-		layer.setStyle({
-			weight: 5,
-			color: '#666',
-			dashArray: '',
-			fillOpacity: 0.7
-		});
-
-		if (!L.Browser.ie && !L.Browser.opera && !L.Browser.edge) {
-			layer.bringToFront();
-		}
-
-		info.update(layer.feature.properties);
-	}
-
-
-	var legend = L.control({position: 'bottomright'});
-
-	legend.onAdd = function (map) {
-
-		var div = L.DomUtil.create('div', 'info legend');
-		var grades = [0, 50, 100, 500, 1000, 2000, 4000, 6000, 8000];
-		var labels = [];
-		var from, to;
-
-		for (var i = 0; i < grades.length; i++) {
-			from = grades[i];
-			to = grades[i + 1];
-
-			labels.push(
-				'<i style="background:' + getColor(from + 1) + '"></i> ' +
-				from + (to ? '&ndash;' + to : '+'));
-		}
-
-		div.innerHTML = labels.join('<br>');
-		return div;
-	};
-
-	legend.addTo(map);
-
-
-	var geojson;
-
-	function resetHighlight(e) {
-		geojson.resetStyle(e.target);
-		info.update();
-	}
-
-	function zoomToFeature(e) {
-		map.fitBounds(e.target.getBounds());
-	}
-
-	function onEachFeature(feature, layer) {
-		layer.on({
-			mouseover: highlightFeature,
-			mouseout: resetHighlight,
-			click: zoomToFeature
-		});
-	}
-
-	// working with circles 2020apr26
-	geojson = L.geoJSON(geojsonFeature1, {
-
-		pointToLayer: function (feature, latlng) {
-			return L.circle(latlng, {
-				radius: 50000,
-				weight: 2,
-				opacity: 1,
-				color: 'white',
-				dashArray: '3',
-				fillOpacity: 0.7,
-				fillColor: getColor(feature.properties.count)
-			});
-		},
-		onEachFeature: onEachFeature
-	}).addTo(map);
+geojson = L.geoJSON(geojsonFeature1, {
+    pointToLayer: function (feature, latlng) {
+        return L.circle(latlng, {
+            radius: 50000, weight: 2, opacity: 1, color: 'white',
+            dashArray: '3', fillOpacity: 0.7, fillColor: getColor(feature.properties.count)
+        });
+    },
+    onEachFeature: onEachFeature
+}).addTo(map);
 
 </script>
-
 
 {% endblock %}
