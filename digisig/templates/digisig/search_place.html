@@ -3,186 +3,220 @@
 {% load static %}
 {% block content %}
 
+<!-- Leaflet CSS + JS loaded inside content block (preserves existing approach) -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+    integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 
-<!-- Leaflet stuff -->
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+<div class="places-layout">
 
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    <!-- =====================================================
+         LEFT SIDEBAR — filter form
+         ===================================================== -->
+    <aside class="places-sidebar">
 
-	<div class="search-catalogue-banner"></div>
-	<div class="sidepanel-left"></div>
-	<div class="sidepanel-right"></div>
+        <div>
+            <h2 class="places-sidebar-heading">Explore Places</h2>
 
-	<div class="main-title"><h1>{{pagetitle}}</h1></div>
+            <!-- Place name quick-search (uses form.location_name) -->
+            <form id="form" action="/search/places" method="post">
+                {% csrf_token %}
+                {{ form.non_field_errors }}
 
-	<div class="mainpage"></div>
+                <div class="places-name-search">
+                    <i class="fas fa-magnifying-glass places-name-search-icon" aria-hidden="true"></i>
+                    {{ form.location_name }}
+                </div>
 
-	<div class="guidance-bar">
-		<div class="div-caption">
-			Guidance Notes<button id="guidancebutton1" onclick="tbtoggle('guidance', 'guidancebutton1')" class="entity">+</button>
-		</div>
-	</div>
+                <!-- Geographic Fields -->
+                <div class="places-filter-section" style="margin-top: 28px;">
+                    <h3 class="places-filter-section-title">
+                        <i class="fas fa-globe" aria-hidden="true"></i>
+                        Geographic Fields
+                    </h3>
 
-	<div class="guidance" id="guidance" style="display:none;">
-		Under construction
-	</div>
+                    <div class="filter-field">
+                        {{ form.region.errors }}
+                        <label for="{{ form.region.id_for_label }}">
+                            Region
+                            <a class="help" href="{% url 'entity' digisig_entity_number=10001347 %}" target="_blank" aria-label="Help: Region"><i class="fas fa-question-circle"></i></a>
+                        </label>
+                        {{ form.region }}
+                    </div>
 
-	<div class="results-bar">
-		<div class="div-caption">
-			Results ({{totaldisplay}} of {{totalrows}})<button id="resultsbutton1" onclick="tbtoggle('results', 'resultsbutton1')" class="entity">-</button>
-		</div>
-	</div>
+                    <div class="filter-field">
+                        {{ form.county.errors }}
+                        <label for="{{ form.county.id_for_label }}">
+                            County
+                            <a class="help" href="{% url 'entity' digisig_entity_number=10001347 %}" target="_blank" aria-label="Help: County"><i class="fas fa-question-circle"></i></a>
+                        </label>
+                        {{ form.county }}
+                    </div>
+                </div>
 
-	<div class="results" id="results">
-		<div class="searchfilter">		
-			<div class="filter">
-			<h2>Filter</h2>
-			<form id="form" action="/search/places" method="post">
-		    	{% csrf_token %}
-				{{ form.non_field_errors }}
-				<div class="fieldWrapper">
-				    {{ form.region.errors }}
-				    <label for="{{ form.region.id_for_label }}">Region <a class="help" href="{% url 'entity' digisig_entity_number=10001347 %}" target="_blank"><i class="fas fa-question-circle"></i></a></label>
-				    {{ form.region }}
-				</div>
-				<div class="fieldWrapper">
-				    {{ form.county.errors }}
-				    <label for="{{ form.county.id_for_label }}">County <a class="help" href="{% url 'entity' digisig_entity_number=10001347 %}" target="_blank"><i class="fas fa-question-circle"></i></a></label>
-				    {{ form.county }}
-				</div>
-				<div class="fieldWrapper">
-			    	{{ form.location_name.errors }}
-			    	<label for="{{ form.location_name.id_for_label }}">Place Name <a class="help" href="{% url 'entity' digisig_entity_number=10001487 %}" target="_blank"><i class="fas fa-question-circle"></i></a></label>
-			    	{{ form.location_name }}
-				</div>
-				<div style="display: none" class="fieldWrapper">
-				    {{ form.pagination.errors }}
-				    <label  for="{{ form.pagination.id_for_label }}">Pagination</label>
-				    {{ form.pagination }}
-				</div>
-				<div class="fieldWrapper">
-		    		<input class="submit" type="submit" value="Submit">
-		    	</div>
-			    	<div class="fieldWrapper">
-			    		<button id="filterclear_button" type="reset" value="Reset">Clear filter</button>
-		    	</div>
-			</form>
-			</div>
-		</div>
+                <!-- Hidden pagination field — required by page_button() -->
+                <div class="filter-field-hidden">
+                    {{ form.pagination.errors }}
+                    <label for="{{ form.pagination.id_for_label }}">Pagination</label>
+                    {{ form.pagination }}
+                </div>
 
-		<div class="searchresultsb">
-			<div>
-				<table>
-					<tr>
-						<th>Place</th>
-						<th>Seal count</th>
-					</tr>
-					{% for place in placeset %}
-					<tr>
-						<td><a href="{% url 'entity' digisig_entity_number=place.id_location %}">{{place.location}}</a></td>
-						<td>{{place.count}}</td>
-					</tr>
-					{% endfor %}		
-				</table>
-			</div>
+                <button class="places-apply-btn" type="submit">Apply Filters</button>
+            </form>
+        </div>
 
-			<div class="item_map">
-				<div id="mapid2"> </div>
-			</div>		
-
-			<div class= "pagination" style="float: right;">
-				{% if pagecountercurrent > 1 %}
-				<button id="page_button_previous" onclick="page_button(-1)">Previous</button>
-				{% endif %}
-				<button id="page_button_1" onclick="page_button(1)">{{pagecountercurrent}}</button>
-				<button id="page_button_2" onclick="page_button(2)">{{pagecounternext}}</button>
-				<button id="page_button_2" onclick="page_button(3)">{{pagecounternextnext}}</button>
-				<button id="page_button_next" onclick="page_button(1)">Next</button>
-			</div>
-		</div>
-	</div>
+    </aside>
 
 
-	{{ place_dict|json_script:"mapdata" }}
+    <!-- =====================================================
+         RIGHT COLUMN — map + results
+         ===================================================== -->
+    <div class="places-main">
 
+        <!-- Map -->
+        <section class="places-map-section" aria-label="Map of places">
+            <div id="mapid2"></div>
+
+            <!-- Legend (positioned inside the map) -->
+            <div class="map-legend" role="note" aria-label="Map legend">
+                <div class="map-legend-title">Map Legend</div>
+                <div class="map-legend-item">
+                    <span class="map-legend-dot map-legend-dot-primary"></span>
+                    Seal Records
+                </div>
+                <div class="map-legend-item">
+                    <span class="map-legend-dot map-legend-dot-secondary"></span>
+                    Geographic Node
+                </div>
+            </div>
+        </section>
+
+        <!-- Results -->
+        <section class="places-results-section" id="results">
+
+            <!-- Results header -->
+            <div class="places-results-header">
+                <span class="places-results-count">Results ({{ totaldisplay }} of {{ totalrows }})</span>
+                <div class="view-toggle" role="group" aria-label="View mode">
+                    <button class="view-toggle-btn view-toggle-btn-active" type="button" aria-label="Grid view"><i class="fas fa-th"></i></button>
+                    <button class="view-toggle-btn" type="button" aria-label="List view"><i class="fas fa-list"></i></button>
+                </div>
+            </div>
+
+            <!-- Place cards -->
+            <div class="places-list">
+                {% for place in placeset %}
+                <article class="place-card">
+                    <a class="place-card-name" href="{% url 'entity' digisig_entity_number=place.id_location %}">{{ place.location }}</a>
+
+                    <div class="place-card-meta">
+                        <div>
+                            <span class="place-meta-label">Associated Seals</span>
+                            <span class="place-meta-value">{{ place.count }} {% if place.count == 1 %}Entry{% else %}Entries{% endif %}</span>
+                        </div>
+                    </div>
+
+                    <a class="place-card-cta" href="{% url 'entity' digisig_entity_number=place.id_location %}">
+                        View Details <i class="fas fa-arrow-right cta-arrow"></i>
+                    </a>
+                </article>
+                {% empty %}
+                <div class="no-results">No matching places found. Try adjusting your filters.</div>
+                {% endfor %}
+            </div>
+
+            <!-- Pagination -->
+            <nav class="places-pagination" aria-label="Results pagination">
+                {% if pagecountercurrent > 1 %}
+                <button class="places-page-btn" id="page_button_previous" onclick="page_button(-1)" aria-label="Previous page">
+                    <i class="fas fa-chevron-left"></i>
+                </button>
+                {% endif %}
+                <button class="places-page-btn places-page-btn-active" id="page_button_1" onclick="page_button(1)">{{ pagecountercurrent }}</button>
+                <button class="places-page-btn" id="page_button_2" onclick="page_button(2)">{{ pagecounternext }}</button>
+                <button class="places-page-btn" id="page_button_3" onclick="page_button(3)">{{ pagecounternextnext }}</button>
+                <span class="places-page-ellipsis" aria-hidden="true">…</span>
+                <button class="places-page-btn" id="page_button_next" onclick="page_button(1)" aria-label="Next page">
+                    <i class="fas fa-chevron-right"></i>
+                </button>
+            </nav>
+
+        </section>
+
+    </div><!-- /.places-main -->
+
+</div><!-- /.places-layout -->
+
+
+<!-- GeoJSON data passed from Django view (preserved from original) -->
+{{ place_dict|json_script:"mapdata" }}
+
+
+<!-- =====================================================
+     Page JS — preserved entirely from the original template
+     ===================================================== -->
 <script>
-	//establishing the map
-	const longitude = '{{ center_long|safe }}';
-	const latitude = '{{ center_lat|safe }}';
+// Leaflet map initialisation
+const longitude = '{{ center_long|safe }}';
+const latitude  = '{{ center_lat|safe }}';
 
-	console.log(latitude, longitude)
+var geojsonFeature = JSON.parse(document.getElementById('mapdata').textContent);
+var map = L.map('mapid2', { scrollWheelZoom: false }).setView([latitude, longitude], 4);
 
-	var geojsonFeature = JSON.parse(document.getElementById('mapdata').textContent);
-	var map = L.map('mapid2', {scrollWheelZoom:false}).setView([latitude,longitude], 4);
-
-	var layer = new L.tileLayer('https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png', {
-		attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
-		subdomains: 'abcd',
-		maxZoom: 20
-	});
-
-
-	map.addLayer(layer);
-
-	L.geoJSON(geojsonFeature, {onEachFeature: onEachFeature}).addTo(map);
+var layer = new L.tileLayer(
+    'https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png',
+    {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+        subdomains: 'abcd',
+        maxZoom: 20
+    }
+);
+map.addLayer(layer);
+L.geoJSON(geojsonFeature, { onEachFeature: onEachFeature }).addTo(map);
 
 function onEachFeature(feature, layer) {
-    // does this feature have a property named popupContent?
     if (feature.properties && feature.properties.popupContent) {
         layer.bindPopup(feature.properties.popupContent);
     }
-	}
+}
 
+// Pagination
 function page_button(numberofpages) {
-	var pagevalue = document.getElementById("id_pagination").value;
-	pagevalue = parseInt(pagevalue) + numberofpages;
-	document.getElementById("id_pagination").value = pagevalue;
-	document.getElementById("form").submit(); 
-	}
+    var pagevalue = document.getElementById("id_pagination").value;
+    pagevalue = parseInt(pagevalue) + numberofpages;
+    document.getElementById("id_pagination").value = pagevalue;
+    document.getElementById("form").submit();
+}
 
+// Dependent dropdowns: selecting region disables county, and vice versa
+document.getElementById("id_region").onchange = function () {
+    var statusregion = document.getElementById('id_region').value;
+    if (statusregion == "0") {
+        document.getElementById('id_county').style = "opacity:1";
+        document.getElementById("id_county").disabled = false;
+    } else {
+        document.getElementById('id_county').style = "opacity:0.6";
+        document.getElementById("id_county").disabled = true;
+        document.getElementById("id_county").value = 0;
+    }
+}
 
-// enable the coroprate options if corporate option is selected
-	document.getElementById("id_region").onchange = function() {
-		//check to see if form has a value
-		var statusregion = document.getElementById('id_region').value;
-
-		if (statusregion == "0") {
-	    	document.getElementById('id_county').style="opacity:1";
-	   		document.getElementById("id_county").disabled = false;	    	
-	    	console.log("hi", statusgroup);
-
-	    } else {
-	    	document.getElementById('id_county').style="opacity:0.6";
-	   		document.getElementById("id_county").disabled = true;
-			document.getElementById("id_county").value = 0;    	
-		}
-	}
-
-	document.getElementById("id_county").onchange = function() {
-		//check to see if form has a value
-		var statusregion = document.getElementById('id_county').value;
-
-		if (statusregion == "0") {
-	    	document.getElementById('id_region').style="opacity:1";
-	   		document.getElementById("id_region").disabled = false;	    	
-	    	console.log("hi", statusgroup);
-
-	    } else {
-	    	document.getElementById('id_region').style="opacity:0.6";
-	   		document.getElementById("id_region").disabled = true;
-			document.getElementById("id_region").value = 0;    	
-		}
-	}
-
-
-
+document.getElementById("id_county").onchange = function () {
+    var statuscounty = document.getElementById('id_county').value;
+    if (statuscounty == "0") {
+        document.getElementById('id_region').style = "opacity:1";
+        document.getElementById("id_region").disabled = false;
+    } else {
+        document.getElementById('id_region').style = "opacity:0.6";
+        document.getElementById("id_region").disabled = true;
+        document.getElementById("id_region").value = 0;
+    }
+}
 
 function myFunction() {
-		document.getElementById("form").reset();
-	}
+    document.getElementById("form").reset();
+}
 </script>
-
-
-
 
 {% endblock %}
