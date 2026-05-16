@@ -4,148 +4,245 @@
 
 {% block content %}
 
-	<div class="seal-banner"></div>
-	<div class="sidepanel-left"></div>
-	<div class="sidepanel-right"></div>
+<div class="entity-page seal-page">
 
+    {# ── Centered page header (eyebrow + serif title + accent rule) ── #}
+    <header class="entity-page-header entity-page-header--centered">
+        <span class="entity-eyebrow">Archival Catalog</span>
+        <h1 class="entity-title">Seal</h1>
+        <span class="entity-title-rule"></span>
+    </header>
 
-	<div class="main-title">
-		<h1>Seal</h1>
-	</div>
+    <div class="seal-layout">
 
-	<div class="mainpage" id="mainpage"></div>
+        {# ── Left column: Details card + Citation box ─────────────── #}
+        <aside class="seal-detail-col">
 
-	<div class="entity_detail" id="entity_detail">
-		<h3>Seal details <button onclick="toggle('entity-permalink')" class="permalink">Permalink</button></h3>
-		<table>
-			<tr>
-				<th>Date <a class="help" href="{% url 'entity' digisig_entity_number=10001357 %}" target="_blank"><i class="fas fa-question-circle"></i></a></th>
-				<td>
-					{% if seal_info.date_origin < 1 %} Not Available						
-					{% else %} c.{{seal_info.date_origin}}
-					{% endif %}</td>
-			</tr>
-			<tr>
-				<th>Actor</th>
-				<td>
-					{% if seal_info.fk_individual_realizer != 10000019 %}
-						<a href="{% url 'entity' digisig_entity_number=seal_info.id_individual %}">{{seal_info.actorname}}</a>
-					{% endif %}
-				</td>
-			</tr>
+            <div class="entity-card entity-detail-card">
+                <div class="entity-card-header">
+                    <h2 class="entity-card-title">Seal Details</h2>
+                    <button onclick="toggle('entity-permalink')" class="entity-permalink-link">
+                        <i class="fas fa-link"></i> Permalink
+                    </button>
+                </div>
 
-			<tr>
-				<th>Class (obverse)</th>
-				<td>
-					{% for c, value in seal_info.obverse.items %} 
-						{% if forloop.first %}<a href="" target="_blank">{{value}}</a>
-						{% else %}, <a href="" target="_blank">{{value}}</a>{% endif %}
-					{% endfor %}
-				</td>
-			</tr>
-			
-			{% if seal_info.reverse != null %}
-			<tr>
-				<th>Class (reverse)</th>
-				<td>
-					{% for c, value in seal_info.reverse.items %} 
-						{% if forloop.first %}<a href="" target="_blank">{{value}}</a>
-						{% else %}, <a href="" target="_blank">{{value}}</a>{% endif %}
-					{% endfor %}
-				</td>
-			</tr>
-			{% endif %}
+                <dl class="entity-detail-list">
 
-			{% for k, value in seal_info.sealdescription.items %}
-			<tr>
-			<tr>
-				{% if forloop.first %}<th>Described in <a class="help" href="{% url 'entity' digisig_entity_number=10001527 %}" target="_blank"><i class="fas fa-question-circle"></i></a></th>
-{% else %}<th></th>{% endif %}
-				{% for k2, value2 in value.items %}
-				<td>
-					<a href="{% url 'entity' digisig_entity_number=value2.sealdescription_id %}">{{value2.collection}}
-						{% if value2.identifier != null %} ({{value2.identifier}}){% endif %}
-					</a>
-				</td>
-				{% endfor %}
-			</tr>
-			</tr>
-			{% endfor %}
-		</table>
-	</div>
+                    <div class="entity-detail-row">
+                        <dt class="entity-detail-label">
+                            Date
+                            <a class="entity-help-link" href="{% url 'entity' digisig_entity_number=10001357 %}" target="_blank" title="About this field">
+                                <i class="fas fa-question-circle"></i>
+                            </a>
+                        </dt>
+                        <dd class="entity-detail-value">
+                            {% if seal_info.date_origin < 1 %}
+                                <span class="entity-detail-muted">Not available</span>
+                            {% else %}
+                                c.{{ seal_info.date_origin }}
+                            {% endif %}
+                        </dd>
+                    </div>
 
-	<div class="entity-permalink" id="entity-permalink">
-		<div class="permalinkinfo" id="permalinkinfo">
-		Permalink
-		<button onclick="toggle('entity-permalink')" class="closebutton">X</button>
-		<form action="#">
-			<label>Copy this URL to link to this page:</label>
-			<input id="input" class="text" name="" value="http://www.digisig.org/entity/{{seal_info.seal.id_seal}}" type="text" readonly>
-		</form>
-		</div>
-	</div>
-		
-	<div class="entity_seals" id="entity_seals">
-		<div class="div-caption">
-			Impressions, Matrices and Casts <button id="entitybutton1" onclick="tbtoggle('entity1', 'entitybutton1')" class="entity">+</button>
-		</div>
+                    {% if seal_info.fk_individual_realizer != 10000019 %}
+                    <div class="entity-detail-row">
+                        <dt class="entity-detail-label">Actor</dt>
+                        <dd class="entity-detail-value">
+                            <a class="entity-detail-link" href="{% url 'entity' digisig_entity_number=seal_info.id_individual %}">{{ seal_info.actorname }}</a>
+                        </dd>
+                    </div>
+                    {% endif %}
 
-		<div>
-			<table id="entity1" style="display:none;">
-				<tr class="info">
-					<td class="totalrows" colspan="3">Showing {{seal_info.manifestation_set.totalrows}}</td>
-				</tr>
+                    <div class="entity-detail-row">
+                        <dt class="entity-detail-label">Class (Obverse)</dt>
+                        <dd class="entity-detail-value">
+                            <ul class="entity-class-list">
+                                {% for c, value in seal_info.obverse.items %}
+                                <li><a class="entity-class-link" href="" target="_blank">{{ value }}</a></li>
+                                {% endfor %}
+                            </ul>
+                        </dd>
+                    </div>
 
+                    {% if seal_info.reverse != null %}
+                    <div class="entity-detail-row">
+                        <dt class="entity-detail-label">Class (Reverse)</dt>
+                        <dd class="entity-detail-value">
+                            <ul class="entity-class-list">
+                                {% for c, value in seal_info.reverse.items %}
+                                <li><a class="entity-class-link" href="" target="_blank">{{ value }}</a></li>
+                                {% endfor %}
+                            </ul>
+                        </dd>
+                    </div>
+                    {% endif %}
 
-				{% for key, manifestation in seal_info.manifestation_set.items %}
+                    {% for k, value in seal_info.sealdescription.items %}
+                    <div class="entity-detail-row">
+                        <dt class="entity-detail-label">
+                            {% if forloop.first %}
+                                Described In
+                                <a class="entity-help-link" href="{% url 'entity' digisig_entity_number=10001527 %}" target="_blank" title="About this field">
+                                    <i class="fas fa-question-circle"></i>
+                                </a>
+                            {% endif %}
+                        </dt>
+                        <dd class="entity-detail-value">
+                            <ul class="entity-cite-list">
+                            {% for k2, value2 in value.items %}
+                                <li>
+                                    <a class="entity-detail-link entity-detail-link--italic" href="{% url 'entity' digisig_entity_number=value2.sealdescription_id %}">
+                                        {{ value2.collection }}{% if value2.identifier != null %} ({{ value2.identifier }}){% endif %}
+                                    </a>
+                                </li>
+                            {% endfor %}
+                            </ul>
+                        </dd>
+                    </div>
+                    {% endfor %}
 
-					{% ifchanged manifestation.fk_support %}
-	
-					{% if forloop.counter|divisibleby:2 %}<tr class="even">{% else %}<tr class="odd">{% endif %}
+                </dl>
+            </div>
 
-						<th colspan="2"><h4><a class="headingbtn" href="">Manifestation details</a></h4></th>
-							<td rowspan="4" style="text-align:center;">
-								{% if manifestation.representation_filename_hash != null %}
-								<figure>
-									<img class="modalimage" id="modalimagebase{{forloop.counter}}" src="{{manifestation.thumb}}{{manifestation.representation_thumbnail_hash}}" alt="{{manifestation.id_representation}}" onclick="image({{forloop.counter}})">
-								</figure>
+            <aside class="entity-cite-box">
+                <h3 class="entity-cite-title">Cite this Record</h3>
+                <p class="entity-cite-body">
+                    Sigillum Archive, &ldquo;Seal Record {{ seal_info.seal.id_seal }}{% if seal_info.actorname %}: {{ seal_info.actorname }}{% endif %}{% if seal_info.date_origin >= 1 %} (c.{{ seal_info.date_origin }}){% endif %}&rdquo;, Digital Sigillography Resource. Accessed {% now "F Y" %}.
+                </p>
+            </aside>
 
-								<!-- The Modal -->
-								<div id="myModal{{forloop.counter}}" class="modal" style="display: none;">
-								  <span class="close" onclick="modalclose({{forloop.counter}})">&times;</span>
-								  <img class="modal-content" id="modalimg{{forloop.counter}}" src="{{manifestation.medium}}{{manifestation.representation_filename_hash}}" alt="{{manifestation.id_representation}}">
-								  <div class="modal-caption" id="caption{{forloop.counter}}"><a href="{% url 'entity' manifestation.id_representation %}">Representation details</a></div>
-								</div>
-								{% endif %}
-							</td>
-						</tr>
+        </aside>
 
+        {# ── Right column: Impressions / Manifestations list ─────── #}
+        <section class="seal-manifest-col">
 
-					{% if forloop.counter|divisibleby:2 %}<tr class="even">{% else %}<tr class="odd">{% endif %}
-						<th class="indent">Held by</th>
-						<td>{{manifestation.repository_fulltitle}}</td>						
-					</tr>
-					
+            <div class="entity-section-heading">
+                <h2 class="entity-section-title">Impressions, Matrices and Casts</h2>
+                <span class="entity-section-rule"></span>
+            </div>
 
-					{% if forloop.counter|divisibleby:2 %}<tr class="even">{% else %}<tr class="odd">{% endif %}
-						<th class="indent">Part of item</th>
-						<td><a href="{% url 'entity' digisig_entity_number=manifestation.id_item %}">{{manifestation.shelfmark}}</a>
-							{% if manifestation.number != null %}
-								{% if fk_number_currentposition < 100 %}, support {{manifestation.number}} {% endif %}{% endif %}
-						</td>
-					</tr>
-				
-					{% if forloop.counter|divisibleby:2 %}<tr class="even">{% else %}<tr class="odd">{% endif %}
-						<th class="finalrow indent">Support Type</th>
-						<td>{% if manifestation.support_type != null %}{{manifestation.support_type}}{% endif %}</td>
-					</tr>
+            {% with mf_set=seal_info.manifestation_set %}
+            {% if mf_set.totalrows %}
+                <p class="entity-section-meta">Showing {{ mf_set.totalrows }} catalogued artifact{{ mf_set.totalrows|pluralize }}</p>
+            {% endif %}
 
-					{% endifchanged %}
+            {% for key, manifestation in mf_set.items %}
+                {% ifchanged manifestation.fk_support %}
 
-				{% endfor %}
+                <article class="seal-manifest-card">
 
-			</table>
-		</div>
-	</div>
+                    <div class="seal-manifest-image">
+                        {% if manifestation.representation_filename_hash != null %}
+                        <figure>
+                            <img class="modalimage img-desat"
+                                 id="modalimagebase{{ forloop.counter }}"
+                                 src="{{ manifestation.thumb }}{{ manifestation.representation_thumbnail_hash }}"
+                                 alt="{{ manifestation.id_representation }}"
+                                 onclick="image({{ forloop.counter }})">
+                        </figure>
+                        <button class="seal-manifest-zoom"
+                                onclick="image({{ forloop.counter }})"
+                                aria-label="Zoom image">
+                            <i class="fas fa-search-plus"></i>
+                        </button>
+                        {% else %}
+                        <div class="seal-manifest-noimage">
+                            <i class="fas fa-image"></i>
+                            <span>No image recorded</span>
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="seal-manifest-info">
+                        <div>
+                            <div class="seal-manifest-meta">
+                                <span class="seal-manifest-badge">Manifestation</span>
+                                {% if manifestation.id_representation %}
+                                <span class="seal-manifest-ref">Ref: {{ manifestation.id_representation }}</span>
+                                {% endif %}
+                            </div>
+
+                            <h3 class="seal-manifest-title">Primary Impression</h3>
+
+                            <dl class="seal-manifest-details">
+                                <div class="seal-manifest-row">
+                                    <dt>Held By</dt>
+                                    <dd>{{ manifestation.repository_fulltitle }}</dd>
+                                </div>
+                                <div class="seal-manifest-row">
+                                    <dt>Part of Item</dt>
+                                    <dd>
+                                        <a class="entity-detail-link entity-detail-link--mono" href="{% url 'entity' digisig_entity_number=manifestation.id_item %}">{{ manifestation.shelfmark }}</a>{% if manifestation.number != null and fk_number_currentposition < 100 %}, support {{ manifestation.number }}{% endif %}
+                                    </dd>
+                                </div>
+                                {% if manifestation.support_type != null %}
+                                <div class="seal-manifest-row">
+                                    <dt>Support Type</dt>
+                                    <dd>{{ manifestation.support_type }}</dd>
+                                </div>
+                                {% endif %}
+                            </dl>
+                        </div>
+
+                        <a class="seal-manifest-cta" href="{% url 'entity' manifestation.id_representation %}">
+                            View Full Catalog Entry <i class="fas fa-arrow-right"></i>
+                        </a>
+                    </div>
+
+                </article>
+
+                {# ── Preserved image modal markup ── #}
+                {% if manifestation.representation_filename_hash != null %}
+                <div id="myModal{{ forloop.counter }}" class="modal" style="display: none;">
+                    <span class="close" onclick="modalclose({{ forloop.counter }})">&times;</span>
+                    <img class="modal-content"
+                         id="modalimg{{ forloop.counter }}"
+                         src="{{ manifestation.medium }}{{ manifestation.representation_filename_hash }}"
+                         alt="{{ manifestation.id_representation }}">
+                    <div class="modal-caption" id="caption{{ forloop.counter }}">
+                        <a href="{% url 'entity' manifestation.id_representation %}">Representation details</a>
+                    </div>
+                </div>
+                {% endif %}
+
+                {% endifchanged %}
+            {% empty %}
+                <div class="seal-empty-grid">
+                    <div class="seal-empty-card">
+                        <i class="fas fa-camera-retro"></i>
+                        <p>No manifestations recorded</p>
+                    </div>
+                    <div class="seal-empty-card">
+                        <i class="fas fa-file-alt"></i>
+                        <p>Research notes pending</p>
+                    </div>
+                </div>
+            {% endfor %}
+            {% endwith %}
+
+        </section>
+
+    </div>
+
+    {# ── Permalink overlay (preserved JS behaviour) ─────────────── #}
+    <div class="entity-permalink" id="entity-permalink" style="display:none;">
+        <div class="entity-permalink-card" id="permalinkinfo">
+            <div class="entity-permalink-head">
+                <span>Permalink</span>
+                <button onclick="toggle('entity-permalink')" class="entity-permalink-close" aria-label="Close">&times;</button>
+            </div>
+            <form action="#">
+                <label for="input">Copy this URL to link to this page:</label>
+                <input id="input"
+                       class="entity-permalink-input"
+                       name=""
+                       value="http://www.digisig.org/entity/{{ seal_info.seal.id_seal }}"
+                       type="text"
+                       readonly>
+            </form>
+        </div>
+    </div>
+
+</div>
 
 {% endblock %}

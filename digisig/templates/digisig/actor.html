@@ -4,128 +4,279 @@
 
 {% block content %}
 
-	<div class="search-people-banner"></div>
-	<div class="sidepanel-left"></div>
-	<div class="sidepanel-right"></div>
+<div class="entity-page actor-page">
 
-	<div class="main-title"><h1>{{pagetitle}}</h1></div>
+    {# ── Top bar: breadcrumbs + permalink ──────────────────────── #}
+    <div class="actor-topbar">
+        <nav class="actor-breadcrumbs" aria-label="Breadcrumb">
+            <a href="{% url 'search' searchtype='actors' %}">Actors</a>
+            {% if individual_object.fk_group.fk_group_class %}
+                <span class="actor-breadcrumbs-sep">/</span>
+                <span>{{ individual_object.fk_group.fk_group_class }}</span>
+            {% endif %}
+        </nav>
+        <button onclick="toggle('entity-permalink')" class="actor-permalink-btn">
+            <i class="fas fa-link"></i> Permalink
+        </button>
+    </div>
 
-	<div class="mainpage" id="maingpage"></div>
+    {# ── Hero: large display title + italic subtitle ───────────── #}
+    <header class="actor-hero">
+        <h1 class="entity-title entity-title--display">{{ pagetitle }}</h1>
+        {% if individual_object.fk_group.fk_group_order %}
+        <p class="entity-subtitle">{{ individual_object.fk_group.fk_group_order }}</p>
+        {% endif %}
+    </header>
 
-	<div class="entity_detail" id="entity_detail">
-		<h3>Actor details <button onclick="toggle('entity-permalink')" class="permalink">Permalink</button></h3> 
-		<table>
-			{% if individual_object.fk_group.fk_group_class != null %}
-			<tr>
-				<th>Class</th>
-				<td>{{individual_object.fk_group.fk_group_class}}</td>
-			<tr>
-			{% endif %}
-	
-			{% if individual_object.fk_group.fk_group_order != null %}
-			<tr>
-				<th>Order</th>
-				<td>{{individual_object.fk_group.fk_group_order}}</td>
-			</tr>
-			{% endif %}				 
-		</table>
-	</div>
+    {# ── Two-column layout: main + sidebar ─────────────────────── #}
+    <div class="actor-layout">
 
-	<div class="entity-permalink" id="entity-permalink">
-		<div class="permalinkinfo" id="permalinkinfo">
-		Permalink
-		<button onclick="toggle('entity-permalink')" class="closebutton">X</button>
-		<form action="#">
-			<label>Copy this URL to link to this page:</label>
-			<input id="input" class="text" name="" value="http://www.digisig.org/entity/{{individual_object.id_individual}}" type="text" readonly>
-		</form>
-		</div>
-	</div>
-			
-	<div class="entity_seals" id="entity_seals">
-		<div class="div-caption">
-			Seal impressions, matrices and casts ({{totaldisplay}} of {{totalrows}})<button id="entitybutton1" onclick="tbtoggle('entity1', 'entitybutton1')" class="entity">+</button>
-		</div>
+        <main class="actor-main-col">
 
-		<div id="entity1" class="seal-container" style="display:none;">
-		    {% for m in manifestation_set.values %}
-		    <div class="seal-card">
+            {# ── Actor Details ─────────────────────────────────── #}
+            <section class="actor-section">
+                <h2 class="entity-section-title">Actor Details</h2>
+                <div class="entity-card actor-detail-card">
+                    <dl class="actor-detail-grid">
+                        <div class="actor-detail-field">
+                            <dt class="entity-detail-label">Standardized Name</dt>
+                            <dd class="entity-detail-value entity-detail-value--bold">{{ pagetitle }}</dd>
+                        </div>
 
-		        <div class="seal-details">
-		            <div class="detail-row"><span class="label">Held by:</span> {{m.repository_fulltitle}}</div>
-		            <div class="detail-row"><span class="label">Part of item:</span> 
-		                <a href="{% url 'item_page' entity_type='item' digisig_entity_number=m.id_item %}">{{m.shelfmark}}</a>
-		                {% if m.number != 'Undetermined'%}(seal {{m.number}}){% endif %}
-		            </div>
-		            {% if m.label_manifestation_repository != null %}
-		            <div class="detail-row"><span class="label">Reference:</span> {{m.label_manifestation_repository}}</div>
-		            {% endif %}
-		            <div class="detail-row"><span class="label">Example of:</span> 
-		                <a href="{% url 'seal_page' entity_type='seal' digisig_entity_number=m.id_seal %}">Seal details</a>
-		            </div>
-		        </div>
+                        {% if individual_object.fk_group.fk_group_class %}
+                        <div class="actor-detail-field">
+                            <dt class="entity-detail-label">Class</dt>
+                            <dd class="entity-detail-value">{{ individual_object.fk_group.fk_group_class }}</dd>
+                        </div>
+                        {% endif %}
 
-		        <div class="seal-image">
-		            {% if m.representation_thumbnail_hash != null %}
-		            <figure>
-		                <img class="modalimage" id="modalimagebase{{forloop.counter}}" 
-		                     src="{{m.thumb}}{{m.representation_thumbnail_hash}}" 
-		                     alt="{{m.id_representation}}" onclick="image({{forloop.counter}})">
-		            </figure>
-		            {% endif %}
-		        </div>
-		        
-		    </div>
-		    {% endfor %}
-		</div>
-	</div>
+                        {% if individual_object.fk_group.fk_group_order %}
+                        <div class="actor-detail-field">
+                            <dt class="entity-detail-label">Order</dt>
+                            <dd class="entity-detail-value">{{ individual_object.fk_group.fk_group_order }}</dd>
+                        </div>
+                        {% endif %}
 
-	{% if relationshipnumber > 0 %}
-	<div class="entity_relationship" id="entity_relationship">
-		<div class="div-caption">
-			Relationships <button id="entitybutton2" onclick="tbtoggle('entity2', 'entitybutton2')" class="entity">+</button>
-		</div>
+                        {% if individual_object.notes %}
+                        <div class="actor-detail-field actor-detail-field--full">
+                            <dt class="entity-detail-label">Notes</dt>
+                            <dd class="entity-detail-value">{{ individual_object.notes }}</dd>
+                        </div>
+                        {% endif %}
+                    </dl>
+                </div>
+            </section>
 
-		<div>
-			<table id="entity2" style="display:none;">
-			{% for key, value in relationship_object.items %}
-				{% if forloop.counter|divisibleby:2 %}<tr class="even">{% else %}<tr class="odd">{% endif %}
-					<td>{{value.role}} of 
-						<a href="{% url 'actor_page' entity_type='actor' digisig_entity_number=value.id_individual %}">{{value.name}}</a>
-					</td>
-				</tr>
-			{% endfor %}
-			</table>
-		</div>
-	</div>
-	{% endif %}
+            {# ── Seal Impressions ──────────────────────────────── #}
+            <section class="actor-section">
+                <div class="entity-section-heading entity-section-heading--split">
+                    <h2 class="entity-section-title">Seal impressions, matrices and casts</h2>
+                    <span class="entity-section-count">
+                        Catalog 1&ndash;{{ totaldisplay }} of {{ totalrows }}
+                        <button id="entitybutton1"
+                                onclick="tbtoggle('entity1', 'entitybutton1')"
+                                class="entity-toggle-btn"
+                                aria-label="Toggle list visibility">+</button>
+                    </span>
+                </div>
 
+                <div id="entity1" class="actor-seal-grid" style="display:none;">
+                {% for m in manifestation_set.values %}
+                    <article class="actor-seal-card">
+                        <div class="actor-seal-image">
+                            {% if m.representation_thumbnail_hash != null %}
+                            <figure>
+                                <img class="modalimage img-desat"
+                                     id="modalimagebase{{ forloop.counter }}"
+                                     src="{{ m.thumb }}{{ m.representation_thumbnail_hash }}"
+                                     alt="{{ m.id_representation }}"
+                                     onclick="image({{ forloop.counter }})">
+                            </figure>
+                            <button class="actor-seal-zoom"
+                                    onclick="image({{ forloop.counter }})"
+                                    aria-label="Zoom image">
+                                <i class="fas fa-search-plus"></i>
+                            </button>
+                            {% else %}
+                            <div class="actor-seal-noimage">
+                                <i class="fas fa-image"></i>
+                            </div>
+                            {% endif %}
+                        </div>
 
-	<div class="entity_event" id="entity_event">
-		<div class="div-caption">
-			References <button id="entitybutton3" onclick="tbtoggle('entity3', 'entitybutton3')" class="entity">+</button>
-		</div>
+                        <div class="actor-seal-body">
+                            <span class="actor-seal-shelfmark">
+                                <a href="{% url 'item_page' entity_type='item' digisig_entity_number=m.id_item %}">{{ m.shelfmark }}</a>
+                                {% if m.number != 'Undetermined' %}<span class="actor-seal-pos">(seal {{ m.number }})</span>{% endif %}
+                            </span>
+                            <dl class="actor-seal-details">
+                                <div>
+                                    <dt>Held By</dt>
+                                    <dd>{{ m.repository_fulltitle }}</dd>
+                                </div>
+                                {% if m.label_manifestation_repository %}
+                                <div>
+                                    <dt>Reference</dt>
+                                    <dd>{{ m.label_manifestation_repository }}</dd>
+                                </div>
+                                {% endif %}
+                            </dl>
+                            <a class="actor-seal-cta"
+                               href="{% url 'seal_page' entity_type='seal' digisig_entity_number=m.id_seal %}">
+                                View Details
+                            </a>
+                        </div>
+                    </article>
 
-		<div >
-			<table id="entity3" style="display:none;">
-				<tr>
-					<th>Item</th>
-					<th>Date</th>
-					<th>Location</th>
-					<th>Role</th>
-				</tr>
+                    {# Preserved image modal #}
+                    {% if m.representation_thumbnail_hash != null %}
+                    <div id="myModal{{ forloop.counter }}" class="modal" style="display: none;">
+                        <span class="close" onclick="modalclose({{ forloop.counter }})">&times;</span>
+                        <img class="modal-content"
+                             id="modalimg{{ forloop.counter }}"
+                             src="{{ m.medium }}{{ m.representation_filename_hash }}"
+                             alt="{{ m.id_representation }}">
+                        <div class="modal-caption" id="caption{{ forloop.counter }}">
+                            <a href="{% url 'entity' m.id_representation %}">Representation details</a>
+                        </div>
+                    </div>
+                    {% endif %}
+                {% endfor %}
+                </div>
+            </section>
 
-			{% for key, r in reference_set.items %}
-				{% if forloop.counter|divisibleby:2 %}<tr class="even">{% else %}<tr class="odd">{% endif %}					
-					<td><a href="{% url 'entity' digisig_entity_number=r.item_id %}">{{r.item_shelfmark}}</a></td>
-					<td>{{r.date}}</td>
-					<td><a href="{% url 'entity' digisig_entity_number=r.location_id %}">{{r.location}}</a></td>
-					<td>{{r.role}}</td>
-				</tr>
-			{% endfor %}
-			</table>
-		</div>
-	</div>
+            {# ── Relationships ─────────────────────────────────── #}
+            {% if relationshipnumber > 0 %}
+            <section class="actor-section">
+                <div class="entity-section-heading entity-section-heading--split">
+                    <h2 class="entity-section-title">Relationships</h2>
+                    <button id="entitybutton2"
+                            onclick="tbtoggle('entity2', 'entitybutton2')"
+                            class="entity-toggle-btn"
+                            aria-label="Toggle list visibility">+</button>
+                </div>
 
+                <ul id="entity2" class="actor-relationship-list" style="display:none;">
+                    {% for key, value in relationship_object.items %}
+                    <li class="actor-relationship-row">
+                        <span class="actor-relationship-role">{{ value.role }}</span> of
+                        <a class="entity-detail-link"
+                           href="{% url 'actor_page' entity_type='actor' digisig_entity_number=value.id_individual %}">
+                            {{ value.name }}
+                        </a>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </section>
+            {% endif %}
+
+            {# ── References ────────────────────────────────────── #}
+            <section class="actor-section">
+                <div class="entity-section-heading entity-section-heading--split">
+                    <h2 class="entity-section-title">References</h2>
+                    <button id="entitybutton3"
+                            onclick="tbtoggle('entity3', 'entitybutton3')"
+                            class="entity-toggle-btn"
+                            aria-label="Toggle list visibility">+</button>
+                </div>
+
+                <div id="entity3" class="actor-refs-wrap" style="display:none;">
+                    <table class="actor-refs-table">
+                        <thead>
+                            <tr>
+                                <th>Item Reference</th>
+                                <th>Date</th>
+                                <th>Location</th>
+                                <th>Actor Role</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        {% for key, r in reference_set.items %}
+                            <tr>
+                                <td class="actor-refs-item">
+                                    <a href="{% url 'entity' digisig_entity_number=r.item_id %}">{{ r.item_shelfmark }}</a>
+                                </td>
+                                <td>{{ r.date }}</td>
+                                <td>
+                                    <a class="entity-detail-link" href="{% url 'entity' digisig_entity_number=r.location_id %}">{{ r.location }}</a>
+                                </td>
+                                <td>
+                                    <span class="actor-role-chip actor-role-chip--{{ r.role|lower }}">{{ r.role }}</span>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+        </main>
+
+        {# ── Right column: Sidebar ─────────────────────────────── #}
+        <aside class="actor-side-col">
+
+            <div class="entity-cite-box">
+                <h3 class="entity-cite-title">Cite this Entry</h3>
+                <p class="entity-cite-body">
+                    Sigillum Archive, &ldquo;{{ pagetitle }}&rdquo;, Entity #{{ individual_object.id_individual }}. Accessed {% now "F Y" %}. [www.digisig.org/entity/{{ individual_object.id_individual }}]
+                </p>
+            </div>
+
+            <div class="entity-card actor-side-card">
+                <h3 class="entity-card-title">Archival Context</h3>
+
+                {% if individual_object.fk_group.fk_group_class %}
+                <div class="actor-context-row">
+                    <span class="actor-context-icon"><i class="fas fa-book"></i></span>
+                    <div>
+                        <span class="entity-detail-label entity-detail-label--xs">Record Type</span>
+                        <span class="actor-context-value">{{ individual_object.fk_group.fk_group_class }}</span>
+                    </div>
+                </div>
+                {% endif %}
+
+                <div class="actor-context-row">
+                    <span class="actor-context-icon"><i class="fas fa-building-columns"></i></span>
+                    <div>
+                        <span class="entity-detail-label entity-detail-label--xs">Catalogued Impressions</span>
+                        <span class="actor-context-value">{{ totalrows }} Recorded Impression{{ totalrows|pluralize }}</span>
+                    </div>
+                </div>
+
+                {% if relationshipnumber > 0 %}
+                <div class="actor-context-row">
+                    <span class="actor-context-icon"><i class="fas fa-people-arrows"></i></span>
+                    <div>
+                        <span class="entity-detail-label entity-detail-label--xs">Known Relationships</span>
+                        <span class="actor-context-value">{{ relationshipnumber }} on record</span>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+
+        </aside>
+
+    </div>
+
+    {# ── Permalink overlay (preserved JS behaviour) ────────────── #}
+    <div class="entity-permalink" id="entity-permalink" style="display:none;">
+        <div class="entity-permalink-card" id="permalinkinfo">
+            <div class="entity-permalink-head">
+                <span>Permalink</span>
+                <button onclick="toggle('entity-permalink')" class="entity-permalink-close" aria-label="Close">&times;</button>
+            </div>
+            <form action="#">
+                <label for="input">Copy this URL to link to this page:</label>
+                <input id="input"
+                       class="entity-permalink-input"
+                       name=""
+                       value="http://www.digisig.org/entity/{{ individual_object.id_individual }}"
+                       type="text"
+                       readonly>
+            </form>
+        </div>
+    </div>
+
+</div>
 
 {% endblock %}
