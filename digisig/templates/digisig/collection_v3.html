@@ -16,9 +16,9 @@
      COLLECTION HEADER
      ═══════════════════════════════════════════════════════════ -->
 <section class="coll-header">
-    <div class="coll-header-inner coll-header-revised">
+    <div class="coll-header-inner">
 
-        <!-- Left: title + notes + metadata -->
+        <!-- Left: title + metadata + notes -->
         <div class="coll-header-text">
 
             <div class="coll-title-row">
@@ -28,41 +28,20 @@
                 </button>
             </div>
 
-            {% if collection_dic.notes %}
-            <div class="coll-notes-box">
-                <span class="coll-meta-label">Collection description</span>
-                <p class="coll-notes-text">{{collection_dic.notes}}</p>
-            </div>
-            {% endif %}
-
             <div class="coll-meta-grid">
 
-                <!-- Credit block: thumbnail inline on the left -->
-                <div class="coll-meta-item coll-meta-credit">
-                    {% if collection_dic.collection_thumbnail != null %}
-                    <div class="coll-credit-thumb">
-                        <img class="modalimage" id="modalimagebase1"
-                             src="{% static 'digisig/images/collections_cover/'%}{{collection_dic.collection_thumbnail}}"
-                             alt="catalogue cover photograph"
-                             onclick="image(1)">
-                        <div class="coll-credit-thumb-overlay">
-                            <i class="fas fa-search-plus"></i>
-                        </div>
-                    </div>
-                    {% endif %}
-                    <div class="coll-credit-info">
-                        {% for key, value in collection_dic.contributors.items %}
-                        <span class="coll-meta-label">{% cycle 'Credit' '' '' '' '' '' '' '' '' %}</span>
-                        <p class="coll-meta-value">
-                            {{value.contribution}} {{value.name}}
-                            {% if value.uricontributor %}
-                            <a href="{{value.uricontributor}}" target="_blank" class="coll-meta-link">External Link</a>
-                            {% endif %}
-                        </p>
-                        {% endfor %}
-                        {% resetcycle %}
-                    </div>
+                {% for key, value in collection_dic.contributors.items %}
+                <div class="coll-meta-item">
+                    <span class="coll-meta-label">{% cycle 'Credit' '' '' '' '' '' '' '' '' %}</span>
+                    <p class="coll-meta-value">
+                        {{value.contribution}} {{value.name}}
+                        {% if value.uricontributor %}
+                        <a href="{{value.uricontributor}}" target="_blank" class="coll-meta-link">External Link</a>
+                        {% endif %}
+                    </p>
                 </div>
+                {% endfor %}
+                {% resetcycle %}
 
                 <div class="coll-meta-item">
                     <span class="coll-meta-label">Publication details</span>
@@ -84,46 +63,42 @@
 
             </div>
 
+            {% if collection_dic.notes %}
+            <div class="coll-notes-box">
+                <span class="coll-meta-label">Archival Notes</span>
+                <p class="coll-notes-text">{{collection_dic.notes}}</p>
+            </div>
+            {% endif %}
+
         </div>
 
-        <!-- Right: Catalog Filter card (repositioned from bento grid) -->
-        <div class="coll-header-filter">
-            <div class="bento-card coll-filter-card-header">
-                <div class="coll-filter-body">
-                    <div>
-                        <h3 class="headline-md">Catalog Filter</h3>
-                        <!-- <p class="coll-filter-desc">Select a catalogue</p> -->
-
-                        <form id="form" action="/information/collections" method="post">
-                            {% csrf_token %}
-                            {{ form.non_field_errors }}
-                            <div class="coll-filter-field">
-                                <label class="coll-filter-label" for="{{ form.collection.id_for_label }}">
-                                    Collection
-                                    <a class="help" href="{% url 'entity' digisig_entity_number=10001607 %}" target="_blank"><i class="fas fa-question-circle"></i></a>
-                                </label>
-                                {{ form.collection }}
-                            </div>
-                            <button class="btn btn-primary coll-filter-submit" type="submit">Submit Query</button>
-                        </form>
-                    </div>
+        <!-- Right: cover image -->
+        {% if collection_dic.collection_thumbnail != null %}
+        <div class="coll-header-cover">
+            <div class="coll-cover-frame">
+                <img class="modalimage" id="modalimagebase1"
+                     src="{% static 'digisig/images/collections_cover/'%}{{collection_dic.collection_thumbnail}}"
+                     alt="catalogue cover photograph"
+                     onclick="image(1)">
+                <div class="coll-cover-overlay">
+                    <i class="fas fa-search-plus"></i>
                 </div>
             </div>
+            <p class="coll-cover-caption">{{collection_dic.collection_fulltitle}}</p>
+
+            <!-- The Modal -->
+            <div id="myModal1" class="modal" style="display: none;">
+                <span class="close" onclick="modalclose(1)">&times;</span>
+                <img class="modal-content" id="modalimg1"
+                     src="{% static 'sealquery/images/collections_cover/'%}{{collection_dic.collection_thumbnail}}"
+                     alt="catalogue cover photograph">
+                <div class="modal-caption" id="caption1">{{collection_dic.collection_fulltitle}}</div>
+            </div>
         </div>
+        {% endif %}
 
     </div>
 </section>
-
-<!-- Cover image modal (kept even though thumbnail is now inline) -->
-{% if collection_dic.collection_thumbnail != null %}
-<div id="myModal1" class="modal" style="display: none;">
-    <span class="close" onclick="modalclose(1)">&times;</span>
-    <img class="modal-content" id="modalimg1"
-         src="{% static 'sealquery/images/collections_cover/'%}{{collection_dic.collection_thumbnail}}"
-         alt="catalogue cover photograph">
-    <div class="modal-caption" id="caption1">{{collection_dic.collection_fulltitle}}</div>
-</div>
-{% endif %}
 
 
 <!-- ═══════════════════════════════════════════════════════════
@@ -134,8 +109,31 @@
 
         <!-- ── Row 1 ─────────────────────────────────────────── -->
 
-        <!-- Entry Completeness — full width (Catalog Filter is now in the header) -->
-        <div class="bento-card bento-col-12">
+        <!-- Catalog Filter (4 cols) -->
+        <div class="bento-card bento-col-4">
+            <div class="coll-filter-body">
+                <div>
+                    <h3 class="headline-md">Catalog Filter</h3>
+                    <p class="coll-filter-desc">Refine the metadata analysis by selecting a specific subset from our archives.</p>
+
+                    <form id="form" action="/information/collections" method="post">
+                        {% csrf_token %}
+                        {{ form.non_field_errors }}
+                        <div class="coll-filter-field">
+                            <label class="coll-filter-label" for="{{ form.collection.id_for_label }}">
+                                Collection
+                                <a class="help" href="{% url 'entity' digisig_entity_number=10001607 %}" target="_blank"><i class="fas fa-question-circle"></i></a>
+                            </label>
+                            {{ form.collection }}
+                        </div>
+                        <button class="btn btn-primary coll-filter-submit" type="submit">Submit Query</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Entry Completeness (8 cols) -->
+        <div class="bento-card bento-col-8">
             <h3 class="headline-md coll-chart-title-center">Entry Completeness by Metadata Field</h3>
             <div class="coll-completeness-chart">
                 <canvas id="Chart1"></canvas>
@@ -175,11 +173,11 @@
 
         <!-- ── Row 3 ─────────────────────────────────────────── -->
 
-        <!-- Corporate Actor Identity — stat cards replacing the chart -->
+        <!-- Corporate Actor Identity (12 cols) -->
         <div class="bento-card bento-col-12">
             <h3 class="headline-md coll-actors-title">Corporate Actor Identity</h3>
-            <div class="coll-actor-stats" id="actor-stats">
-                <!-- Populated by JavaScript below using labels5 / data5 -->
+            <div class="coll-chart-body">
+                <canvas id="Chart5"></canvas>
             </div>
         </div>
 
@@ -299,26 +297,15 @@ new Chart(document.getElementById('Chart3').getContext('2d'), {
     }
 });
 
-/* Corporate Actor Identity — stat cards (replaces Chart5 canvas) */
-(function () {
-    var actorLabels = [ {% for i in labels5 %} '{{i}}', {% endfor %} ];
-    var actorData   = [ {% for i in data5 %}   {{i}},   {% endfor %} ];
-    var container   = document.getElementById('actor-stats');
-    var firstCard   = true;
-
-    actorLabels.forEach(function (label, i) {
-        var rounded = Math.round(actorData[i]);
-        if (rounded < 1) { return; }          /* skip anything that rounds to 0 */
-
-        var card = document.createElement('div');
-        card.className = 'coll-actor-stat-card' + (firstCard ? ' coll-actor-stat-card--primary' : '');
-        card.innerHTML =
-            '<span class="coll-actor-stat-num">' + rounded + '%</span>' +
-            '<span class="coll-actor-stat-label">' + label + '</span>';
-        container.appendChild(card);
-        firstCard = false;                    /* only the first rendered card gets the accent */
-    });
-})();
+/* Chart 5: Actors */
+new Chart(document.getElementById('Chart5').getContext('2d'), {
+    type: 'bar',
+    data: {
+        labels: [ {% for i in labels5 %} '{{i}}', {% endfor %} ],
+        datasets: [ makeDataset([ {% for i in data5 %} {{i}}, {% endfor %} ]) ]
+    },
+    options: commonOptions
+});
 
 </script>
 

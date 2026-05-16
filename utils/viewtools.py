@@ -3504,40 +3504,6 @@ def sealdescription_fetchobject(digisig_entity_number):
 
 	return (sealdescription_object)
 
-#assembles the list of people credited with a work
-@sync_to_async
-def sealdescription_contributorgenerate(collection_dic):
-
-	collectiontarget = collection_dic["id_collection"]
-
-	collectioncontributions = Collectioncontributor.objects.filter(
-		fk_collection=collectiontarget).select_related(
-		'fk_contributor').select_related(
-		'fk_collectioncontribution')
-
-	contribution_set = {}
-
-	for c in collectioncontributions:
-		contribution = {}
-		contribution['contribution'] = c.fk_collectioncontribution.collectioncontribution 
-		
-		namevalue = ""
-		if c.fk_contributor.name_first:
-			namevalue = namevalue + c.fk_contributor.name_first
-		if c.fk_contributor.name_middle:
-			namevalue = namevalue + " " + c.fk_contributor.name_middle
-		if c.fk_contributor.name_last:
-			namevalue = namevalue + " " + c.fk_contributor.name_last
-
-		contribution['name'] = namevalue
-		contribution['uricontributor'] = c.fk_contributor.uricontributor
-		
-		contribution_set[c.fk_contributor] = contribution
-
-	collection_dic["contributors"] = contribution_set
-
-	return(collection_dic)
-
 @sync_to_async
 def sealdescription_fetchrepresentation(sealdescription_object):
 
@@ -3566,6 +3532,40 @@ def representation_fetchinfo(description_dic, representation_case):
 	#description_dic["id_representation"] = representation_case.id_representation
 
 	return(description_dic)
+
+#assembles the list of people credited with a work
+@sync_to_async
+def sealdescription_contributorgenerate(sealdescription_object, sealdescription_dic):
+
+	collectiontarget = sealdescription_object.fk_collection
+
+	collectioncontributions = Collectioncontributor.objects.filter(
+		fk_collection=collectiontarget).select_related(
+		'fk_contributor').select_related(
+		'fk_collectioncontribution')
+
+	contribution_set = {}
+
+	for c in collectioncontributions:
+		contribution = {}
+		contribution['contribution'] = c.fk_collectioncontribution.collectioncontribution 
+		
+		namevalue = ""
+		if c.fk_contributor.name_first:
+			namevalue = namevalue + c.fk_contributor.name_first
+		if c.fk_contributor.name_middle:
+			namevalue = namevalue + " " + c.fk_contributor.name_middle
+		if c.fk_contributor.name_last:
+			namevalue = namevalue + " " + c.fk_contributor.name_last
+
+		contribution['name'] = namevalue
+		contribution['uricontributor'] = c.fk_contributor.uricontributor
+		
+		contribution_set[c.fk_contributor] = contribution
+
+	sealdescription_dic["collection_dic"]  = contribution_set
+
+	return(sealdescription_dic)
 
 
 @sync_to_async

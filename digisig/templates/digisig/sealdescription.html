@@ -4,201 +4,823 @@
 
 {% block content %}
 
-	<div class="search-catalogue-banner"></div>
-	<div class="sidepanel-left"></div>
-	<div class="sidepanel-right"></div>
+{# ─── NEW CSS: Add these rules to style.css under a new section ─── #}
+<style>
+/* =============================================================
+   SEAL DESCRIPTION ENTITY DETAIL PAGE  (sealdescription.html)
+   New rules to add to style.css.
+   All colour / spacing values use existing CSS variables.
+   ============================================================= */
+
+/* ── Page wrapper ──────────────────────────────────────────── */
+.sd-page {
+    max-width: var(--container-max);
+    margin: 0 auto;
+    padding: 48px var(--margin-desktop) 96px;
+}
+
+@media (max-width: 768px) {
+    .sd-page { padding: 32px var(--margin-mobile) 64px; }
+}
+
+/* ── Collection title section (left-border accent) ─────────── */
+.sd-title-section {
+    margin-bottom: 48px;
+    border-left: 4px solid var(--secondary-container);
+    padding-left: 24px;
+}
+
+.sd-title-section h1 {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 40px;
+    line-height: 48px;
+    font-weight: 700;
+    color: var(--primary);
+}
+
+.sd-title-section .sd-subtitle {
+    font-family: 'Inter', sans-serif;
+    font-size: 18px;
+    line-height: 28px;
+    color: var(--on-surface-variant);
+    font-style: italic;
+    margin-top: 8px;
+}
+
+@media (max-width: 768px) {
+    .sd-title-section h1 { font-size: 32px; line-height: 40px; }
+}
+
+/* ── Two-column page grid ──────────────────────────────────── */
+.sd-layout {
+    display: grid;
+    grid-template-columns: 1fr 340px;
+    gap: 24px;
+    align-items: start;
+}
+
+@media (max-width: 1024px) {
+    .sd-layout { grid-template-columns: 1fr 280px; }
+}
+
+@media (max-width: 768px) {
+    .sd-layout {
+        grid-template-columns: 1fr;
+    }
+    /* On mobile, image column appears above metadata */
+    .sd-image-col { order: -1; }
+}
+
+/* ── Shared "ivory" card ───────────────────────────────────── */
+.sd-card {
+    background: var(--surface-container-lowest);
+    border: 1px solid rgba(137, 113, 113, 0.2);
+    box-shadow: 0 1px 4px rgba(75, 0, 11, 0.05);
+}
+
+/* ── Metadata card ─────────────────────────────────────────── */
+.sd-meta-card {
+    padding: 32px;
+    margin-bottom: 24px;
+}
+
+.sd-meta-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 16px;
+    margin-bottom: 32px;
+    flex-wrap: wrap;
+}
+
+.sd-identifier {
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    line-height: 20px;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--secondary);
+    display: block;
+    margin-bottom: 8px;
+}
+
+.sd-meta-card h2 {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 28px;
+    line-height: 36px;
+    font-weight: 600;
+    color: var(--primary);
+    margin: 0;
+}
+
+/* Permalink button */
+.sd-permalink-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+    border: 1px solid var(--primary-container);
+    color: var(--primary-container);
+    background: transparent;
+    padding: 8px 16px;
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    cursor: pointer;
+    transition: background 0.2s ease, color 0.2s ease;
+}
+
+.sd-permalink-btn:hover {
+    background: var(--primary-container);
+    color: var(--on-primary);
+}
+
+.sd-permalink-btn i {
+    font-size: 14px;
+}
+
+/* Zebra-striped metadata rows */
+.sd-meta-rows {
+    border-top: 1px solid rgba(220, 192, 191, 0.15);
+}
+
+.sd-meta-row {
+    display: grid;
+    grid-template-columns: 160px 1fr;
+    gap: 12px;
+    padding: 14px 0;
+    border-bottom: 1px solid rgba(220, 192, 191, 0.15);
+    align-items: baseline;
+}
+
+.sd-meta-row:nth-child(even) {
+    background: rgba(75, 0, 11, 0.02);
+    margin: 0 -32px;
+    padding: 14px 32px;
+}
+
+.sd-meta-label {
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    line-height: 20px;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--on-surface-variant);
+    flex-shrink: 0;
+}
+
+.sd-meta-value {
+    font-family: 'Inter', sans-serif;
+    font-size: 16px;
+    line-height: 24px;
+    color: var(--on-surface);
+    font-weight: 500;
+}
+
+.sd-meta-value a {
+    color: var(--primary-container);
+    font-weight: 500;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.sd-meta-value a:hover { text-decoration: underline; }
+
+/* Help icon (identifier row) */
+.sd-meta-value .help {
+    color: var(--on-surface-variant);
+    opacity: 0.5;
+    margin-left: 6px;
+    font-size: 13px;
+    transition: opacity 0.15s ease;
+}
+
+.sd-meta-value .help:hover { opacity: 1; color: var(--secondary); }
+
+/* External link badge */
+.sd-ext-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--secondary);
+    border: 1px solid var(--secondary-fixed-dim);
+    padding: 2px 8px;
+    margin-left: 8px;
+    border-radius: var(--radius-sm);
+    text-decoration: none;
+    transition: background 0.15s ease;
+}
+
+.sd-ext-link:hover {
+    background: var(--secondary-fixed);
+    text-decoration: none;
+}
+
+@media (max-width: 480px) {
+    .sd-meta-row {
+        grid-template-columns: 1fr;
+        gap: 4px;
+    }
+    .sd-meta-row:nth-child(even) {
+        margin: 0 -16px;
+        padding: 14px 16px;
+    }
+}
+
+/* ── Seal description contents card ─────────────────────────── */
+.sd-contents-card {
+    margin-bottom: 24px;
+    overflow: hidden;
+    border-left: 4px solid var(--primary);
+}
+
+.sd-contents-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 24px;
+    background: var(--surface-container-high);
+    cursor: pointer;
+    user-select: none;
+}
+
+.sd-contents-header-label {
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    line-height: 20px;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--primary);
+}
+
+.sd-contents-toggle {
+    font-size: 20px;
+    color: var(--on-surface-variant);
+    transition: transform 0.25s ease;
+    line-height: 1;
+}
+
+.sd-contents-toggle.is-open { transform: rotate(180deg); }
+
+.sd-contents-body {
+    padding: 32px;
+}
+
+/* Dimensions row with icon */
+.sd-dim-row {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+}
+
+.sd-dim-icon {
+    width: 48px;
+    height: 48px;
+    background: rgba(255, 179, 178, 0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.sd-dim-icon i {
+    color: var(--primary);
+    font-size: 20px;
+}
+
+.sd-dim-label {
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    line-height: 20px;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--on-surface-variant);
+    display: block;
+    margin-bottom: 4px;
+}
+
+.sd-dim-value {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 28px;
+    line-height: 36px;
+    font-weight: 600;
+    color: var(--on-surface);
+}
+
+/* Contents detail table (rows inside collapsed section) */
+.sd-contents-table {
+    margin-top: 24px;
+    padding-top: 24px;
+    border-top: 1px solid rgba(220, 192, 191, 0.2);
+}
+
+.sd-contents-row {
+    display: grid;
+    grid-template-columns: 200px 1fr;
+    gap: 12px;
+    padding: 10px 0;
+    border-bottom: 1px solid rgba(220, 192, 191, 0.12);
+    font-size: 16px;
+    line-height: 24px;
+}
+
+.sd-contents-row:last-child { border-bottom: none; }
+
+.sd-contents-row th {
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    color: var(--on-surface-variant);
+    text-align: left;
+    font-style: normal;
+}
+
+.sd-contents-row td {
+    font-family: 'Inter', sans-serif;
+    font-size: 16px;
+    line-height: 24px;
+    color: var(--on-surface);
+}
+
+@media (max-width: 480px) {
+    .sd-contents-row {
+        grid-template-columns: 1fr;
+        gap: 4px;
+    }
+}
+
+/* ── Citation box ───────────────────────────────────────────── */
+.sd-citation-box {
+    background: var(--surface-container-low);
+    border-left: 4px solid var(--on-secondary-container);
+    padding: 20px 24px;
+}
+
+.sd-citation-title {
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    line-height: 20px;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--on-secondary-container);
+    margin-bottom: 8px;
+}
+
+.sd-citation-text {
+    font-family: 'Courier New', 'Courier', monospace;
+    font-size: 13px;
+    line-height: 20px;
+    color: var(--on-surface-variant);
+}
+
+/* ── Image column ───────────────────────────────────────────── */
+.sd-image-col {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+.sd-image-card {
+    padding: 8px;
+}
+
+.sd-image-wrap {
+    position: relative;
+    overflow: hidden;
+    cursor: pointer;
+}
+
+.sd-image-wrap img {
+    width: 100%;
+    height: auto;
+    display: block;
+    filter: grayscale(100%);
+    transition: filter 0.6s ease;
+}
+
+.sd-image-wrap:hover img { filter: grayscale(0); }
+
+.sd-zoom-btn {
+    position: absolute;
+    bottom: 12px;
+    right: 12px;
+    width: 36px;
+    height: 36px;
+    background: rgba(75, 0, 11, 0.8);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    pointer-events: none;
+}
+
+.sd-image-caption {
+    padding: 12px 8px 4px;
+    text-align: center;
+    font-family: 'Inter', sans-serif;
+    font-size: 13px;
+    line-height: 18px;
+    color: var(--on-surface-variant);
+    font-style: italic;
+}
+
+/* ── Permalink overlay panel ─────────────────────────────────── */
+.sd-permalink-panel {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 80;
+    background: rgba(17, 36, 37, 0.65);
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+}
+
+.sd-permalink-panel.is-open { display: flex; }
+
+.sd-permalink-inner {
+    background: var(--surface-container-lowest);
+    border: 1px solid var(--outline-variant);
+    padding: 32px;
+    max-width: 520px;
+    width: 100%;
+    position: relative;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+}
+
+.sd-permalink-inner h4 {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 22px;
+    line-height: 30px;
+    color: var(--primary);
+    margin-bottom: 16px;
+}
+
+.sd-permalink-inner label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--on-surface-variant);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+}
+
+.sd-permalink-inner input {
+    width: 100%;
+    background: var(--surface-container-low);
+    border: 1px solid var(--outline-variant);
+    padding: 10px 14px;
+    font-family: 'Courier New', monospace;
+    font-size: 14px;
+    color: var(--on-surface);
+    outline: none;
+}
+
+.sd-permalink-close {
+    position: absolute;
+    top: 12px;
+    right: 16px;
+    font-size: 24px;
+    color: var(--on-surface-variant);
+    cursor: pointer;
+    background: none;
+    border: none;
+    line-height: 1;
+    padding: 4px;
+    transition: color 0.15s ease;
+}
+
+.sd-permalink-close:hover { color: var(--primary); }
+</style>
+
+{# ── Background banner (matches other catalogue pages) ─── #}
+<div class="search-catalogue-banner"></div>
+
+<div class="sd-page">
+
+    {# ── Collection / page title ───────────────────────────────── #}
+    <section class="sd-title-section">
+        <h1>{{ pagetitle }}</h1>
+        <p class="sd-subtitle">Digital Preservation Archive &amp; Academic Catalogue Raisonné.</p>
+    </section>
+
+    {# ── Two-column layout ──────────────────────────────────────── #}
+    <div class="sd-layout">
+
+        {# ── LEFT COLUMN: metadata + contents + citation ── #}
+        <div class="sd-main-col">
+
+            {# ── Metadata card ── #}
+            <article class="sd-card sd-meta-card">
+
+                <div class="sd-meta-header">
+                    <div>
+                        <span class="sd-identifier">Item Identifier: {{ sealdescription_object.sealdescription_identifier }}</span>
+                        <h2>{{ sealdescription_object.sealdescription_title }}</h2>
+                    </div>
+                    <button class="sd-permalink-btn" onclick="document.getElementById('sd-permalink-panel').classList.add('is-open')">
+                        <i class="fas fa-link"></i> Permalink
+                    </button>
+                </div>
+
+                <div class="sd-meta-rows">
+
+                    {# Collection #}
+                    <div class="sd-meta-row">
+                        <span class="sd-meta-label">Collection</span>
+                        <span class="sd-meta-value">
+                            <a href="{% url 'entity' sealdescription_object.fk_collection.id_collection %}">
+                                {{ sealdescription_object.fk_collection.collection_title }}
+                            </a>
+                        </span>
+                    </div>
+
+                    {# Credit (one or more contributors) #}
+                    {% for key, value in sealdescription_dic.collection_dic.items %}
+                    <div class="sd-meta-row">
+                        <span class="sd-meta-label">{% cycle 'Credit' '' '' '' '' '' '' '' '' %}</span>
+                        <span class="sd-meta-value">
+                            {{ value.contribution }} {{ value.name }}
+                            {% if value.uricontributor %}
+                                <a class="sd-ext-link" href="{{ value.uricontributor }}" target="_blank">
+                                    <i class="fas fa-arrow-up-right-from-square"></i> Link
+                                </a>
+                            {% endif %}
+                        </span>
+                    </div>
+                    {% endfor %}
+                    {% resetcycle %}
+
+                    {# Identifier with external links #}
+                    <div class="sd-meta-row">
+                        <span class="sd-meta-label">
+                            Identifier
+                            <a class="help" href="{% url 'entity' digisig_entity_number=10001597 %}" target="_blank">
+                                <i class="fas fa-question-circle"></i>
+                            </a>
+                        </span>
+                        <span class="sd-meta-value">
+                            {{ sealdescription_object.sealdescription_identifier }}
+                            {% for link in externallinkset.items %}
+                                {% if link %}
+                                    <a class="sd-ext-link" href="{{ link.external_link }}" target="_blank">
+                                        <i class="fas fa-arrow-up-right-from-square"></i> External Link
+                                    </a>
+                                {% endif %}
+                            {% endfor %}
+                        </span>
+                    </div>
+
+                    {# Description of (link to seal record) #}
+                    <div class="sd-meta-row">
+                        <span class="sd-meta-label">Description of</span>
+                        <span class="sd-meta-value">
+                            <a href="{% url 'entity' sealdescription_object.fk_seal.id_seal %}">
+                                Seal details <i class="fas fa-arrow-up-right-from-square" style="font-size:12px;"></i>
+                            </a>
+                        </span>
+                    </div>
+
+                </div>{# /.sd-meta-rows #}
+
+            </article>{# /.sd-meta-card #}
+
+            {# ── Seal description contents (collapsible) ── #}
+            <section class="sd-card sd-contents-card">
+
+                <div class="sd-contents-header" onclick="sdToggleContents(this)" aria-expanded="false">
+                    <span class="sd-contents-header-label">Seal description contents</span>
+                    <span class="sd-contents-toggle" aria-hidden="true">&#8964;</span>
+                </div>
+
+                <div class="sd-contents-body" id="sd-contents-body" style="display:none;">
+
+                    {# Dimensions #}
+                    {% if sealdescription_object.sealsize_vertical %}
+                    <div class="sd-dim-row">
+                        <div class="sd-dim-icon">
+                            <i class="fas fa-ruler-horizontal"></i>
+                        </div>
+                        <div>
+                            <span class="sd-dim-label">Dimensions</span>
+                            <span class="sd-dim-value">
+                                {{ sealdescription_object.sealsize_vertical }}
+                                {% if sealdescription_object.sealsize_horizontal %}
+                                    &times; {{ sealdescription_object.sealsize_horizontal }}
+                                {% endif %}
+                                mm
+                            </span>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    {# Remaining fields in a definition-style table #}
+                    <div class="sd-contents-table">
+
+                        {% if sealdescription_object.realizer %}
+                        <div class="sd-contents-row">
+                            <th>Actor</th>
+                            <td>{{ sealdescription_object.realizer }}</td>
+                        </div>
+                        {% endif %}
+
+                        {% if sealdescription_object.shape %}
+                        <div class="sd-contents-row">
+                            <th>Shape</th>
+                            <td>{{ sealdescription_object.shape }}</td>
+                        </div>
+                        {% endif %}
+
+                        {# Obverse / reverse split, or single description #}
+                        {% if sealdescription_object.motif_reverse %}
+
+                            {% if sealdescription_object.motif_obverse %}
+                            <div class="sd-contents-row">
+                                <th>Description (Obverse)</th>
+                                <td>{{ sealdescription_object.motif_obverse }}</td>
+                            </div>
+                            {% endif %}
+
+                            {% if sealdescription_object.legend_obverse %}
+                            <div class="sd-contents-row">
+                                <th>Legend (Obverse)</th>
+                                <td>{{ sealdescription_object.legend_obverse }}</td>
+                            </div>
+                            {% endif %}
+
+                            <div class="sd-contents-row">
+                                <th>Description (Reverse)</th>
+                                <td>{{ sealdescription_object.motif_reverse }}</td>
+                            </div>
+
+                            {% if sealdescription_object.legend_reverse %}
+                            <div class="sd-contents-row">
+                                <th>Legend (Reverse)</th>
+                                <td>{{ sealdescription_object.legend_reverse }}</td>
+                            </div>
+                            {% endif %}
+
+                        {% else %}
+
+                            {% if sealdescription_object.motif_obverse %}
+                            <div class="sd-contents-row">
+                                <th>Description</th>
+                                <td>{{ sealdescription_object.motif_obverse }}</td>
+                            </div>
+                            {% endif %}
+
+                            {% if sealdescription_object.legend_obverse %}
+                            <div class="sd-contents-row">
+                                <th>Legend</th>
+                                <td>{{ sealdescription_object.legend_obverse }}</td>
+                            </div>
+                            {% endif %}
+
+                        {% endif %}
+
+                    </div>{# /.sd-contents-table #}
+
+                </div>{# /.sd-contents-body #}
+
+            </section>{# /.sd-contents-card #}
+
+            {# ── Citation box ── #}
+            <div class="sd-citation-box">
+                <p class="sd-citation-title">How to Cite this Record</p>
+                <p class="sd-citation-text">
+                    {{ sealdescription_object.fk_collection.collection_title }}.
+                    Item {{ sealdescription_object.sealdescription_identifier }}:
+                    {{ sealdescription_object.sealdescription_title }}.
+                    Digisig Digital Sigillography Resource. [Accessed {% now "Y" %}].
+                    &lt;https://www.digisig.org/entity/{{ sealdescription_object.id_sealdescription }}&gt;
+                </p>
+            </div>
+
+        </div>{# /.sd-main-col #}
+
+        {# ── RIGHT COLUMN: image ── #}
+        <aside class="sd-image-col">
+
+            {% if sealdescription_dic.representation_filename_hash %}
+            <div class="sd-card sd-image-card">
+                <div class="sd-image-wrap" id="sd-image-wrap">
+                    <img
+                        id="modalimagebase"
+                        src="{{ sealdescription_dic.medium }}{{ sealdescription_dic.representation_filename_hash }}"
+                        alt="{{ sealdescription_object.fk_collection.collection_shorttitle }}, {{ sealdescription_object.sealdescription_identifier }}"
+                    >
+                    <div class="sd-zoom-btn" aria-hidden="true">
+                        <i class="fas fa-magnifying-glass-plus"></i>
+                    </div>
+                </div>
+                <p class="sd-image-caption">
+                    Fig. 1: {{ sealdescription_object.fk_collection.collection_shorttitle }},
+                    {{ sealdescription_object.sealdescription_identifier }}.
+                </p>
+            </div>
+            {% endif %}
+
+        </aside>{# /.sd-image-col #}
+
+    </div>{# /.sd-layout #}
+
+</div>{# /.sd-page #}
 
 
+{# ── Permalink overlay ───────────────────────────────────── #}
+<div class="sd-permalink-panel" id="sd-permalink-panel" role="dialog" aria-modal="true" aria-label="Permalink">
+    <div class="sd-permalink-inner">
+        <button class="sd-permalink-close" onclick="document.getElementById('sd-permalink-panel').classList.remove('is-open')" aria-label="Close">&times;</button>
+        <h4>Permalink</h4>
+        <label for="sd-permalink-input">Copy this URL to link to this page:</label>
+        <input
+            id="sd-permalink-input"
+            type="text"
+            readonly
+            value="https://www.digisig.org/entity/{{ sealdescription_object.id_sealdescription }}"
+            onclick="this.select()"
+        >
+    </div>
+</div>
 
-	<div class="main-title">
-		<h1>{{pagetitle}}</h1>
-	</div>
 
-	<div class="mainpage" id="mainpage"></div>
-
-	<div class="entity-permalink" id="entity-permalink">
-		<div class="permalinkinfo" id="permalinkinfo">
-		Permalink
-		<button onclick="toggle('entity-permalink')" class="closebutton">X</button>
-		<form action="#">
-			<label>Copy this URL to link to this page:</label>
-			<input id="input" class="text" name="" value="http://www.digisig.org/entity/{{sealdescription_object.id_sealdescription}}" type="text" readonly>
-		</form>
-		</div>
-	</div>
-
-	<div class="entity_detail" id= "entity_detail"> 
-		<table>
-			<h3>Seal description details <button onclick="toggle('entity-permalink')" class="permalink">Permalink</button></h3>
-
-			<tr>
-				<th>Title</th>
-				<td>{{sealdescription_object.sealdescription_title}}</td>
-
-			{% if sealdescription_dic.representation_filename_hash %}
-					<td rowspan="5"><img class="sealdescription-img" id="modalimagebase" src="{{sealdescription_dic.medium}}{{sealdescription_dic.representation_filename_hash}}" alt="{{sealdescription_object.fk_collection.collection_shorttitle}}, {{sealdescription_object.sealdescription_identifier}}">
-					</td>
-					<!-- The Modal -->
-					<div id="myModal" class="modal">
-					  <span class="close">&times;</span>
-					  <img class="modal-content" id="img01">
-					  <div id="caption"></div>
-					</div>
-			{% endif %}
-
-			</tr>
-
-			<tr>
-				<th>Identifier <a class="help" href="{% url 'entity' digisig_entity_number=10001597 %}" target="_blank"><i class="fas fa-question-circle"></i></a></th>
-				<td>{{sealdescription_object.sealdescription_identifier}}
-
-					{% for link in externallinkset.items %}
-					{% if link %}<a href="{{link.external_link}}" target="_blank">External Link</a>{% endif %}
-					{% endfor %}	
-				</td>
-			</tr>
-			
-			<tr>
-				<th>Collection</th> 
-				<td><a href="{% url 'entity' sealdescription_object.fk_collection.id_collection %}">{{sealdescription_object.fk_collection.collection_title}}</a></td>
-			</tr>
-
-			{% for key, value in sealdescription_dic.contributors.items %}
-				<tr>
-					<th>{% cycle 'Credit' '' '' '' '' '' '' '' '' %}</th>
-					<td>
-						{{value.contribution}} {{value.name}}
-					{% if value.uricontributor %}
-					<a href="{{value.uricontributor}}" target="_blank">External Link</a>
-					{% endif %}
-					</td> 
-				</tr>
-			{% endfor %}
-			{% resetcycle %}
-			
-			<tr>
-				<th>Description of</th>
-				<td><a href="{% url 'entity' sealdescription_object.fk_seal.id_seal %}">Seal details</a></td>
-			</tr>
-		</table>
-	</div>
-
-		
-	<div class="entity_sealdescription" id="entity_sealdescription">
-		<div class="div-caption">
-			Seal description contents <button id="entitybutton1" onclick="tbtoggle('entity1', 'entitybutton1')" class="entity">+</button>
-		</div>
-
-		<div>
-		<table id="entity1" style="display:none;">
-				{% if sealdescription_object.realizer %}
-				<tr>
-					<th>Actor</th>
-					<td>{{sealdescription_object.realizer}}</td>
-				</tr>
-				{% endif %}
-	
-				{% if sealdescription_object.shape %}
-				<tr>
-					<th>Shape</th>
-					<td>{{sealdescription_object.shape}}</td>
-				</tr>
-				{% endif %}
-	
-				{% if sealdescription_object.sealsize_vertical %}
-				<tr>
-					<th>Dimensions</th>
-					<td>{{sealdescription_object.sealsize_vertical}}
-						{% if sealdescription_object.sealsize_horizontal %}
-								x {{sealdescription_object.sealsize_horizontal}}
-						{% endif %}
-						mm
-					</td>
-				</tr>
-				{% endif %}
-
-<!-- 				{% if sealdescription_object.sealdescription != null %}
-				<tr>
-					<th>Description</th>
-					<td>{{sealdescription_object.sealdescription}}</td>
-				</tr>
-				{% endif %}
- -->
-			{% if sealdescription_object.motif_reverse %}
-	
-				{% if sealdescription_object.motif_obverse %}
-				<tr>
-					<th>Description (Obverse)</th>
-					<td>{{sealdescription_object.motif_obverse}}</td>
-				</tr>
-				{% endif %}
-	
-				{% if sealdescription_object.legend_obverse %}
-				<tr>
-					<th>Legend (Obverse)</th>
-					<td>{{sealdescription_object.legend_obverse}}</td>
-				</tr>
-				{% endif %}
-	
-				{% if sealdescription_object.motif_reverse %}
-				<tr>
-					<th>Description (Reverse)</th>
-					<td>{{sealdescription_object.motif_reverse}}</td>
-				</tr>
-				{% endif %}
-	
-				{% if sealdescription_object.legend_reverse %}
-				<tr>
-					<th>Legend (Reverse)</th>
-					<td>{{sealdescription_object.legend_reverse}}</td>
-				</tr>
-				{% endif %}
-
-			{% else %}
-	
-				{% if sealdescription_object.motif_obverse %}
-				<tr>
-					<th>Description</th>
-					<td>{{sealdescription_object.motif_obverse}}</td>
-				</tr>
-				{% endif %}
-	
-				{% if sealdescription_object.legend_obverse %}
-				<tr>
-					<th>Legend</th>
-					<td>{{sealdescription_object.legend_obverse}}</td>
-				</tr>
-				{% endif %}				
-	
-			{% endif %}
-
-		</table>
-		</div>
-	</div>
+{# ── Image lightbox modal (preserved from original) ── #}
+<div id="myModal" class="modal" style="display:none;">
+    <span class="close">&times;</span>
+    <img class="modal-content" id="img01" alt="">
+    <div id="caption" class="modal-caption"></div>
+</div>
 
 
 <script>
-// Get the modal
-var modal = document.getElementById("myModal");
+/* ── Contents toggle ─────────────────────────────────────── */
+function sdToggleContents(headerEl) {
+    var body   = document.getElementById('sd-contents-body');
+    var toggle = headerEl.querySelector('.sd-contents-toggle');
+    var isOpen = headerEl.getAttribute('aria-expanded') === 'true';
 
-// Get the image and insert it inside the modal - use its "alt" text as a caption
-var img = document.getElementById("modalimagebase");
-var modalImg = document.getElementById("img01");
-var captionText = document.getElementById("caption");
-img.onclick = function(){
-  modal.style.display = "block";
-  modalImg.src = this.src;
-  captionText.innerHTML = this.alt;
+    if (isOpen) {
+        body.style.display = 'none';
+        toggle.classList.remove('is-open');
+        headerEl.setAttribute('aria-expanded', 'false');
+    } else {
+        body.style.display = 'block';
+        toggle.classList.add('is-open');
+        headerEl.setAttribute('aria-expanded', 'true');
+    }
 }
 
-// Get the <span> element that closes the modal
-var span = document.getElementsByClassName("close")[0];
+/* ── Image lightbox ────────────────────────────────────────
+   Preserved from original sealdescription.html             */
+var modal      = document.getElementById('myModal');
+var modalImg   = document.getElementById('img01');
+var captionEl  = document.getElementById('caption');
+var sourceImg  = document.getElementById('modalimagebase');
 
-// When the user clicks on <span> (x), close the modal
-span.onclick = function() {
-  modal.style.display = "none";
-} 
+if (sourceImg) {
+    /* clicking the image wrap triggers the modal */
+    document.getElementById('sd-image-wrap').addEventListener('click', function () {
+        modal.style.display = 'flex';
+        modalImg.src        = sourceImg.src;
+        captionEl.innerHTML = sourceImg.alt;
+    });
+}
 
+var closeBtn = document.querySelector('#myModal .close');
+if (closeBtn) {
+    closeBtn.onclick = function () { modal.style.display = 'none'; };
+}
+
+/* Close modal on backdrop click */
+modal.addEventListener('click', function (e) {
+    if (e.target === modal) { modal.style.display = 'none'; }
+});
+
+/* Close permalink panel on backdrop click */
+document.getElementById('sd-permalink-panel').addEventListener('click', function (e) {
+    if (e.target === this) { this.classList.remove('is-open'); }
+});
+
+/* Escape key closes both overlays */
+document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape') {
+        modal.style.display = 'none';
+        document.getElementById('sd-permalink-panel').classList.remove('is-open');
+    }
+});
 </script>
 
 {% endblock %}
