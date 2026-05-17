@@ -353,6 +353,7 @@ p {
     align-items: center;
     gap: 24px;
     flex-wrap: wrap;
+    background: transparent;
 }
 
 /* Each top-level nav item — either a direct link or a dropdown trigger */
@@ -2216,6 +2217,7 @@ p {
 .places-map-section {
     height: 400px;
     position: relative;
+    z-index: 0;
     overflow: hidden;
     border-bottom: 1px solid var(--outline-variant);
     flex-shrink: 0;
@@ -7184,16 +7186,14 @@ details.analysis-guidance[open] .analysis-guidance-icon {
 }
 
 .info-pub-item {
-    display: grid;
-    grid-template-columns: 28px 1fr;
-    gap: 0 12px;
-    padding: 16px 0;
+    padding: 16px 0 16px 40px;
     border-bottom: 1px solid var(--ent-parchment-border, #dcc0bf);
     font-family: 'Inter', sans-serif;
     font-size: 15px;
     line-height: 24px;
     color: var(--on-surface);
     counter-increment: pub-counter;
+    position: relative;
 }
 
 .info-pub-item:last-child {
@@ -7203,12 +7203,15 @@ details.analysis-guidance[open] .analysis-guidance-icon {
 
 .info-pub-item::before {
     content: counter(pub-counter);
+    position: absolute;
+    left: 0;
+    top: 16px;
     font-family: 'Playfair Display', Georgia, serif;
     font-size: 13px;
     font-weight: 600;
     color: var(--on-surface-variant);
-    padding-top: 2px;
     line-height: 24px;
+    width: 28px;
 }
 
 .info-pub-item em {

@@ -1,13 +1,13 @@
 // When the user scrolls down 170px from the top of the document, resize the navbar
 window.onscroll = function() {scrollFunction()};
 
-function scrollFunction() {
-  if (document.body.scrollTop > 170 || document.documentElement.scrollTop > 170) {
-    document.getElementById("navbar").style.background = "black";
-  } else {
-    document.getElementById("navbar").style.background = "transparent";
-  }
-}
+// function scrollFunction() {
+//   if (document.body.scrollTop > 170 || document.documentElement.scrollTop > 170) {
+//     document.getElementById("navbar").style.background = "black";
+//   } else {
+//     document.getElementById("navbar").style.background = "transparent";
+//   }
+// }
 
 // the buttons that open and close sections
 function toggle(id) {
