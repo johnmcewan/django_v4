@@ -1173,10 +1173,8 @@ class EntityView(View):
 		pagetitle = sealdescription_object.fk_collection.collection_title
 
 		sealdescription_dic= await sealdescription_fetchrepresentation(sealdescription_object)
-		sealdescription_dic = await sealdescription_contributorgenerate(sealdescription_object, sealdescription_dic)
+		sealdescription_dic = await sealdescription_contributorgenerate(sealdescription_dic)
 		externallinkset = await externallinkgenerator(digisig_entity_number)
-
-		print (sealdescription_dic)
 
 		context = {
 			'pagetitle': pagetitle,

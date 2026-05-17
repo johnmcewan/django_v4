@@ -4,30 +4,50 @@
 
 {% block content %}
 
-	<div class="search-banner"></div>
-	<div class="sidepanel-left"></div>
-	<div class="sidepanel-right"></div>
+<div class="entity-page">
 
-	<div class="main-title">
-		<h1>Changes, Patches, and Updates</h1>
-	</div>
+  <!-- ═══════════════════════════════════════════════
+       PAGE HEADER
+       ═══════════════════════════════════════════════ -->
+  <header class="entity-page-header">
+    <p class="entity-eyebrow">About &mdash; Updates</p>
+    <h1 class="entity-title entity-title--display">Changelog</h1>
+    <p class="entity-subtitle">A running record of changes, patches and improvements to the Digisig platform.</p>
+    <hr class="info-page-rule">
+  </header>
 
-	<div class="mainpage"></div>
 
+  <!-- ═══════════════════════════════════════════════
+       CHANGELOG TABLE
+       ═══════════════════════════════════════════════ -->
+  <div class="info-changelog-wrap entity-card" style="padding:0;overflow:hidden;">
+    <table class="info-changelog-table">
+      <thead>
+        <tr>
+          <th class="info-changelog-th-date">Date</th>
+          <th class="info-changelog-th-change">Change</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for change in change_object %}
+        <tr class="info-changelog-row{% ifchanged change.change_date %} info-changelog-row--dated{% endifchanged %}">
+          <td class="info-changelog-date-cell">
+            {% ifchanged change.change_date %}
+            <time class="info-changelog-date" datetime="{{change.change_date|date:'Y-m-d'}}">
+              {{change.change_date|date:"j M Y"}}
+            </time>
+            {% endifchanged %}
+          </td>
+          <td class="info-changelog-entry">
+            <span class="info-changelog-bullet" aria-hidden="true"></span>
+            {{change.change}}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
 
-	<div class="entity_main">
-
-		<table>
-		{% for change in change_object %}
-			<tr>
-				<th style="min-height:40px;">{% ifchanged change.change_date %}
-						{{change.change_date|date:"d/m/y"}}
-					{% endifchanged %}
-				</th>
-				<td>●</td><td>{{change.change}}</td>
-			</tr>
-		{% endfor %}
-		</table>
-	</div>
+</div><!-- /entity-page -->
 
 {% endblock %}

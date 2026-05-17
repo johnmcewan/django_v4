@@ -3519,6 +3519,7 @@ def sealdescription_fetchrepresentation(sealdescription_object):
 		representation_set = Representation.objects.select_related('fk_connection').get(id_representation=12204474)
 
 	sealdescription_dic = representation_fetchinfo(description_dic, representation_set)
+	sealdescription_dic["id_collection"] = sealdescription_object.fk_collection 
 
 	return(sealdescription_dic)
 
@@ -3535,9 +3536,9 @@ def representation_fetchinfo(description_dic, representation_case):
 
 #assembles the list of people credited with a work
 @sync_to_async
-def sealdescription_contributorgenerate(sealdescription_object, sealdescription_dic):
+def sealdescription_contributorgenerate(collection_dic):
 
-	collectiontarget = sealdescription_object.fk_collection
+	collectiontarget = collection_dic["id_collection"]
 
 	collectioncontributions = Collectioncontributor.objects.filter(
 		fk_collection=collectiontarget).select_related(
@@ -3563,9 +3564,9 @@ def sealdescription_contributorgenerate(sealdescription_object, sealdescription_
 		
 		contribution_set[c.fk_contributor] = contribution
 
-	sealdescription_dic["collection_dic"]  = contribution_set
+	collection_dic["contributors"]  = contribution_set
 
-	return(sealdescription_dic)
+	return(collection_dic)
 
 
 @sync_to_async

@@ -6468,3 +6468,1096 @@ p {
     border-color: var(--primary-container);
     text-decoration: none;
 }
+
+
+/* =============================================================
+   MAP / DISCOVER PAGE  (map.html)
+
+   Layout: narrow 3-column filter sidebar (left) + wide 9-column
+   map panel (right). Uses entity-page background and all
+   entity-* base tokens; introduces only map-specific classes.
+
+   Append this block after the manifestation-* section in
+   style_additions.css (or the combined style.css).
+   ============================================================= */
+
+/* ─── Page wrapper ────────────────────────────────────────── */
+.map-page {
+    max-width: var(--container-max);
+    margin: 0 auto;
+    padding: 48px var(--margin-desktop) 96px;
+    background-image: radial-gradient(circle, rgba(107, 20, 29, 0.018) 1px, transparent 1px);
+    background-size: 28px 28px;
+}
+
+@media (max-width: 768px) {
+    .map-page { padding: 32px var(--margin-mobile) 64px; }
+}
+
+/* ─── Page header ─────────────────────────────────────────── */
+.map-page-header {
+    margin-bottom: 48px;
+}
+
+.map-page-header .entity-title {
+    color: var(--on-surface);
+    margin-bottom: 12px;
+}
+
+.map-page-rule {
+    border: 0;
+    border-top: 1px solid var(--outline-variant);
+    opacity: 0.5;
+    margin: 28px 0 0;
+}
+
+/* ─── Body layout: 3fr sidebar + 9fr map ─────────────────── */
+.map-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 3fr) minmax(0, 9fr);
+    gap: 32px;
+    align-items: start;
+}
+
+@media (max-width: 900px) {
+    .map-layout {
+        grid-template-columns: 1fr;
+        gap: 24px;
+    }
+}
+
+/* ─── Filter sidebar ──────────────────────────────────────── */
+.map-filter-col {
+    position: sticky;
+    top: 80px;
+}
+
+@media (max-width: 900px) {
+    .map-filter-col { position: static; }
+}
+
+.map-filter-card {
+    /* entity-card provides background, border, shadow and 32px padding */
+}
+
+.map-filter-form {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+}
+
+/* Each label + input pair */
+.map-filter-field {
+    padding: 14px 0;
+    border-bottom: 1px solid var(--ent-parchment-border, #dcc0bf);
+}
+
+.map-filter-field:first-of-type {
+    padding-top: 0;
+}
+
+/* Style the Django-rendered <select> elements */
+.map-filter-field select,
+.map-filter-field input[type="text"],
+.map-filter-field input[type="number"] {
+    width: 100%;
+    margin-top: 6px;
+    background: var(--surface-container-lowest);
+    border: 1px solid var(--outline-variant);
+    padding: 8px 10px;
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    line-height: 20px;
+    color: var(--on-surface);
+    outline: none;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    /* Sharp-corner aesthetic to match other entity pages */
+    border-radius: 0.125rem;
+}
+
+.map-filter-field select:focus,
+.map-filter-field input[type="text"]:focus,
+.map-filter-field input[type="number"]:focus {
+    border-color: var(--primary-container);
+    box-shadow: 0 0 0 2px rgba(75, 0, 11, 0.12);
+}
+
+/* Submit button */
+.map-filter-actions {
+    margin-top: 20px;
+}
+
+.map-submit-btn {
+    width: 100%;
+    padding: 12px 16px;
+    background: var(--primary-container);
+    color: var(--on-primary);
+    font-family: 'Inter', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    border: none;
+    cursor: pointer;
+    transition: opacity 0.15s ease, background 0.15s ease;
+    border-radius: 0.125rem;
+}
+
+.map-submit-btn:hover  { opacity: 0.88; }
+.map-submit-btn:active { opacity: 0.78; }
+
+/* Italicised hint below the form */
+.map-filter-note {
+    font-family: 'Inter', sans-serif;
+    font-size: 12px;
+    line-height: 18px;
+    color: var(--on-surface-variant);
+    font-style: italic;
+    margin: 20px 0 0;
+    padding-top: 16px;
+    border-top: 1px solid var(--ent-parchment-border, #dcc0bf);
+}
+
+.map-filter-note i {
+    color: var(--secondary);
+    margin-right: 4px;
+}
+
+/* ─── Map main panel ──────────────────────────────────────── */
+.map-main-col {
+    min-width: 0;
+}
+
+.map-panel {
+    /* entity-card provides background, border, shadow and 32px padding */
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+}
+
+/* Panel header row: title left, hint right */
+.map-panel-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 16px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--ent-parchment-border, #dcc0bf);
+}
+
+.map-panel-hint {
+    font-family: 'Inter', sans-serif;
+    font-size: 12px;
+    letter-spacing: 0.06em;
+    color: var(--on-surface-variant);
+    font-style: italic;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.map-panel-hint i { font-size: 11px; }
+
+/* Container that holds either the Leaflet map or the empty state */
+.map-container {
+    position: relative;
+    width: 100%;
+    min-height: 560px;
+}
+
+/* The Leaflet map div — fills its container */
+.map-leaflet {
+    width: 100%;
+    height: 560px;
+}
+
+@media (max-width: 768px) {
+    .map-container { min-height: 380px; }
+    .map-leaflet   { height: 380px; }
+}
+
+/* ─── Empty state (shown before the form is submitted) ────── */
+.map-empty-state {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    background: var(--surface-container-lowest);
+    border: 1px dashed var(--outline-variant);
+    color: var(--on-surface-variant);
+    text-align: center;
+    padding: 40px;
+    pointer-events: none;   /* don't block any Leaflet events */
+}
+
+.map-empty-state i {
+    font-size: 48px;
+    color: var(--outline-variant);
+}
+
+.map-empty-state p {
+    font-family: 'Inter', sans-serif;
+    font-size: 15px;
+    line-height: 24px;
+    max-width: 340px;
+    margin: 0;
+}
+
+.map-empty-state strong {
+    color: var(--primary-container);
+    font-style: normal;
+}
+
+
+/* =============================================================
+   ANALYSIS PAGES  (analysis_date.html, analysis_time.html)
+
+   analysis_time.html reuses map-* classes entirely; only the
+   Clear button and two extra filter fields are new.
+   analysis_date.html adds: guidance block, prediction card,
+   chart panel, decision-path table, similar-seals grid.
+
+   Append this block after map_style.css in style_additions.css
+   (or the combined style.css).
+   ============================================================= */
+
+/* ─── Shared: secondary "Clear" button ───────────────────── */
+/* Sits below the burgundy Apply/Submit button in both pages */
+.map-filter-secondary-actions {
+    margin-top: 8px;
+}
+
+.analysis-clear-btn {
+    width: 100%;
+    padding: 9px 16px;
+    background: transparent;
+    color: var(--on-surface-variant);
+    font-family: 'Inter', sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    border: 1px solid var(--outline-variant);
+    cursor: pointer;
+    border-radius: 0.125rem;
+    transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+}
+
+.analysis-clear-btn:hover {
+    background: var(--surface-container);
+    border-color: var(--on-surface-variant);
+    color: var(--on-surface);
+}
+
+/* ─── Unit label inside filter field labels ───────────────── */
+.analysis-unit {
+    font-weight: 400;
+    color: var(--on-surface-variant);
+    font-style: italic;
+    letter-spacing: 0;
+    text-transform: none;
+    font-size: 11px;
+}
+
+
+/* =============================================================
+   ANALYSIS DATE PAGE  (analysis_date.html only)
+   ============================================================= */
+
+/* ─── Guidance <details> block ────────────────────────────── */
+.analysis-guidance {
+    background: var(--surface-container-low);
+    border: 1px solid var(--ent-parchment-border, #dcc0bf);
+    border-left: 4px solid var(--secondary-container);
+    margin-bottom: 40px;
+}
+
+.analysis-guidance-summary {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 16px 24px;
+    cursor: pointer;
+    font-family: 'Inter', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--secondary);
+    list-style: none;
+    user-select: none;
+}
+
+.analysis-guidance-summary::-webkit-details-marker { display: none; }
+
+/* +/− indicator via the icon only — no pseudo-element needed */
+.analysis-guidance-icon {
+    font-size: 14px;
+    color: var(--secondary);
+    flex-shrink: 0;
+    transition: transform 0.2s ease;
+}
+
+details.analysis-guidance[open] .analysis-guidance-icon {
+    transform: rotate(90deg);
+}
+
+.analysis-guidance-date {
+    margin-left: auto;
+    font-size: 11px;
+    font-weight: 400;
+    letter-spacing: 0.04em;
+    text-transform: none;
+    color: var(--on-surface-variant);
+    font-style: italic;
+}
+
+.analysis-guidance-body {
+    padding: 0 24px 24px;
+    border-top: 1px solid var(--ent-parchment-border, #dcc0bf);
+}
+
+.analysis-guidance-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 32px;
+    margin-top: 20px;
+}
+
+@media (max-width: 768px) {
+    .analysis-guidance-grid { grid-template-columns: 1fr; gap: 16px; }
+}
+
+.analysis-guidance-heading {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--primary-container);
+    margin: 20px 0 8px;
+}
+
+.analysis-guidance-heading:first-child { margin-top: 0; }
+
+.analysis-guidance-body p {
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    line-height: 22px;
+    color: var(--on-surface-variant);
+    margin: 0 0 10px;
+}
+
+.analysis-guidance-body a {
+    color: var(--primary-container);
+    text-decoration: underline;
+    text-decoration-color: rgba(75, 0, 11, 0.3);
+    text-underline-offset: 3px;
+}
+
+/* ─── Prediction result card ──────────────────────────────── */
+.analysis-prediction-card {
+    /* entity-card provides background, border, shadow, padding */
+    border-left: 4px solid var(--primary-container) !important;
+    margin-bottom: 24px;
+}
+
+.analysis-prediction-eyebrow {
+    font-family: 'Inter', sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--primary-container);
+    margin: 0 0 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.analysis-prediction-value {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 40px;
+    line-height: 48px;
+    font-weight: 700;
+    color: var(--on-surface);
+    margin: 0 0 12px;
+    letter-spacing: -0.01em;
+}
+
+.analysis-prediction-note {
+    font-family: 'Inter', sans-serif;
+    font-size: 13px;
+    line-height: 20px;
+    color: var(--on-surface-variant);
+    font-style: italic;
+    margin: 0;
+}
+
+/* ─── Empty state for results column ─────────────────────── */
+.analysis-empty-state {
+    /* extends map-empty-state */
+    position: static;           /* not overlaid — flows in the column */
+    margin-bottom: 24px;
+    min-height: 140px;
+    border-radius: 0.125rem;
+    pointer-events: auto;
+}
+
+/* ─── Chart panel ─────────────────────────────────────────── */
+.analysis-chart-panel {
+    /* entity-card */
+    padding: 24px;
+}
+
+.analysis-chart-container {
+    position: relative;
+    width: 100%;
+    min-height: 300px;
+}
+
+/* ─── Result Details section (full-width, below the grid) ─── */
+.analysis-results-section {
+    margin-top: 56px;
+}
+
+.analysis-results-section .entity-section-title {
+    color: var(--primary-container);
+}
+
+/* ─── Subsection headings inside Result Details ───────────── */
+.analysis-subsection {
+    margin-top: 32px;
+}
+
+.analysis-subsection-heading {
+    font-family: 'Inter', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--secondary);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0 0 16px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--ent-parchment-border, #dcc0bf);
+}
+
+/* ─── Decision path table ─────────────────────────────────── */
+.analysis-decision-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.analysis-decision-table thead tr {
+    background: var(--surface-container);
+    border-bottom: 2px solid var(--ent-parchment-border, #dcc0bf);
+}
+
+.analysis-decision-table th {
+    padding: 11px 20px;
+    font-family: 'Inter', sans-serif;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--on-surface-variant);
+    text-align: left;
+}
+
+.analysis-decision-table td {
+    padding: 13px 20px;
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    line-height: 20px;
+    color: var(--on-surface);
+    border-bottom: 1px solid var(--ent-parchment-border, #dcc0bf);
+}
+
+.analysis-decision-table tbody tr:nth-child(even) {
+    background: rgba(107, 20, 29, 0.022);
+}
+
+/* Node number cell — monospaced, muted */
+.analysis-decision-node {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-size: 12px;
+    color: var(--on-surface-variant);
+    width: 6%;
+    white-space: nowrap;
+}
+
+/* Yes / No answer cell */
+.analysis-decision-answer {
+    width: 10%;
+    white-space: nowrap;
+    font-weight: 600;
+    font-size: 13px;
+}
+
+.analysis-decision-answer--yes {
+    color: var(--secondary);         /* gold for Yes */
+}
+
+.analysis-decision-answer--no {
+    color: var(--on-surface-variant);
+}
+
+/* Final prediction row */
+.analysis-decision-final {
+    background: rgba(75, 0, 11, 0.04) !important;
+    border-top: 2px solid var(--primary-container);
+}
+
+.analysis-decision-final td {
+    font-weight: 600;
+    color: var(--primary-container);
+    border-bottom: 0;
+}
+
+/* ─── Similar seals grid ──────────────────────────────────── */
+/* Reuses .manif-repr-card / .manif-repr-image / .manif-repr-info
+   from manifestation_style.css — no new layout rules needed.  */
+
+/* Placeholder when no image is available */
+.analysis-no-image {
+    background: var(--surface-container);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 160px;
+    color: var(--outline-variant);
+    font-size: 36px;
+}
+
+/* Empty-results message when no similar seals found */
+.analysis-no-results {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    padding: 40px;
+    border: 1px dashed var(--outline-variant);
+    color: var(--on-surface-variant);
+    text-align: center;
+    border-radius: 0.125rem;
+}
+
+.analysis-no-results i {
+    font-size: 32px;
+    color: var(--outline-variant);
+}
+
+.analysis-no-results p {
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    line-height: 22px;
+    max-width: 340px;
+    margin: 0;
+}
+
+
+/* =============================================================
+   INFORMATION / ABOUT PAGES
+   (about.html, contributors.html, change.html)
+
+   These are editorial/static pages that share a common page
+   wrapper and header pattern with the entity pages, but use
+   prose-focused layout rather than the entity detail grid.
+
+   Append after analysis_style.css in the combined stylesheet.
+   ============================================================= */
+
+/* ─── Shared: hairline rule below the page header ────────── */
+.info-page-rule {
+    border: 0;
+    border-top: 1px solid var(--outline-variant);
+    opacity: 0.5;
+    margin: 28px 0 48px;
+}
+
+
+/* =============================================================
+   ABOUT PAGE  (about.html)
+   ============================================================= */
+
+/* ─── 8fr prose + 4fr sticky sidebar ─────────────────────── */
+.info-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 8fr) minmax(0, 4fr);
+    gap: 48px;
+    align-items: start;
+}
+
+@media (max-width: 960px) {
+    .info-layout {
+        grid-template-columns: 1fr;
+        gap: 40px;
+    }
+}
+
+.info-content-col {
+    min-width: 0;
+}
+
+/* Sticky sidebar */
+.info-sidebar-col {
+    position: sticky;
+    top: 80px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    min-width: 0;
+}
+
+@media (max-width: 960px) {
+    .info-sidebar-col {
+        position: static;
+    }
+}
+
+/* ─── Prose sections ──────────────────────────────────────── */
+.info-section {
+    margin-bottom: 0; /* spacing handled by the hr rule below */
+}
+
+/* Hairline between sections */
+.info-section-rule {
+    border: 0;
+    border-top: 1px solid var(--outline-variant);
+    opacity: 0.25;
+    margin: 40px 0;
+}
+
+/* Section heading: Playfair Display h2 with small gold rule */
+.info-section-heading {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 26px;
+    line-height: 34px;
+    font-weight: 600;
+    color: var(--primary-container);
+    margin: 0 0 20px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--ent-parchment-border, #dcc0bf);
+}
+
+/* Body prose */
+.info-prose p {
+    font-family: 'Inter', sans-serif;
+    font-size: 16px;
+    line-height: 26px;
+    color: var(--on-surface);
+    margin: 0 0 16px;
+}
+
+.info-prose p:last-child { margin-bottom: 0; }
+
+.info-prose a {
+    color: var(--primary-container);
+    text-decoration: underline;
+    text-decoration-color: rgba(75, 0, 11, 0.3);
+    text-underline-offset: 3px;
+    transition: text-decoration-color 0.15s ease;
+}
+
+.info-prose a:hover {
+    text-decoration-color: var(--primary-container);
+}
+
+/* ─── Publication lists ───────────────────────────────────── */
+.info-pub-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    counter-reset: pub-counter;
+}
+
+.info-pub-item {
+    display: grid;
+    grid-template-columns: 28px 1fr;
+    gap: 0 12px;
+    padding: 16px 0;
+    border-bottom: 1px solid var(--ent-parchment-border, #dcc0bf);
+    font-family: 'Inter', sans-serif;
+    font-size: 15px;
+    line-height: 24px;
+    color: var(--on-surface);
+    counter-increment: pub-counter;
+}
+
+.info-pub-item:last-child {
+    border-bottom: 0;
+    padding-bottom: 0;
+}
+
+.info-pub-item::before {
+    content: counter(pub-counter);
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--on-surface-variant);
+    padding-top: 2px;
+    line-height: 24px;
+}
+
+.info-pub-item em {
+    font-style: italic;
+    color: var(--on-surface);
+}
+
+.info-pub-item a {
+    color: var(--primary-container);
+    text-decoration: underline;
+    text-decoration-color: rgba(75, 0, 11, 0.3);
+    text-underline-offset: 3px;
+    transition: text-decoration-color 0.15s ease;
+}
+
+.info-pub-item a:hover {
+    text-decoration-color: var(--primary-container);
+}
+
+/* ─── Sidebar: author card ────────────────────────────────── */
+.info-author-card {
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.info-author-name {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 22px;
+    font-weight: 600;
+    color: var(--on-surface);
+    margin: 0;
+    line-height: 28px;
+}
+
+.info-author-role {
+    font-family: 'Inter', sans-serif;
+    font-size: 13px;
+    line-height: 20px;
+    color: var(--on-surface-variant);
+    margin: 0;
+    font-style: italic;
+}
+
+.info-author-orcid {
+    padding-top: 10px;
+    border-top: 1px solid var(--ent-parchment-border, #dcc0bf);
+}
+
+.info-orcid-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-family: 'Inter', sans-serif;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--secondary);
+    text-decoration: none;
+    transition: color 0.15s ease;
+}
+
+.info-orcid-link:hover { color: var(--secondary); text-decoration: underline; }
+
+/* ─── Sidebar: quick navigation ──────────────────────────── */
+.info-nav-card {
+    padding: 20px 24px;
+}
+
+.info-nav-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.info-nav-link {
+    display: block;
+    font-family: 'Inter', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--on-surface-variant);
+    text-decoration: none;
+    padding: 6px 0;
+    border-bottom: 1px solid transparent;
+    transition: color 0.15s ease, border-color 0.15s ease;
+}
+
+.info-nav-link:hover {
+    color: var(--primary-container);
+    border-bottom-color: rgba(75, 0, 11, 0.2);
+}
+
+.info-nav-link::before {
+    content: "→";
+    margin-right: 6px;
+    font-size: 11px;
+    opacity: 0.5;
+    transition: opacity 0.15s ease;
+}
+
+.info-nav-link:hover::before { opacity: 1; }
+
+/* ─── Sidebar: donate box ─────────────────────────────────── */
+/* entity-cite-box provides the gold-left-border and padding */
+.info-donate-box {
+    margin-top: 0 !important;  /* override entity-cite-box margin */
+}
+
+.info-donate-text {
+    font-family: 'Inter', sans-serif;
+    font-size: 13px;
+    line-height: 20px;
+    color: var(--on-surface-variant);
+    margin: 8px 0 16px;
+}
+
+.info-donate-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    padding: 10px 16px;
+    background: var(--primary-container);
+    color: var(--on-primary);
+    font-family: 'Inter', sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    text-decoration: none;
+    border-radius: 0.125rem;
+    transition: opacity 0.15s ease;
+}
+
+.info-donate-btn:hover { opacity: 0.88; text-decoration: none; color: var(--on-primary); }
+
+
+/* =============================================================
+   CONTRIBUTORS PAGE  (contributors.html)
+   ============================================================= */
+
+/* Intro text */
+.info-intro {
+    margin-bottom: 40px;
+}
+
+.info-intro-text {
+    font-family: 'Inter', sans-serif;
+    font-size: 17px;
+    line-height: 28px;
+    color: var(--on-surface-variant);
+    max-width: 720px;
+    margin: 0;
+    font-style: italic;
+}
+
+.info-contrib-section {
+    margin-bottom: 0;
+}
+
+/* Responsive card grid */
+.info-contrib-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 20px;
+    margin-top: 8px;
+}
+
+/* Individual contributor card */
+.info-contrib-card {
+    padding: 28px 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 10px;
+    transition: box-shadow 0.15s ease;
+}
+
+.info-contrib-card:hover {
+    box-shadow: 0 4px 16px rgba(75, 0, 11, 0.10);
+}
+
+/* Monogram avatar — initials in a burgundy circle */
+.info-contrib-avatar {
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    background: var(--primary-container);
+    color: var(--on-primary);
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 18px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    letter-spacing: 0.02em;
+    flex-shrink: 0;
+}
+
+.info-contrib-name {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 17px;
+    font-weight: 600;
+    color: var(--on-surface);
+    margin: 0;
+    line-height: 22px;
+}
+
+.info-contrib-role {
+    font-family: 'Inter', sans-serif;
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--on-surface-variant);
+    margin: 0;
+}
+
+
+/* =============================================================
+   CHANGELOG PAGE  (change.html)
+   ============================================================= */
+
+/* Outer wrap — entity-card provides border, background, shadow;
+   we override padding to 0 so the table can go edge-to-edge.   */
+.info-changelog-wrap {
+    /* padding: 0; overflow: hidden; — set inline in template */
+}
+
+.info-changelog-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+/* Column headers */
+.info-changelog-th-date {
+    padding: 12px 28px;
+    font-family: 'Inter', sans-serif;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--on-surface-variant);
+    background: var(--surface-container);
+    border-bottom: 2px solid var(--ent-parchment-border, #dcc0bf);
+    width: 16%;
+    white-space: nowrap;
+}
+
+.info-changelog-th-change {
+    padding: 12px 28px;
+    font-family: 'Inter', sans-serif;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--on-surface-variant);
+    background: var(--surface-container);
+    border-bottom: 2px solid var(--ent-parchment-border, #dcc0bf);
+}
+
+/* Every row */
+.info-changelog-row td {
+    padding: 11px 28px;
+    border-bottom: 1px solid var(--ent-parchment-border, #dcc0bf);
+    vertical-align: top;
+}
+
+.info-changelog-row:last-child td {
+    border-bottom: 0;
+}
+
+/* Rows that start a new date group get a slightly heavier top border */
+.info-changelog-row--dated td {
+    border-top: 2px solid var(--ent-parchment-border, #dcc0bf);
+    padding-top: 16px;
+}
+
+.info-changelog-row--dated:first-child td {
+    border-top: 0;
+    padding-top: 14px;
+}
+
+/* Even-row zebra */
+.info-changelog-table tbody tr:nth-child(even) {
+    background: rgba(107, 20, 29, 0.018);
+}
+
+/* Date stamp cell */
+.info-changelog-date-cell {
+    width: 16%;
+    vertical-align: top;
+}
+
+.info-changelog-date {
+    display: block;
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--primary-container);
+    line-height: 20px;
+    white-space: nowrap;
+}
+
+/* Change text cell */
+.info-changelog-entry {
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    line-height: 22px;
+    color: var(--on-surface);
+    position: relative;
+}
+
+/* Gold bullet dot before each entry */
+.info-changelog-bullet {
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--secondary);
+    vertical-align: middle;
+    margin-right: 10px;
+    flex-shrink: 0;
+    opacity: 0.7;
+    position: relative;
+    top: -1px;
+}
+
+@media (max-width: 600px) {
+    .info-changelog-table,
+    .info-changelog-table thead,
+    .info-changelog-table tbody,
+    .info-changelog-table tr,
+    .info-changelog-table td,
+    .info-changelog-table th {
+        display: block;
+    }
+    .info-changelog-th-date { display: none; }
+    .info-changelog-date-cell {
+        width: 100%;
+        padding: 12px 20px 4px;
+    }
+    .info-changelog-entry { padding: 4px 20px 12px; }
+    .info-changelog-row td { padding: 6px 20px; border-bottom: 0; }
+    .info-changelog-row--dated { border-top: 1px solid var(--ent-parchment-border, #dcc0bf); }
+}
+

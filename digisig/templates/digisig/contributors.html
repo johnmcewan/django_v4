@@ -4,28 +4,83 @@
 
 {% block content %}
 
-	<div class="search-banner"></div>
-	<div class="sidepanel-left"></div>
-	<div class="sidepanel-right"></div>
+<div class="entity-page">
 
-	<div class="main-title">
-		<h1>Contributors</h1>
-	</div>
+  <!-- ═══════════════════════════════════════════════
+       PAGE HEADER
+       ═══════════════════════════════════════════════ -->
+  <header class="entity-page-header">
+    <p class="entity-eyebrow">About &mdash; Team</p>
+    <h1 class="entity-title entity-title--display">Contributors</h1>
+    <p class="entity-subtitle">The people who have helped build the Digital Sigillography Resource.</p>
+    <hr class="info-page-rule">
+  </header>
 
-	<div class="mainpage"> </div>
 
-		<div class="entity_main">
-<p>A project as large and complex as DIGISIG is only possible thanks to the efforts of a large number of people.</p>
+  <!-- ═══════════════════════════════════════════════
+       INTRO
+       ═══════════════════════════════════════════════ -->
+  <div class="info-intro">
+    <p class="info-intro-text">A project as large and complex as DIGISIG is only possible thanks to the efforts of a large number of people. We are grateful to all who have contributed their time, expertise and data.</p>
+  </div>
 
-<p>Students that have contributed to the development of the project</p> 
 
-<p>Karson Million</p>
-<p>Weronika Grajdura</p>
-<p>Chrisopher Hopwood</p>
-<p>Alienor De Smedt</p>
-<p>Charlotte Jones</p>
+  <!-- ═══════════════════════════════════════════════
+       CONTRIBUTORS
+       ═══════════════════════════════════════════════ -->
+  <section class="info-contrib-section">
+    <div class="entity-section-heading">
+      <i class="fas fa-users" style="color:var(--secondary);font-size:16px;flex-shrink:0;"></i>
+      <h2 class="entity-section-title">Student contributors</h2>
+      <span class="entity-section-rule"></span>
+    </div>
 
-</div>
+    <div class="info-contrib-grid">
 
+      <div class="info-contrib-card entity-card">
+        <div class="info-contrib-avatar">KM</div>
+        <p class="info-contrib-name">Karson Million</p>
+        <p class="info-contrib-role">Student contributor</p>
+      </div>
+
+      <div class="info-contrib-card entity-card">
+        <div class="info-contrib-avatar">WG</div>
+        <p class="info-contrib-name">Weronika Grajdura</p>
+        <p class="info-contrib-role">Student contributor</p>
+      </div>
+
+      <div class="info-contrib-card entity-card">
+        <div class="info-contrib-avatar">CH</div>
+        <p class="info-contrib-name">Christopher Hopwood</p>
+        <p class="info-contrib-role">Student contributor</p>
+      </div>
+
+      <div class="info-contrib-card entity-card">
+        <div class="info-contrib-avatar">AD</div>
+        <p class="info-contrib-name">Ali&eacute;nor De Smedt</p>
+        <p class="info-contrib-role">Student contributor</p>
+      </div>
+
+      <div class="info-contrib-card entity-card">
+        <div class="info-contrib-avatar">CJ</div>
+        <p class="info-contrib-name">Charlotte Jones</p>
+        <p class="info-contrib-role">Student contributor</p>
+      </div>
+
+    </div><!-- /info-contrib-grid -->
+  </section>
+
+
+  <!-- Acknowledgement -->
+  <div class="entity-cite-box" style="margin-top: 48px;">
+    <p class="entity-cite-title">
+      <i class="fas fa-archive"></i>&ensp;Archivists
+    </p>
+    <p class="entity-cite-body" style="font-style:italic;font-family:'Inter',sans-serif;font-size:15px;line-height:24px;">
+      What has made this project possible is the kind generosity of innumerable archivists, who have patiently shared the seals in their custody with the author. Without them, this project would not exist.
+    </p>
+  </div>
+
+</div><!-- /entity-page -->
 
 {% endblock %}
