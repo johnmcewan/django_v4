@@ -5104,6 +5104,7 @@ p {
 
 /* ---------- Permalink overlay (preserved JS toggle behaviour) ---------- */
 .entity-permalink {
+    display: none;
     position: fixed;
     inset: 0;
     z-index: 80;
@@ -6204,3 +6205,266 @@ p {
 /* =============================================================
    END ENTITY DETAIL PAGES
    ============================================================= */
+
+
+
+/* =============================================================
+   MANIFESTATION PAGE  (manifestation.html)
+
+   Layout: 8-col main content left, 4-col sticky sidebar right.
+   Mirrors the actor.html grid; shares all entity-* base classes.
+   Append this block after the actor-* section in style_additions.css
+   (or after the actor-* section in the combined style.css).
+   ============================================================= */
+
+/* ─── Local tokens (same as other entity pages) ─────────────
+   These resolve the broken self-referential tokens in the base
+   style.css. If those tokens are ever fixed upstream, remove
+   the local overrides below.                                   */
+.entity-page {
+    --ent-parchment-border: var(--outline-variant, #dcc0bf);
+    --ent-zebra-tint:       rgba(107, 20, 29, 0.022);
+    --ent-card-shadow:      0 2px 8px rgba(107, 20, 29, 0.07);
+    --ent-gold-accent:      rgba(119, 90, 23, 0.35);
+}
+
+/* ─── Page header / hero ─────────────────────────────────── */
+.manif-hero {
+    margin-bottom: 56px;
+}
+
+.manif-hero-text {
+    margin-bottom: 24px;
+}
+
+.manif-hero .entity-title {
+    color: var(--on-surface);
+    margin-bottom: 12px;
+}
+
+.manif-hero-actions {
+    margin-top: 20px;
+}
+
+/* ─── Page layout: 8fr main + 4fr sidebar ────────────────── */
+.manif-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 8fr) minmax(0, 4fr);
+    gap: 40px;
+    align-items: start;
+    margin-top: 48px;
+}
+
+@media (max-width: 960px) {
+    .manif-layout {
+        grid-template-columns: 1fr;
+        gap: 32px;
+    }
+}
+
+.manif-main-col {
+    display: flex;
+    flex-direction: column;
+    gap: 56px;
+    min-width: 0;
+}
+
+.manif-side-col {
+    position: sticky;
+    top: 80px;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    min-width: 0;
+}
+
+@media (max-width: 960px) {
+    .manif-side-col {
+        position: static;
+    }
+}
+
+/* ─── Section headings ────────────────────────────────────── */
+/* Re-use entity-section-title colour; icon accent in gold */
+.manif-section .entity-section-title {
+    color: var(--primary-container);
+}
+
+.manif-section-icon {
+    color: var(--secondary);
+    font-size: 16px;
+    flex-shrink: 0;
+}
+
+/* ─── Artifact image panel (sidebar) ─────────────────────── */
+.manif-image-panel {
+    padding: 16px;          /* tighter than the default 32px card padding */
+}
+
+.manif-image-figure {
+    margin: 0;
+}
+
+.manif-image-full {
+    width: 100%;
+    aspect-ratio: 3 / 4;
+    object-fit: cover;
+    display: block;
+    cursor: zoom-in;
+    transition: opacity 0.15s ease;
+}
+
+.manif-image-full:hover {
+    opacity: 0.92;
+}
+
+.manif-image-caption {
+    display: block;
+    text-align: center;
+    font-family: 'Inter', sans-serif;
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--on-surface-variant);
+    padding: 10px 0 2px;
+}
+
+/* ─── Action buttons (View High-Res / Download) ──────────── */
+.manif-action-btns {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.manif-action-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 11px 16px;
+    font-family: 'Inter', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    text-decoration: none;
+    border: 1px solid var(--outline-variant);
+    background: var(--surface-container-lowest);
+    color: var(--on-surface-variant);
+    cursor: pointer;
+    transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+
+.manif-action-btn:hover {
+    background: var(--surface-container);
+    border-color: var(--on-surface);
+    color: var(--on-surface);
+    text-decoration: none;
+}
+
+/* Gold variant — "View High-Resolution Image" */
+.manif-action-btn--gold {
+    border-color: rgba(119, 90, 23, 0.4);
+    color: var(--secondary);
+}
+
+.manif-action-btn--gold:hover {
+    background: rgba(119, 90, 23, 0.05);
+    border-color: var(--secondary);
+    color: var(--secondary);
+}
+
+/* ─── Actor name — large Playfair in Seal Details row ─────── */
+.manif-actor-name {
+    font-size: 22px;          /* slightly smaller than display to fit in DL */
+    line-height: 30px;
+}
+
+.manif-actor-link {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 22px;
+    font-weight: 600;
+    line-height: 30px;
+    border-bottom-width: 2px;
+}
+
+/* ─── External link badge ─────────────────────────────────── */
+.manif-external-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 12px;
+    margin-left: 10px;
+    vertical-align: middle;
+}
+
+/* ─── Representation cards ────────────────────────────────── */
+.manif-repr-card {
+    display: grid;
+    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+    padding: 0;
+    overflow: hidden;
+}
+
+.manif-repr-card--spaced {
+    margin-bottom: 20px;
+}
+
+.manif-repr-image {
+    position: relative;
+    background: var(--surface-container);
+    overflow: hidden;
+}
+
+.manif-repr-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    cursor: zoom-in;
+    transition: opacity 0.15s ease;
+}
+
+.manif-repr-image img:hover {
+    opacity: 0.9;
+}
+
+.manif-repr-info {
+    padding: 24px;
+}
+
+@media (max-width: 768px) {
+    .manif-repr-card {
+        grid-template-columns: 1fr;
+    }
+    .manif-repr-image {
+        aspect-ratio: 16 / 9;
+    }
+}
+
+/* ─── Citation links row ──────────────────────────────────── */
+.manif-cite-links {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin-top: 14px;
+}
+
+.manif-cite-link {
+    font-family: 'Inter', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--primary-container);
+    text-decoration: none;
+    background: none;
+    border: none;
+    border-bottom: 1px solid rgba(75, 0, 11, 0.3);
+    padding: 0;
+    cursor: pointer;
+    transition: border-color 0.15s ease;
+}
+
+.manif-cite-link:hover {
+    border-color: var(--primary-container);
+    text-decoration: none;
+}

@@ -1,0 +1,212 @@
+{% extends "digisig/base.html" %}
+
+{% load static %}
+
+{% block content %}
+
+	<div class="search-banner"></div>
+	<div class="sidepanel-left"></div>
+	<div class="sidepanel-right"></div>
+
+
+	<div class="main-title">
+		<h1>{{manifestation_dic.imagestate_term}}</h1>
+	</div>
+
+	<div class="mainpage"></div>
+
+	<div class="entity-permalink" id="entity-permalink">
+		<div class="permalinkinfo" id="permalinkinfo">
+		Permalink
+		<button onclick="toggle('entity-permalink')" class="closebutton">X</button>
+		<form action="#">
+			<label>Copy this URL to link to this page:</label>
+			<input id="input" class="text" name="" value="http://www.digisig.org/entity/{{manifestation_dic.id_manifestation}}" type="text" readonly>
+		</form>
+		</div>
+	</div>
+
+
+	<div class="entity_detail" id="entity_detail">
+		<h3>{{manifestation_dic.imagestate_term}} details
+			<button onclick="toggle('entity-permalink')" class="permalink">Permalink</button>
+		</h3>
+		<table>
+			<tr>
+				<th>Held by </th>
+				<td>{{manifestation_dic.repository_fulltitle}}</td>
+
+				{% if manifestation_dic.fk_representation_type != 0 %}
+				<td rowspan="4">
+					<figure>
+						<img class="modalimage" id="modalimagebase1" src="{{manifestation_dic.thumb}}{{manifestation_dic.representation_thumbnail_hash}}" alt="{{manifestation_dic.id_representation}}" onclick="image(1)">
+					</figure>
+
+					<!-- The Modal -->
+					<div id="myModal1" class="modal" style="display: none;">
+					  <span class="close" onclick="modalclose(1)">&times;</span>
+					  <img class="modal-content" id="modalimg1" src="{{manifestation_dic.medium}}{{manifestation_dic.representation_filename_hash}}" alt="{{manifestation_dic.id_representation}}">
+					  <div class="modal-caption" id="caption1"><a href="{% url 'entity' manifestation_dic.id_representation %}">Representation details</a></div>
+					</div>
+				</td>
+				{% endif %}
+			</tr>
+
+			{% if manifestation_dic.label_manifestation_repository %}
+				<tr>
+					<th>Reference<a class="help" href="{% url 'entity' digisig_entity_number=10001567 %}" target="_blank"><i class="fas fa-question-circle"></i></a></th>
+					<td>{{manifestation_dic.label_manifestation_repository}}
+						{% if manifestation_dic.connection != null %}
+						<a class="dig-btn" href="{{manifestation_dic.connection}}{{manifestation_dic.ui_manifestation_repository}}" target="_blank">External Link</a>
+						{% endif %}
+					</td>
+				</tr>
+			{% endif %}
+	
+				<tr>
+					<th>Part of</th>
+					<td><a href="{% url 'entity' manifestation_dic.id_item %}">{{manifestation_dic.shelfmark}}</a></td>
+				</tr>
+	
+			{% if manifestation_dic.fk_attachment != null %}
+				<tr>
+					<th>Attachment <a class="help" href="{% url 'entity' digisig_entity_number=10001427 %}" target="_blank"><i class="fas fa-question-circle"></i></a></th>
+					<td>{{manifestation_dic.attachment}}</td>
+				</tr>
+			{% endif %}
+
+			{% if manifestation_dic.number != 'Undetermined' %}
+				<tr>
+					<th>Position <a class="help" href="{% url 'entity' digisig_entity_number=10001447 %}" target="_blank"><i class="fas fa-question-circle"></i></a></th>
+					<td>support {{manifestation_dic.fk_number_currentposition}}, {{manifestation_dic.fk_support.position}}</td>
+				</tr>
+			{% endif %}
+
+				<tr>
+					<th>Support status<a class="help" href="{% url 'entity' digisig_entity_number=10001377 %}" target="_blank"><i class="fas fa-question-circle"></i></a></th>
+					<td>{% if manifestation_dic.fk_support.fk_supportstatus != null %}{{manifestation_dic.fk_support.supportstatus}}{% if manifestation_dic.fk_support.fk_supportstatus.supportstatus != 'undetermined' %} {{manifestation_dic.fk_support.fk_supportstatus.supportstatus}}{% endif %}{% endif %}
+				</tr>
+
+				<tr>
+					<th>Support type<a class="help" href="{% url 'entity' digisig_entity_number=10001377 %}" target="_blank"><i class="fas fa-question-circle"></i></a></th>
+					<td>{% if manifestation_dic.fk_support.fk_nature != null %}{{manifestation_dic.fk_support.fk_nature.nature_name}}{% if manifestation_dic.fk_support.fk_material != null %} ({{manifestation_dic.fk_support.fk_material.material}}){% endif %}{% endif %}
+				</tr>
+		</table>
+	</div>
+
+	<div class="entity_seals" id="entity_seals">
+		<div class="div-caption">
+			Seal <button id="entitybutton1" onclick="tbtoggle('entity1', 'entitybutton1')" class="entity">+</button>
+		</div>
+
+		<div>
+			<table id="entity1" style="display:none;">
+				<tr>
+					<th colspan="2"><h4><a class="headingbtn" href="{% url 'entity' manifestation_dic.id_seal %}">Seal details</a></h4></th>
+				</tr>
+				
+				<tr>
+					<th class="indent">Date <a class="help" href="{% url 'entity' digisig_entity_number=10001357 %}" target="_blank"><i class="fas fa-question-circle"></i></a></th>
+					<td>
+					{% if seal_object.date_origin %}
+						c.{{seal_object.date_origin}} 
+					{% else %} Not Available
+					{% endif %}</td>
+				</tr>
+				
+				<tr>
+					<th class="indent">Actor <a class="help" href="{% url 'entity' digisig_entity_number=10001537 %}" target="_blank"><i class="fas fa-question-circle"></i></a></th>
+					<td><a class="dig-btn" href="{% url 'entity' manifestation_dic.id_individual %}">{{outname}}</a></td>
+				</tr>
+				
+				{% for description in sealdescription_object %}
+				<tr>
+				{% if forloop.first %}<th class="indent">Described in <a class="help" href="{% url 'entity' digisig_entity_number=10001527 %}" target="_blank"><i class="fas fa-question-circle"></i></a></th>
+{% else %}<th></th>{% endif %}
+					<td> 
+					<a href="{% url 'entity' description.id_sealdescription %}">{{description.fk_collection.collection_shorttitle}}
+						{% if description.sealdescription_identifier != null %} ({{description.sealdescription_identifier}}){% endif %}
+					</a>
+					</td>
+				</tr>
+				{% endfor%}
+			</table>
+		</div>
+	</div>
+
+
+	<div class="entity_event" id="entity_event">
+		<div class="div-caption">
+			Event <button id="entitybutton2" onclick="tbtoggle('entity2', 'entitybutton2')" class="entity">+</button>
+		</div>
+
+		<div>
+			<table id="entity2" style="display:none;">
+				<tr>
+					<th class="indent">Date</th>
+					<td>{{manifestation_dic.fk_support.fk_part.fk_event.startdate}} 
+						{% if manifestation_dic.fk_support.fk_part.fk_event.enddate %}
+					- {{manifestation_dic.fk_support.fk_part.fk_event.enddate}}</td>
+					{% endif %}
+				</tr>
+				<tr>
+					<th class="indent">Region</th>
+					<td>{{region}}</td>
+				</tr>
+			</table>
+		</div>
+	</div>
+
+
+	{% if representation_object.count > 0 %}				
+	<div class="entity_representation" id="entity_representation">
+		<div class="div-caption">
+			Representation <button id="entitybutton3" onclick="tbtoggle('entity3', 'entitybutton3')" class="entity">+</button>
+		</div>
+
+		<div>
+			<table id="entity3" style="display:none;">
+				<tr class="info">
+					<td colspan="3" class="totalrows">Showing {{representation_object.count}} of {{totalrows}}</td>
+				</tr>
+				{% for representation in representation_object %}
+				{% if forloop.counter|divisibleby:2 %}<tr class="even">{% else %}<tr class="odd">{% endif %}
+					<th colspan="3"><h4><a class="headingbtn" href="{% url 'entity' representation.id_representation %}">Representation details</a></h4></th>
+				</tr>
+
+				{% if forloop.counter|divisibleby:2 %}<tr class="even">{% else %}<tr class="odd">{% endif %}
+					<th class="indent">Creator</th>
+					<td>{{representation.name_first}} {{representation.name_middle}} {{representation.name_last}}</td>
+					<td rowspan="3">
+						{% if representation.representation_thumbnail != null %}
+						<img class="modalimage" id="modalimagebase{{forloop.counter}}" src="{{representation.thumb}}{{representation.representation_thumbnail}}" alt="{{representation.id_representation}}" onclick="image({{forloop.counter}})">
+
+						<!-- The Modal -->
+						<div id="myModal{{forloop.counter}}" class="modal" style="display: none;">
+						  <span class="close" onclick="modalclose({{forloop.counter}})">&times;</span>
+						  <img class="modal-content" id="modalimg{{forloop.counter}}" src="{{representation.medium}}{{representation.representation_filename}}" alt="{{representation.id_representation}}">
+						  <div class="modal-caption" id="caption{{forloop.counter}}"><a href="{% url 'entity' representation.id_representation %}">{{representation.id_representation}}</a></div>
+						</div>
+
+						{% endif %}
+					</td>
+				</tr>
+
+				{% if forloop.counter|divisibleby:2 %}<tr class="even">{% else %}<tr class="odd">{% endif %}
+					<th class="indent">Type</th>
+					<td>{{representation.representation_type}}</td>
+				</tr>
+
+				{% if forloop.counter|divisibleby:2 %}<tr class="even">{% else %}<tr class="odd">{% endif %}
+					<th class="indent">Date Taken</th>
+					<td>{{representation.represenation_datecreated}}</td>
+				</tr>
+				{% endfor %}
+			</table>
+		</div>
+	</div>
+	{% endif %}
+
+{% endblock %}
+
+
