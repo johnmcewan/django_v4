@@ -356,6 +356,8 @@ async def analyze(request, analysistype):
 		data1 = []
 		representationset = []
 		manifestation_set = []
+		totalrows = 0
+		totaldisplay = ''
 
 		if request.method == 'POST':
 
@@ -400,8 +402,8 @@ async def analyze(request, analysistype):
 			'manifestation_set': manifestation_set,
 			'decisiontreedic': decisiontreedic,
 			'finalnodevalue': finalnodevalue,
-		    'totalrows': totalrows,
-		    'totaldisplay': totaldisplay,
+			'totalrows': totalrows,
+			'totaldisplay': totaldisplay,
 			}
 
 		template = loader.get_template('digisig/analysis_date.html')
@@ -565,12 +567,16 @@ async def search(request, searchtype):
 		form = await sealdescriptionform_options(form)
 
 		qpagination = 1
+		if request.method == 'POST':
+			try:
+				qpagination = max(1, int(request.POST.get('pagination', '1')))
+			except (ValueError, TypeError):
+				qpagination = 1
 
 		sealdescription_object = await sealdescription_search()
-
-		if request.method == 'POST':
-			if form.is_valid(): 
-				sealdescription_object, qpagination = await sealdescriptionsearchfilter(sealdescription_object, form)
+		if request.method == 'POST' and form.is_valid():
+			sealdescription_object, qpagination = await sealdescriptionsearchfilter(
+				sealdescription_object, form)
 
 		sealdescription_object, totalrows, totaldisplay, has_next, has_previous = await defaultpagination(sealdescription_object, qpagination)
 
