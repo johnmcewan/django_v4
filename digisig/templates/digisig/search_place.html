@@ -127,19 +127,28 @@
             </div>
 
             <!-- Pagination -->
-            <nav class="places-pagination" aria-label="Results pagination">
-                {% if pagecountercurrent > 1 %}
-                <button class="places-page-btn" id="page_button_previous" onclick="page_button(-1)" aria-label="Previous page">
-                    <i class="fas fa-chevron-left"></i>
-                </button>
+            <nav class="pagination" aria-label="Results pagination">
+                {% if has_previous %}
+                <button class="page-btn"
+                        onclick="go_to_page({{ pagecountercurrent|add:'-1' }})">Previous</button>
                 {% endif %}
-                <button class="places-page-btn places-page-btn-active" id="page_button_1" onclick="page_button(1)">{{ pagecountercurrent }}</button>
-                <button class="places-page-btn" id="page_button_2" onclick="page_button(2)">{{ pagecounternext }}</button>
-                <button class="places-page-btn" id="page_button_3" onclick="page_button(3)">{{ pagecounternextnext }}</button>
-                <span class="places-page-ellipsis" aria-hidden="true">…</span>
-                <button class="places-page-btn" id="page_button_next" onclick="page_button(1)" aria-label="Next page">
-                    <i class="fas fa-chevron-right"></i>
-                </button>
+
+                {% if has_previous %}
+                <button class="page-btn"
+                        onclick="go_to_page({{ pagecountercurrent|add:'-1' }})">{{ pagecountercurrent|add:'-1' }}</button>
+                {% endif %}
+
+                <button class="page-btn page-btn-active"
+                        onclick="go_to_page({{ pagecountercurrent }})">{{ pagecountercurrent }}</button>
+
+                {% if has_next %}
+                <button class="page-btn"
+                        onclick="go_to_page({{ pagecounternext }})">{{ pagecounternext }}</button>
+                <button class="page-btn"
+                        onclick="go_to_page({{ pagecounternextnext }})">{{ pagecounternextnext }}</button>
+                <button class="page-btn"
+                        onclick="go_to_page({{ pagecounternext }})">Next</button>
+                {% endif %}
             </nav>
 
         </section>
@@ -179,14 +188,6 @@ function onEachFeature(feature, layer) {
     if (feature.properties && feature.properties.popupContent) {
         layer.bindPopup(feature.properties.popupContent);
     }
-}
-
-// Pagination
-function page_button(numberofpages) {
-    var pagevalue = document.getElementById("id_pagination").value;
-    pagevalue = parseInt(pagevalue) + numberofpages;
-    document.getElementById("id_pagination").value = pagevalue;
-    document.getElementById("form").submit();
 }
 
 // Dependent dropdowns: selecting region disables county, and vice versa

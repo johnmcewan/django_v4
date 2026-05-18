@@ -125,33 +125,33 @@
                                     <dt>Reference</dt>
                                     <dd>
                                         <a href="{% url 'entity' digisig_entity_number=sealdescription.fk_collection.id_collection %}">{{ sealdescription.collection_shorttitle }}</a>,
-                                        <a href="{% url 'entity' digisig_entity_number=sealdescription.id_sealdescription %}">{{ sealdescription.sealdescription_identifier }}</a>{% if sealdescription.catalogue_pagenumber != null %}, p.&nbsp;{{ sealdescription.catalogue_pagenumber }}{% endif %}
+                                        <a href="{% url 'entity' digisig_entity_number=sealdescription.id_sealdescription %}">{{ sealdescription.sealdescription_identifier }}</a>{% if sealdescription.catalogue_pagenumber %}, p.&nbsp;{{ sealdescription.catalogue_pagenumber }}{% endif %}
                                     </dd>
                                 </div>
 
-                                {% if sealdescription.motif_reverse != null %}
-                                    {% if sealdescription.motif_obverse != null %}
+                                {% if sealdescription.motif_reverse %}
+                                    {% if sealdescription.motif_obverse %}
                                     <div class="meta-row meta-row-wide">
                                         <dt>Description</dt>
                                         <dd>{{ sealdescription.motif_obverse|truncatechars:120 }}</dd>
                                     </div>
                                     {% endif %}
 
-                                    {% if sealdescription.legend_obverse != null %}
+                                    {% if sealdescription.legend_obverse %}
                                     <div class="meta-row meta-row-wide">
                                         <dt>Legend</dt>
                                         <dd><em>{{ sealdescription.legend_obverse|truncatechars:120 }}</em></dd>
                                     </div>
                                     {% endif %}
 
-                                    {% if sealdescription.motif_reverse != null %}
+                                    {% if sealdescription.motif_reverse %}
                                     <div class="meta-row meta-row-wide">
                                         <dt>Description (Reverse)</dt>
                                         <dd>{{ sealdescription.motif_reverse|truncatechars:120 }}</dd>
                                     </div>
                                     {% endif %}
 
-                                    {% if sealdescription.legend_reverse != null %}
+                                    {% if sealdescription.legend_reverse %}
                                     <div class="meta-row meta-row-wide">
                                         <dt>Legend (Reverse)</dt>
                                         <dd><em>{{ sealdescription.legend_reverse|truncatechars:120 }}</em></dd>
@@ -159,14 +159,14 @@
                                     {% endif %}
 
                                 {% else %}
-                                    {% if sealdescription.motif_obverse != null %}
+                                    {% if sealdescription.motif_obverse %}
                                     <div class="meta-row meta-row-wide">
                                         <dt>Description</dt>
                                         <dd>{{ sealdescription.motif_obverse|truncatechars:120 }}</dd>
                                     </div>
                                     {% endif %}
 
-                                    {% if sealdescription.legend_obverse != null %}
+                                    {% if sealdescription.legend_obverse %}
                                     <div class="meta-row meta-row-wide">
                                         <dt>Legend</dt>
                                         <dd><em>{{ sealdescription.legend_obverse|truncatechars:120 }}</em></dd>
@@ -174,7 +174,7 @@
                                     {% endif %}
                                 {% endif %}
 
-                                {% if sealdescription.realizer != null %}
+                                {% if sealdescription.realizer %}
                                 <div class="meta-row meta-row-wide">
                                     <dt>Name</dt>
                                     <dd>{{ sealdescription.realizer }}</dd>
@@ -208,13 +208,27 @@
                 </div>
 
                 <nav class="pagination" aria-label="Results pagination">
-                    {% if pagecountercurrent > 1 %}
-                    <button class="page-btn" id="page_button_previous" onclick="page_button(-1)">Previous</button>
+                    {% if has_previous %}
+                    <button class="page-btn"
+                            onclick="go_to_page({{ pagecountercurrent|add:'-1' }})">Previous</button>
                     {% endif %}
-                    <button class="page-btn page-btn-active" id="page_button_1" onclick="page_button(1)">{{ pagecountercurrent }}</button>
-                    <button class="page-btn" id="page_button_2" onclick="page_button(2)">{{ pagecounternext }}</button>
-                    <button class="page-btn" id="page_button_3" onclick="page_button(3)">{{ pagecounternextnext }}</button>
-                    <button class="page-btn" id="page_button_next" onclick="page_button(1)">Next</button>
+
+                    {% if has_previous %}
+                    <button class="page-btn"
+                            onclick="go_to_page({{ pagecountercurrent|add:'-1' }})">{{ pagecountercurrent|add:'-1' }}</button>
+                    {% endif %}
+
+                    <button class="page-btn page-btn-active"
+                            onclick="go_to_page({{ pagecountercurrent }})">{{ pagecountercurrent }}</button>
+
+                    {% if has_next %}
+                    <button class="page-btn"
+                            onclick="go_to_page({{ pagecounternext }})">{{ pagecounternext }}</button>
+                    <button class="page-btn"
+                            onclick="go_to_page({{ pagecounternextnext }})">{{ pagecounternextnext }}</button>
+                    <button class="page-btn"
+                            onclick="go_to_page({{ pagecounternext }})">Next</button>
+                    {% endif %}
                 </nav>
 
             </section>
@@ -223,17 +237,13 @@
 </section>
 
 
-<!-- Preserved JS from the original template -->
 <script>
-function page_button(numberofpages) {
-    var pagevalue = document.getElementById("id_pagination").value;
-    pagevalue = parseInt(pagevalue) + numberofpages;
-    document.getElementById("id_pagination").value = pagevalue;
-    document.getElementById("form").submit();
-}
+// function go_to_page(pageNumber) {
+//     document.getElementById("id_pagination").value = pageNumber;
+//     document.getElementById("form").submit();
+// }
 
 function myFunction() {
-    console.log("hello");
     // Text fields → empty string
     document.getElementById("id_cataloguecode").value  = "";
     document.getElementById("id_cataloguemotif").value = "";

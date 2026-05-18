@@ -230,7 +230,12 @@
       <!-- Similar seals -->
       <div class="analysis-subsection">
         <h3 class="analysis-subsection-heading">
-          <i class="fas fa-stamp"></i> Similar seals
+            <i class="fas fa-stamp"></i> Similar seals
+            {% if totalrows %}
+            <span class="analysis-subsection-count">
+                showing {{ totaldisplay }} of {{ totalrows }}
+            </span>
+            {% endif %}
         </h3>
 
         {% if manifestation_set %}
@@ -346,12 +351,6 @@
 
 
 <script>
-/* ── Event listeners (unchanged) ─────────────────────────── */
-document.getElementById("form").addEventListener("input", function() {
-    var pag = document.getElementById("id_pagination");
-    if (pag) pag.value = 1;
-});
-
 /* ── Chart.js (logic unchanged, colours updated to match palette) */
 var ctx = document.getElementById('Chart1').getContext('2d');
 var chart = new Chart(ctx, {

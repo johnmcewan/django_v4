@@ -60,18 +60,14 @@
             <h2 class="entity-section-title">Impressions, matrices, casts</h2>
             <span class="entity-section-count">
                 {{ totalrows }} catalogued artifact{{ totalrows|pluralize }}
-                <button id="entitybutton1"
-                        onclick="tbtoggle('entity1', 'entitybutton1')"
-                        class="entity-toggle-btn"
-                        aria-label="Toggle list visibility">
-                    {% if displaystatus == 1 %}+{% else %}&minus;{% endif %}
-                </button>
+            <button id="entitybutton1"
+                    onclick="tbtoggle('entity1', 'entitybutton1')"
+                    class="entity-toggle-btn"
+                    aria-label="Toggle list visibility">+</button>
             </span>
         </div>
 
-        <div id="entity1"
-             class="place-cards-wrap"
-             {% if displaystatus == 1 %}style="display:none;"{% endif %}>
+        <div id="entity1" class="place-cards-wrap" style="display:none;">
 
             <p class="entity-section-meta">
                 Showing {{ totaldisplay }} of {{ totalrows }}
@@ -159,26 +155,25 @@
 
             {% endfor %}
             </div>
-
             {% if totalrows > 9 %}
-            <nav class="place-pagination">
-                {% if pagecountercurrent > 1 %}
-                <button id="page_button_previous"
-                        class="page-btn"
-                        onclick="page_button(-1)">Previous</button>
+            <nav class="place-pagination pagination" aria-label="Impressions pagination">
+                {% if has_previous %}
+                <a class="page-btn"
+                   href="?page={{ pagecountercurrent|add:'-1' }}">Previous</a>
+                <a class="page-btn"
+                   href="?page={{ pagecountercurrent|add:'-1' }}">{{ pagecountercurrent|add:'-1' }}</a>
                 {% endif %}
-                <button id="page_button_1"
-                        class="page-btn page-btn-active"
-                        onclick="page_button(1)">{{ pagecountercurrent }}</button>
-                <button id="page_button_2"
-                        class="page-btn"
-                        onclick="page_button(2)">{{ pagecounternext }}</button>
-                <button id="page_button_3"
-                        class="page-btn"
-                        onclick="page_button(3)">{{ pagecounternextnext }}</button>
-                <button id="page_button_next"
-                        class="page-btn"
-                        onclick="page_button(1)">Next</button>
+
+                <span class="page-btn page-btn-active">{{ pagecountercurrent }}</span>
+
+                {% if has_next %}
+                <a class="page-btn"
+                   href="?page={{ pagecounternext }}">{{ pagecounternext }}</a>
+                <a class="page-btn"
+                   href="?page={{ pagecounternextnext }}">{{ pagecounternextnext }}</a>
+                <a class="page-btn"
+                   href="?page={{ pagecounternext }}">Next</a>
+                {% endif %}
             </nav>
             {% endif %}
 
@@ -253,19 +248,6 @@
         </div>
     </div>
 
-    {# ── Hidden pagination form (preserved) ──────────────────── #}
-    <div style="display: none;">
-        <form id="form" action="/page/place/{{ place_object.id_location }}" method="post">
-            {% csrf_token %}
-            {{ form.non_field_errors }}
-            <div class="fieldWrapper">
-                {{ form.pagination.errors }}
-                <label for="{{ form.pagination.id_for_label }}">Pagination</label>
-                {{ form.pagination }}
-            </div>
-        </form>
-    </div>
-
     {{ mapdic|json_script:"mapdata" }}
 
 </div>
@@ -292,13 +274,6 @@ mymap.addLayer(layer);
 
 L.geoJSON(geojsonFeature, {onEachFeature: onEachFeature}).addTo(mymap);
 
-// pagination
-function page_button(numberofpages) {
-    var pagevalue = document.getElementById("id_pagination").value;
-    pagevalue = parseInt(pagevalue) + numberofpages;
-    document.getElementById("id_pagination").value = pagevalue;
-    document.getElementById("form").submit();
-}
 </script>
 
 {% endblock %}

@@ -177,7 +177,7 @@ async def about(request):
 	context = {
 		'pagetitle': pagetitle,
 	}
-	template = loader.get_template('digisig/about.html')					
+	template = loader.get_template('digisig/about.html')                    
 	return HttpResponse(template.render(context, request))
 
 
@@ -232,7 +232,7 @@ async def discover(request, discovertype):
 			#map points
 			if (qmapchoice == 1):
 				locationset = await map_locationset(qcollection)
-				location_dict, center_long, center_lat = await mapgenerator2(locationset)		
+				location_dict, center_long, center_lat = await mapgenerator2(locationset)       
 
 			#map counties
 			elif (qmapchoice == 2):
@@ -292,7 +292,7 @@ async def analyze(request, analysistype):
 					try:
 						qmapchoice = int(mapchoice_value)
 					except ValueError:
-						print(f"Error: '{mapchoice_value}' is not a valid integer for map choice.")			
+						print(f"Error: '{mapchoice_value}' is not a valid integer for map choice.")         
 
 				timechoice_value = form.cleaned_data.get('timechoice')
 				qtimechoice = None
@@ -313,7 +313,7 @@ async def analyze(request, analysistype):
 			#map points
 			if (qmapchoice == 1):
 				locationset = await map_locationset(qcollection, qtimechoice, qsealtypechoice)
-				location_dict, center_long, center_lat = await mapgenerator2(locationset)		
+				location_dict, center_long, center_lat = await mapgenerator2(locationset)       
 
 			#map counties
 			elif (qmapchoice == 2):
@@ -367,7 +367,7 @@ async def analyze(request, analysistype):
 					url = os.path.join(settings.BASE_DIR, 'staticfiles/ml/ml_tree')
 					print ("try")
 
-					with open(url, 'rb') as file:	
+					with open(url, 'rb') as file:   
 						mlmodel = pickle.load(file)
 
 				except:
@@ -375,7 +375,7 @@ async def analyze(request, analysistype):
 					url = os.path.join(settings.BASE_DIR, 'digisig\\static\\ml\\ml_tree')
 					print ("except")
 
-					with open(url, 'rb') as file:	
+					with open(url, 'rb') as file:   
 						mlmodel = pickle.load(file)
 
 				# pass model and features of seal to function that predicts the date
@@ -386,7 +386,7 @@ async def analyze(request, analysistype):
 
 				seal_set, resultrange, resultset, labels, data1 = await finalnodevalue_set(finalnodevalue, shape_object, class_object)
 
-				seal_set, totalrows, totaldisplay = await defaultpagination(seal_set, 1)
+				seal_set, totalrows, totaldisplay, has_next, has_previous = await defaultpagination(seal_set, 1)
 
 				manifestation_set = await mlmanifestation_set(seal_set)
 
@@ -397,10 +397,11 @@ async def analyze(request, analysistype):
 			'resultrange': resultrange,
 			'labels': labels,
 			'data1': data1,
-			# 'representationset': representationset,
 			'manifestation_set': manifestation_set,
 			'decisiontreedic': decisiontreedic,
 			'finalnodevalue': finalnodevalue,
+		    'totalrows': totalrows,
+		    'totaldisplay': totaldisplay,
 			}
 
 		template = loader.get_template('digisig/analysis_date.html')
@@ -413,27 +414,28 @@ async def search(request, searchtype):
 ### Actor Search
 
 	if searchtype == "actors":
-		
 		pagetitle = 'Search Actors'
-
 		form = PeopleForm(request.POST or None)
-		form = await peopleform_options(form) 
+		form = await peopleform_options(form)
 
+		# Read pagination directly from POST — resilient to form validation failure
 		qpagination = 1
+		if request.method == 'POST':
+			try:
+				qpagination = max(1, int(request.POST.get('pagination', '1')))
+			except (ValueError, TypeError):
+				qpagination = 1
 
 		individual_object = await individualsearch()
+		if request.method == 'POST' and form.is_valid():
+			individual_object, qpagination = await peoplesearchfilter(individual_object, form)
 
-		if request.method == 'POST':
+		individual_object, totalrows, totaldisplay, has_next, has_previous = \
+			await defaultpagination(individual_object, qpagination)
 
-			if form.is_valid():
-				qpagination = form.cleaned_data['pagination']
-				individual_object = await peoplesearchfilter(individual_object, form)
-
-		individual_object, totalrows, totaldisplay = await defaultpagination(individual_object, qpagination)
-
-		pagecountercurrent = qpagination
-		pagecounternext = qpagination + 1
-		pagecounternextnext = qpagination +2
+		pagecountercurrent  = qpagination
+		pagecounternext     = qpagination + 1
+		pagecounternextnext = qpagination + 2
 
 		individual_set = await actornamegenerator(individual_object)
 
@@ -446,8 +448,9 @@ async def search(request, searchtype):
 			'pagecountercurrent': pagecountercurrent,
 			'pagecounternext': pagecounternext,
 			'pagecounternextnext': pagecounternextnext,
-			}
-
+			'has_next': has_next,
+			'has_previous': has_previous,
+		}
 		template = loader.get_template('digisig/search_actor.html')
 		return HttpResponse(template.render(context, request))
 
@@ -455,29 +458,29 @@ async def search(request, searchtype):
 ### Search Item
 
 	if searchtype == "items":
-
 		pagetitle = 'Search Items'
-
 		form = ItemForm(request.POST or None)
 		form = await itemform_options(form)
+		series_object = await seriesset()
 
-		# code prepares the array of series and repositories to pass to the frontend
-		series_object= await seriesset()
-
+		# Read pagination directly from POST — resilient to form validation failure
 		qpagination = 1
+		if request.method == 'POST':
+			try:
+				qpagination = max(1, int(request.POST.get('pagination', '1')))
+			except (ValueError, TypeError):
+				qpagination = 1
 
 		item_object = await itemsearch()
+		if request.method == 'POST' and form.is_valid():
+			item_object, qpagination = await itemsearchfilter(item_object, form)
 
-		if request.method == 'POST':
+		item_pageobject, totalrows, totaldisplay, has_next, has_previous = \
+			await defaultpagination(item_object, qpagination)
 
-			if form.is_valid(): 
-				item_object, qpagination = await itemsearchfilter(item_object, form)
-
-		item_pageobject, totalrows, totaldisplay = await defaultpagination(item_object, qpagination)
-
-		pagecountercurrent = qpagination 
-		pagecounternext = qpagination + 1
-		pagecounternextnext = qpagination +2
+		pagecountercurrent  = qpagination
+		pagecounternext     = qpagination + 1
+		pagecounternextnext = qpagination + 2
 
 		item_displayset = await item_displaysetgenerate(item_pageobject)
 
@@ -491,6 +494,8 @@ async def search(request, searchtype):
 			'pagecountercurrent': pagecountercurrent,
 			'pagecounternext': pagecounternext,
 			'pagecounternextnext': pagecounternextnext,
+			'has_next': has_next,
+			'has_previous': has_previous,
 			}
 
 		template = loader.get_template('digisig/search_item.html')
@@ -500,32 +505,30 @@ async def search(request, searchtype):
 ### Search Seals
 
 	if searchtype == "seals":
-
 		pagetitle = 'Impressions, Matrices and Casts'
-
 		form = ManifestationForm(request.POST or None)
-		# form options for manifestation
 		form = await manifestationsform_options(form)
-		# add the section of form that deals with series and repositories
 		form = await itemform_options(form)
+		series_object = await seriesset()
 
-		# code prepares the array of series and repositories to pass to the frontend
-		series_object= await seriesset()
-
+		# Read pagination directly from POST — resilient to form validation failure
 		qpagination = 1
+		if request.method == 'POST':
+			try:
+				qpagination = max(1, int(request.POST.get('pagination', '1')))
+			except (ValueError, TypeError):
+				qpagination = 1
 
 		manifestation_object = await manifestation_search_all()
+		if request.method == 'POST' and form.is_valid():
+			manifestation_object, qpagination = await sealsearchfilter(manifestation_object, form)
 
-		if request.method == 'POST':
+		manifestation_pageobject, totalrows, totaldisplay, has_next, has_previous = \
+			await defaultpagination(manifestation_object, qpagination)
 
-			if form.is_valid(): 
-				manifestation_object, qpagination = await sealsearchfilter(manifestation_object, form)
-
-		manifestation_pageobject, totalrows, totaldisplay = await defaultpagination(manifestation_object, qpagination)
-
-		pagecountercurrent = qpagination 
-		pagecounternext = qpagination + 1
-		pagecounternextnext = qpagination +2
+		pagecountercurrent  = qpagination
+		pagecounternext     = qpagination + 1
+		pagecounternextnext = qpagination + 2
 
 		representation_set = await representationsetgenerate(manifestation_pageobject)
 		manifestation_set, totalmanifestation_count = await manifestation_searchsetgenerate(manifestation_pageobject)
@@ -544,6 +547,8 @@ async def search(request, searchtype):
 			'pagecounternext': pagecounternext,
 			'pagecounternextnext': pagecounternextnext,
 			'series_object': series_object,
+			'has_next': has_next,
+			'has_previous': has_previous,
 			}
 
 		template = loader.get_template('digisig/search_seal.html')                    
@@ -564,15 +569,14 @@ async def search(request, searchtype):
 		sealdescription_object = await sealdescription_search()
 
 		if request.method == 'POST':
-			if form.is_valid():
-				qpagination = form.cleaned_data.get('pagination') or 1 
+			if form.is_valid(): 
 				sealdescription_object, qpagination = await sealdescriptionsearchfilter(sealdescription_object, form)
 
-		sealdescription_object, totalrows, totaldisplay = await defaultpagination(sealdescription_object, qpagination) 
+		sealdescription_object, totalrows, totaldisplay, has_next, has_previous = await defaultpagination(sealdescription_object, qpagination)
 
 		pagecountercurrent = qpagination
 		pagecounternext = qpagination + 1
-		pagecounternextnext = qpagination +2		
+		pagecounternextnext = qpagination +2        
 
 		sealdescription_displayset = await sealdescription_displaysetgenerate(sealdescription_object)
 
@@ -585,6 +589,8 @@ async def search(request, searchtype):
 			'pagecountercurrent': pagecountercurrent,
 			'pagecounternext': pagecounternext,
 			'pagecounternextnext': pagecounternextnext,
+			'has_next': has_next,
+			'has_previous': has_previous,
 			}
 
 		template = loader.get_template('digisig/search_sealdescription.html')
@@ -593,33 +599,32 @@ async def search(request, searchtype):
 
 ### Search Places 
 	
+	# if searchtype == "places":
+
 	if searchtype == "places":
-
 		pagetitle = 'Search Places'
-
 		form = PlaceForm(request.POST or None)
 		form = await placeform_options(form)
 
+		# Read pagination directly from POST — resilient to form validation failure
 		qpagination = 1
+		if request.method == 'POST':
+			try:
+				qpagination = max(1, int(request.POST.get('pagination', '1')))
+			except (ValueError, TypeError):
+				qpagination = 1
 
 		place_object = await place_search()
+		if request.method == 'POST' and form.is_valid():
+			place_object, qpagination = await placesearchfilter(place_object, form)
 
-		if request.method == 'POST':
+		# place_object = await placeobjectannotate(place_object)
+		placepage_object, totalrows, totaldisplay, has_next, has_previous = \
+			await defaultpagination(place_object, qpagination)
 
-			if form.is_valid(): 
-				place_object, qpagination = await placesearchfilter(place_object, form)
-
-		place_object = await placeobjectannotate(place_object)
-
-		placepage_object, totalrows, totaldisplay = await defaultpagination(place_object, qpagination) 
-
-		pagecountercurrent = qpagination
-		pagecounternext = qpagination + 1
-		pagecounternextnext = qpagination +2		
-
-		# place_dict = []
-		# center_long = 0
-		# center_lat = 55
+		pagecountercurrent  = qpagination
+		pagecounternext     = qpagination + 1
+		pagecounternextnext = qpagination + 2
 
 		place_dict, center_long, center_lat = await mapgenerator2(placepage_object)
 
@@ -635,10 +640,12 @@ async def search(request, searchtype):
 			'pagecountercurrent': pagecountercurrent,
 			'pagecounternext': pagecounternext,
 			'pagecounternextnext': pagecounternextnext,
-			}
-
+			'has_next': has_next,
+			'has_previous': has_previous,
+		}
 		template = loader.get_template('digisig/search_place.html')
 		return HttpResponse(template.render(context, request))
+
 
 ######################### information ################################
 
@@ -658,7 +665,7 @@ async def information(request, infotype):
 			'change_object': change_object,
 		}
 
-		template = loader.get_template('digisig/change.html')					
+		template = loader.get_template('digisig/change.html')                   
 		return HttpResponse(template.render(context, request))
 
 
@@ -687,7 +694,7 @@ async def information(request, infotype):
 			'pagetitle': pagetitle,
 		}
 
-		template = loader.get_template('digisig/contributors.html')					
+		template = loader.get_template('digisig/contributors.html')                 
 		return HttpResponse(template.render(context, request))
 
 
@@ -765,40 +772,40 @@ async def information(request, infotype):
 		# seal_set = Seal.objects.filter(fk_sealsealdescription__fk_collection=qcollection).filter(fk_seal_face__fk_class=qclassification)
 
 		# if len(seal_set) > 0:
-		# 	for s in seal_set:
+		#   for s in seal_set:
 
-		# 		### 1/7/2024 -- attempting to put human readable labels -- not working yet -- javascript fails on string with quotes
-		# 		sealdescription_entry = Sealdescription.objects.get(Q(fk_collection=qcollection) & Q(fk_seal=s.id_seal))
+		#       ### 1/7/2024 -- attempting to put human readable labels -- not working yet -- javascript fails on string with quotes
+		#       sealdescription_entry = Sealdescription.objects.get(Q(fk_collection=qcollection) & Q(fk_seal=s.id_seal))
 
-		# 		event_seal = Event.objects.get(part__fk_part__fk_support__fk_face__fk_seal=s.id_seal)
+		#       event_seal = Event.objects.get(part__fk_part__fk_support__fk_face__fk_seal=s.id_seal)
 
-		# 		try:
-		# 			start = event_seal.repository_startdate
-		# 			end = event_seal.repository_enddate
-		# 			starty = start.year
-		# 			endy = end.year
+		#       try:
+		#           start = event_seal.repository_startdate
+		#           end = event_seal.repository_enddate
+		#           starty = start.year
+		#           endy = end.year
 
-		# 			try:
-		# 				start2 = event_seal.startdate
-		# 				end2 = event_seal.enddate
+		#           try:
+		#               start2 = event_seal.startdate
+		#               end2 = event_seal.enddate
 
-		# 				if start2.year > 0 :
-		# 					data1.append([starty, endy])
-		# 					# data2.append(liney)
-		# 					data2.append([start2.year, end2.year])
-		# 					#labels.append(event_seal.pk_event)
-		# 					labels.append(s.id_seal)
+		#               if start2.year > 0 :
+		#                   data1.append([starty, endy])
+		#                   # data2.append(liney)
+		#                   data2.append([start2.year, end2.year])
+		#                   #labels.append(event_seal.pk_event)
+		#                   labels.append(s.id_seal)
 
-		# 			except:
+		#           except:
 
-		# 				print ("fail2", event_seal)
+		#               print ("fail2", event_seal)
 
-		# 			if starty > 1500:
-		# 				print ("fail", event_seal, start, end, starty, endy, start2, end2)
+		#           if starty > 1500:
+		#               print ("fail", event_seal, start, end, starty, endy, start2, end2)
 
-		# 		except:
+		#       except:
 
-		# 			print ("fail1", event_seal)
+		#           print ("fail1", event_seal)
 
 		template = loader.get_template('digisig/machinelearning.html')
 
@@ -879,48 +886,50 @@ class EntityView(View):
 
 	async def actor_page(self, request, digisig_entity_number):
 
-
-		# establishing the base queries
 		individual_object = await individualsearch(digisig_entity_number)
 		manifestation_set = await manifestation_search()
-
-		# limits manifestation set to cases connected with actor in question
 		manifestation_object = await sealsearch_actor(manifestation_set, digisig_entity_number)
 
-		# #hack to deal with cases where there are too many seals for the form to handle
-		qpagination = 1
-		manifestation_pageobject, totalrows, totaldisplay = await defaultpagination(manifestation_object, qpagination)
+		# Read page from GET parameter — no form involved on this page
+		try:
+			qpagination = max(1, int(request.GET.get('page', 1)))
+		except (ValueError, TypeError):
+			qpagination = 1
 
-		############ compile information for Actor
-		# get representation information
+		manifestation_pageobject, totalrows, totaldisplay, has_next, has_previous = \
+			await defaultpagination(manifestation_object, qpagination)
+
+		pagecountercurrent  = qpagination
+		pagecounternext     = qpagination + 1
+		pagecounternextnext = qpagination + 2
+
 		representation_set = await representationsetgenerate(manifestation_pageobject)
 		manifestation_set, totalmanifestation_count = await manifestation_searchsetgenerate(manifestation_pageobject)
 		manifestation_display_dic, listofseals, listofevents, listofactors = await manifestation_displaysetgenerate(manifestation_set, representation_set)
 		description_set = await sealdescription_displaysetgenerate2(listofseals)
 		location_set = await location_displaysetgenerate(listofevents)
 		manifestation_object = await finalassembly_displaysetgenerate(manifestation_display_dic, location_set, description_set)
-
 		relationship_object, relationshipnumber = await relationship_dataset(digisig_entity_number)
-
-		# list of references to the actor
 		reference_set = await referenceset_references(digisig_entity_number)
-
-		pagetitle= namecompiler(individual_object)
+		pagetitle = namecompiler(individual_object)
 
 		context = {
 			'pagetitle': pagetitle,
 			'individual_object': individual_object,
 			'relationship_object': relationship_object,
-			'relationshipnumber' : relationshipnumber,
+			'relationshipnumber': relationshipnumber,
 			'manifestation_set': manifestation_object,
 			'totalrows': totalrows,
 			'totaldisplay': totaldisplay,
+			'has_next': has_next,
+			'has_previous': has_previous,
+			'pagecountercurrent': pagecountercurrent,
+			'pagecounternext': pagecounternext,
+			'pagecounternextnext': pagecounternextnext,
 			'reference_set': reference_set,
-			}
-
-		# template = loader.get_template('digisig/actor.html')
-
+		}
 		return render(request, 'digisig/actor.html', context)
+
 
 
 ################################ Collection ######################################
@@ -936,7 +945,7 @@ class EntityView(View):
 		collection_choices = await digisigcollection_options(form)
 
 		### Information about the collection
-		qcollection = int(digisig_entity_number)		
+		qcollection = int(digisig_entity_number)        
 		collection_dic = await collection_cases(qcollection)
 		collection_dic = await collection_details(collection_dic)
 		collection_dic = await sealdescription_contributorgenerate(collection_dic)
@@ -1043,61 +1052,46 @@ class EntityView(View):
 
 	async def place_page(self, request, digisig_entity_number):
 
-
-		# displaystatus = 1
-
-		qpagination = 1
-
-		if request.method == 'POST':
-			form = PageCycleForm(request.POST)
-
-			if form.is_valid():
-				qpagination = form.cleaned_data['pagination']
-				form = PageCycleForm(request.POST)
-				# displaystatus = 0		
-
-		else:
-			form = PageCycleForm()
+		# Read page from GET — no form needed for pagination on an entity page
+		try:
+			qpagination = max(1, int(request.GET.get('page', 1)))
+		except (ValueError, TypeError):
+			qpagination = 1
 
 		place_object, pagetitle = await place_information(digisig_entity_number)
-
 		mapdic = await mapgenerator(place_object)
 
-		placecall = True
-		manifestation_object = await manifestation_search(digisig_entity_number, placecall)
+		manifestation_object = await manifestation_search(digisig_entity_number, placecall=True)
 
-		# #note that is should pick up cases where manifestations are associated with secondary places?
-		# manifestation_object = manifestation_object.filter(
-		# 		fk_support__fk_part__fk_event__fk_event_locationreference__fk_locationname__fk_location__id_location=digisig_entity_number).distinct()
+		manifestation_pageobject, totalrows, totaldisplay, has_next, has_previous = \
+			await defaultpagination(manifestation_object, qpagination)
 
-		## these pagecounters are going to break on pages that are small lists
-		manifestation_pageobject, totalrows, totaldisplay = await defaultpagination(manifestation_object, qpagination)
-		pagecountercurrent = qpagination 
-		pagecounternext = qpagination + 1
-		pagecounternextnext = qpagination +2
+		pagecountercurrent  = qpagination
+		pagecounternext     = qpagination + 1
+		pagecounternextnext = qpagination + 2
 
 		representation_set = await representationsetgenerate(manifestation_pageobject)
 		manifestation_set, totalmanifestation_count = await manifestation_searchsetgenerate(manifestation_pageobject)
-		manifestation_display_dic, listofseals, listofevents, listofactors = await manifestation_displaysetgenerate(manifestation_set, representation_set)
+		manifestation_display_dic, listofseals, listofevents, listofactors = \
+			await manifestation_displaysetgenerate(manifestation_set, representation_set)
 		description_set = await sealdescription_displaysetgenerate2(listofseals)
 		location_set = await location_displaysetgenerate(listofevents)
-		manifestation_output = await finalassembly_displaysetgenerate(manifestation_display_dic, location_set, description_set)
+		manifestation_output = await finalassembly_displaysetgenerate(
+			manifestation_display_dic, location_set, description_set)
 
 		context = {
 			'pagetitle': pagetitle,
 			'place_object': place_object,
-			'mapdic': mapdic, 
+			'mapdic': mapdic,
 			'manifestation_set': manifestation_output,
 			'totalrows': totalrows,
 			'totaldisplay': totaldisplay,
-			'form': form,
+			'has_next': has_next,
+			'has_previous': has_previous,
 			'pagecountercurrent': pagecountercurrent,
 			'pagecounternext': pagecounternext,
 			'pagecounternextnext': pagecounternextnext,
-			}
-
-		# template = loader.get_template('digisig/place.html')  
-
+		}
 		return render(request, 'digisig/place.html', context)
 
 

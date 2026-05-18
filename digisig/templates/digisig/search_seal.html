@@ -262,14 +262,28 @@
 
                 <!-- Pagination -->
                 <nav class="pagination" aria-label="Results pagination">
-                    {% if pagecountercurrent > 1 %}
-                    <button class="page-btn" id="page_button_previous" onclick="page_button(-1)">Previous</button>
+                    {% if has_previous %}
+                    <button class="page-btn"
+                            onclick="go_to_page({{ pagecountercurrent|add:'-1' }})">Previous</button>
                     {% endif %}
-                    <button class="page-btn page-btn-active" id="page_button_1" onclick="page_button(1)">{{ pagecountercurrent }}</button>
-                    <button class="page-btn" id="page_button_2" onclick="page_button(2)">{{ pagecounternext }}</button>
-                    <button class="page-btn" id="page_button_3" onclick="page_button(3)">{{ pagecounternextnext }}</button>
-                    <button class="page-btn" id="page_button_next" onclick="page_button(1)">Next</button>
-                </nav>
+
+                    {% if has_previous %}
+                    <button class="page-btn"
+                            onclick="go_to_page({{ pagecountercurrent|add:'-1' }})">{{ pagecountercurrent|add:'-1' }}</button>
+                    {% endif %}
+
+                    <button class="page-btn page-btn-active"
+                            onclick="go_to_page({{ pagecountercurrent }})">{{ pagecountercurrent }}</button>
+
+                    {% if has_next %}
+                    <button class="page-btn"
+                            onclick="go_to_page({{ pagecounternext }})">{{ pagecounternext }}</button>
+                    <button class="page-btn"
+                            onclick="go_to_page({{ pagecounternextnext }})">{{ pagecounternextnext }}</button>
+                    <button class="page-btn"
+                            onclick="go_to_page({{ pagecounternext }})">Next</button>
+                    {% endif %}
+</nav>
 
             </section>
         </div>
@@ -285,14 +299,6 @@
 document.getElementById("form").addEventListener("input", formupdate_event);
 function formupdate_event() {
     document.getElementById("id_pagination").value = 1;
-}
-
-// pagination handler
-function page_button(numberofpages) {
-    var pagevalue = document.getElementById("id_pagination").value;
-    pagevalue = parseInt(pagevalue) + numberofpages;
-    document.getElementById("id_pagination").value = pagevalue;
-    document.getElementById("form").submit();
 }
 
 // series/repository dependent dropdown

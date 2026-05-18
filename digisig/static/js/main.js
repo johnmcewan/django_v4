@@ -1,3 +1,10 @@
+//advancing pages
+function go_to_page(pageNumber) {
+    document.getElementById("id_pagination").value = pageNumber;
+    document.getElementById("form").submit();
+}
+
+
 // the buttons that open and close sections
 function toggle(id) {
   var state = document.getElementById(id).style.display;

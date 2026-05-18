@@ -633,46 +633,86 @@ def personsearch_prepareset(individual_object):
 
 ## a function to apply this complex filter to actor searches
 
+# @sync_to_async
+# def peoplesearchfilter(individual_object, form):
+
+# 	qname = form.cleaned_data['name']   
+
+# 	qgroup = form.cleaned_data['group']
+# 	qclass = form.cleaned_data['personclass']
+# 	qorder = form.cleaned_data['personorder']
+
+# 	if qgroup.isdigit():
+# 		qgroup = int(qgroup)
+# 		if int(qgroup) == 2: individual_object = individual_object.filter(corporateentity=True)
+# 		if int(qgroup) == 1: individual_object = individual_object.filter(corporateentity=False)
+
+# 	if len(qname) > 0:
+# 		individual_object = individual_object.filter(
+# 			Q(
+# 				fullname_modern__icontains=qname) | Q(
+# 				fullname_original__icontains=qname) | Q(
+# 				fk_descriptor_title__descriptor_original__icontains=qname)| Q(
+# 				fk_descriptor_name__descriptor_original__icontains=qname)| Q(
+# 				fk_descriptor_prefix1__prefix__icontains=qname)| Q(
+# 				fk_descriptor_descriptor1__descriptor_original__icontains=qname)| Q(
+# 				fk_descriptor_prefix2__prefix__icontains=qname)| Q(
+# 				fk_descriptor_descriptor2__descriptor_original__icontains=qname)| Q(
+# 				fk_descriptor_prefix3__prefix__icontains=qname)| Q(
+# 				fk_descriptor_descriptor3__descriptor_original__icontains=qname)) 
+
+# 	if qclass.isdigit():
+# 		if int(qclass) > 0:
+# 			qclass = int(qclass)
+# 			individual_object = individual_object.filter(fk_group_class=qclass)
+
+# 	if qorder.isdigit():
+# 		if int(qorder) > 0:
+# 			qorder = int(qorder)
+# 			individual_object = individual_object.filter(fk_group_order=qorder)
+
+# 	return (individual_object)
 
 @sync_to_async
 def peoplesearchfilter(individual_object, form):
 
-	qname = form.cleaned_data['name']   
-
+	qname  = form.cleaned_data['name']
 	qgroup = form.cleaned_data['group']
 	qclass = form.cleaned_data['personclass']
 	qorder = form.cleaned_data['personorder']
 
+	try:
+		qpagination = max(1, int(form.cleaned_data.get('pagination') or 1))
+	except (ValueError, TypeError):
+		qpagination = 1
+
 	if qgroup.isdigit():
 		qgroup = int(qgroup)
-		if int(qgroup) == 2: individual_object = individual_object.filter(corporateentity=True)
-		if int(qgroup) == 1: individual_object = individual_object.filter(corporateentity=False)
+		if qgroup == 2: individual_object = individual_object.filter(corporateentity=True)
+		if qgroup == 1: individual_object = individual_object.filter(corporateentity=False)
 
-	if len(qname) > 0:
+	if qname:
 		individual_object = individual_object.filter(
-			Q(
-				fullname_modern__icontains=qname) | Q(
-				fullname_original__icontains=qname) | Q(
-				fk_descriptor_title__descriptor_original__icontains=qname)| Q(
-				fk_descriptor_name__descriptor_original__icontains=qname)| Q(
-				fk_descriptor_prefix1__prefix__icontains=qname)| Q(
-				fk_descriptor_descriptor1__descriptor_original__icontains=qname)| Q(
-				fk_descriptor_prefix2__prefix__icontains=qname)| Q(
-				fk_descriptor_descriptor2__descriptor_original__icontains=qname)| Q(
-				fk_descriptor_prefix3__prefix__icontains=qname)| Q(
-				fk_descriptor_descriptor3__descriptor_original__icontains=qname)) 
+			Q(fullname_modern__icontains=qname) |
+			Q(fullname_original__icontains=qname) |
+			Q(fk_descriptor_title__descriptor_original__icontains=qname) |
+			Q(fk_descriptor_name__descriptor_original__icontains=qname) |
+			Q(fk_descriptor_prefix1__prefix__icontains=qname) |
+			Q(fk_descriptor_descriptor1__descriptor_original__icontains=qname) |
+			Q(fk_descriptor_prefix2__prefix__icontains=qname) |
+			Q(fk_descriptor_descriptor2__descriptor_original__icontains=qname) |
+			Q(fk_descriptor_prefix3__prefix__icontains=qname) |
+			Q(fk_descriptor_descriptor3__descriptor_original__icontains=qname))
 
 	if qclass.isdigit():
 		if int(qclass) > 0:
-			qclass = int(qclass)
-			individual_object = individual_object.filter(fk_group_class=qclass)
+			individual_object = individual_object.filter(fk_group_class=int(qclass))
 
 	if qorder.isdigit():
 		if int(qorder) > 0:
-			qorder = int(qorder)
-			individual_object = individual_object.filter(fk_group_order=qorder)
+			individual_object = individual_object.filter(fk_group_order=int(qorder))
 
-	return (individual_object)
+	return (individual_object, qpagination)
 
 
 
@@ -2563,7 +2603,6 @@ def representationmetadata_sealdescription(representation_case, representation_d
 
 	return(representation_dic)
 
-
 @sync_to_async
 def itemform_options(form):
 
@@ -2632,9 +2671,10 @@ def itemsearchfilter(item_object, form):
 
 	try:
 		qsearchphrase = form.cleaned_data['searchphrase']
-		if len(searchphrase) > 0:
-			item_object = item_object.filter(part_description__icontains=searchphrase)
-	except: 
+		if len(searchphrase) > 0:                                    
+			item_object = item_object.filter(
+				part_description__icontains=searchphrase)
+	except:
 		pass
 
 	try:
@@ -2732,44 +2772,47 @@ def place_information(entity):
 
 	return (place_object, place_name)
 
-
 @sync_to_async
-def placesearchfilter(placeset):
+def placesearchfilter(placeset, form):
 
-	qregion = form.cleaned_data['region']
-	qcounty = form.cleaned_data['county']   
-	qpagination = form.cleaned_data['pagination']
+	qregion        = form.cleaned_data['region']
+	qcounty        = form.cleaned_data['county']
 	qlocation_name = form.cleaned_data['location_name']
 
-	if qregion.isdigit():
+	try:
+		qpagination = max(1, int(form.cleaned_data.get('pagination') or 1))
+	except (ValueError, TypeError):
+		qpagination = 1
+
+	regionselect = False          # ← initialise before use
+
+	if qregion and str(qregion).isdigit():
 		if int(qregion) > 0:
 			placeset = placeset.filter(fk_region__fk_regiondisplay=qregion)
 			regionselect = True
 
-	if regionselect == False:
-		if qcounty.isdigit():
+	if not regionselect:          # ← cleaner than == False
+		if qcounty and str(qcounty).isdigit():
 			if int(qcounty) > 0:
 				placeset = placeset.filter(fk_region=qcounty)
 
-	if len(qlocation_name) > 0:
+	if qlocation_name:
 		placeset = placeset.filter(location__icontains=qlocation_name)
-
-	if qpagination < 1: qapgination =1 
 
 	return (placeset, qpagination)
 
-@sync_to_async
-def placeobjectannotate(place_object):
+# @sync_to_async
+# def placeobjectannotate(place_object):
 
-	place_object.annotate(count=Count('locationname__locationreference'))
+# 	place_object.annotate(count=Count('locationname__locationreference'))
 
-	totalcount = 1
-	for p in place_object:
-		if totalcount < 10:
-			print (p, p.count)
-			totalcount = totalcount + 1 
+# 	totalcount = 1
+# 	for p in place_object:
+# 		if totalcount < 10:
+# 			print (p, p.count)
+# 			totalcount = totalcount + 1 
 
-	return (place_object)
+# 	return (place_object)
 
 @sync_to_async
 def dateform_options(form):
@@ -2940,8 +2983,8 @@ def sealdescriptionsearchfilter(sealdescription_object, form):
 		sealdescription_object = sealdescription_object.filter(
 			sealdescription_title__icontains=qcataloguename)
 
-	if qpagination < 1:
-		qpagination = 1
+	# if qpagination < 1:
+	# 	qpagination = 1
 
 	return sealdescription_object, qpagination
 
@@ -2952,7 +2995,7 @@ def sealdescription_displaysetgenerate(sealdescription_object):
 	for sd in sealdescription_object:
 		sealdes_temp = {}
 		sealdes_temp['id_sealdescription'] = sd.id_sealdescription
-		sealdes_temp['fk_seal'] = sd.fk_seal.id_seal
+		# sealdes_temp['fk_seal'] = sd.fk_seal.id_seal
 		sealdes_temp['sealdescription_title'] = sd.sealdescription_title
 		sealdes_temp['collection_shorttitle'] = sd.fk_collection.collection_shorttitle
 		sealdes_temp['sealdescription_identifier'] = sd.sealdescription_identifier
@@ -2961,7 +3004,9 @@ def sealdescription_displaysetgenerate(sealdescription_object):
 		sealdes_temp['motif_obverse'] = sd.motif_obverse
 		sealdes_temp['legend_obverse'] = sd.legend_obverse
 		sealdes_temp['legend_reverse'] = sd.legend_reverse
-		sealdes_temp['realizer'] = sd.fk_seal.fk_individual_realizer
+		# sealdes_temp['realizer'] = sd.fk_seal.fk_individual_realizer
+		sealdes_temp['fk_seal'] = sd.fk_seal.id_seal if sd.fk_seal else None
+		sealdes_temp['realizer'] = sd.fk_seal.fk_individual_realizer if sd.fk_seal else None
 		sealdes_temp['collection_thumbnail'] = sd.fk_collection.collection_thumbnail
 		sealdes_temp['collection_fulltitle'] = sd.fk_collection.collection_fulltitle
 		sealdes_temp['fk_collection'] = sd.fk_collection
@@ -2969,24 +3014,6 @@ def sealdescription_displaysetgenerate(sealdescription_object):
 		sealdescription_displayset[sd.id_sealdescription] = sealdes_temp
 
 	return (sealdescription_displayset)
-
-
-# @sync_to_async
-# def manifestation_search():
-#   manifestation_object = Manifestation.objects.all().select_related(
-#   'fk_face__fk_seal').select_related(
-#   'fk_support__fk_part__fk_item__fk_repository').select_related(
-#   'fk_support__fk_number_currentposition').select_related(
-#   'fk_support__fk_attachment').select_related(
-#   'fk_support__fk_supportstatus').select_related(
-#   'fk_support__fk_nature').select_related(
-#   'fk_imagestate').select_related(
-#   'fk_position').select_related(
-#   'fk_support__fk_part__fk_event').order_by(
-#   'id_manifestation').prefetch_related(
-#   Prefetch('fk_manifestation', queryset=Representation.objects.filter(primacy=1)))
-
-#   return(manifestation_object)
 
 
 ## find seal manifestations and optionally limit to those associated with a particular place
@@ -3391,20 +3418,126 @@ async def manifestation_construction(manifestation_pageobject):
 
 	return manifestation_displayset
 
+# @sync_to_async
+# def sealsearchfilter(manifestation_object, form):
+# 	qrepository = form.cleaned_data['repository']   
+# 	qseries = form.cleaned_data['series']
+# 	qrepresentation_type = form.cleaned_data['representation']
+# 	qnature = form.cleaned_data['nature']
+# 	qlocation = form.cleaned_data['location']
+# 	qtimegroup = form.cleaned_data['timegroup']
+# 	qshape = form.cleaned_data['shape']
+# 	qshelfmark = form.cleaned_data['name']
+# 	qclassname = form.cleaned_data['classname']
+# 	qpagination = form.cleaned_data['pagination']
+# 	qgroup = form.cleaned_data['group']
 
-@sync_to_async
+# 	if qrepository.isdigit():
+# 		if int(qrepository) > 0:
+# 			manifestation_object = manifestation_object.filter(
+# 				fk_support__fk_part__fk_item__fk_repository=qrepository)
+
+# 	if qseries.isdigit():
+# 		if int(qseries) > 0:
+# 			manifestation_object = manifestation_object.filter(
+# 				fk_support__fk_part__fk_item__fk_series=qseries)
+
+# 	if qrepresentation_type.isdigit():
+# 		if int(qrepresentation_type) > 0:
+# 			manifestation_object = manifestation_object.filter(
+# 				fk_manifestation__fk_representation_type=qrepresentation_type)
+
+# 	if qnature.isdigit():
+# 		if int(qnature) > 0:
+# 			manifestation_object = manifestation_object.filter(
+# 				fk_support__fk_nature=qnature)
+
+# 	if qlocation.isdigit():
+# 		if int(qlocation) > 0:
+# 			manifestation_object = manifestation_object.filter(
+# 				fk_support__fk_part__fk_event__fk_event_locationreference__fk_locationname__fk_location__fk_region=qlocation)
+
+# 	if qtimegroup.isdigit():
+# 		if int(qtimegroup) > 0:
+# 			qtimegroup_int = int(qtimegroup)
+# 			temporalperiod_target = (TimegroupC.objects.get(timegroup_c = qtimegroup_int))   
+# 			yearstart = (temporalperiod_target.timegroup_c_startdate)
+# 			yearend = (temporalperiod_target.timegroup_c_finaldate)
+# 			# manifestation_object = manifestation_object.filter(
+# 			# 	fk_support__fk_part__fk_event__repository_startdate__lt=datetime.strptime(str(yearstart), "%Y")).filter(
+# 			# 	fk_support__fk_part__fk_event__repository_enddate__gt=datetime.strptime(str(yearstart+50), "%Y"))
+# 			manifestation_object = manifestation_object.filter(
+# 				fk_support__fk_part__fk_event__startdate__lt=datetime.strptime(str(yearend), "%Y")).filter(
+# 				fk_support__fk_part__fk_event__enddate__gt=datetime.strptime(str(yearstart), "%Y"))
+
+
+
+
+# 	if qshape.isdigit():
+# 		if int(qshape) > 0:
+# 			manifestation_object = manifestation_object.filter(
+# 				fk_face__fk_shape=qshape)
+
+# 	if qgroup.isdigit():
+# 		if int(qgroup) > 0:
+# 			manifestation_object = manifestation_object.filter(
+# 				fk_face__fk_seal__fk_printgroup=qgroup)
+
+# 	if qclassname.isdigit():
+# 		if int(qclassname) > 0:
+# 			searchclassification =  Classification.objects.get(id_class = qclassname)
+# 			manifestation_object = manifestation_object.filter(
+# 				fk_face__fk_class__level1=searchclassification.level1)
+
+# 			if searchclassification.level2 > 0:
+# 				manifestation_object = manifestation_object.filter(
+# 				fk_face__fk_class__level2=searchclassification.level2)
+
+# 				if searchclassification.level3 > 0:
+# 					manifestation_object = manifestation_object.filter(
+# 					fk_face__fk_class__level3=searchclassification.level3)
+
+# 					if searchclassification.level4 > 0:
+# 						manifestation_object = manifestation_object.filter(
+# 						fk_face__fk_class__level4=searchclassification.level4)
+
+# 						if searchclassification.level5 > 0:
+# 							manifestation_object = manifestation_object.filter(
+# 							fk_face__fk_class__level5=searchclassification.level5)
+
+# 							if searchclassification.level6 > 0:
+# 								manifestation_object = manifestation_object.filter(
+# 								fk_face__fk_class__level6=searchclassification.level6)
+
+# 								if searchclassification.level7 > 0:
+# 									manifestation_object = manifestation_object.filter(
+# 									fk_face__fk_class__level7=searchclassification.level7)
+
+# 	if len(qshelfmark) > 0:
+# 		manifestation_object = manifestation_object.filter(
+# 		fk_support__fk_part__fk_item__shelfmark__icontains=qshelfmark)
+
+# 	if qpagination < 1: qapgination =1 
+
+# 	return(manifestation_object, qpagination)
+
+@sync_to_async                          
 def sealsearchfilter(manifestation_object, form):
-	qrepository = form.cleaned_data['repository']   
-	qseries = form.cleaned_data['series']
+	qrepository         = form.cleaned_data['repository']
+	qseries             = form.cleaned_data['series']
 	qrepresentation_type = form.cleaned_data['representation']
-	qnature = form.cleaned_data['nature']
-	qlocation = form.cleaned_data['location']
-	qtimegroup = form.cleaned_data['timegroup']
-	qshape = form.cleaned_data['shape']
-	qshelfmark = form.cleaned_data['name']
-	qclassname = form.cleaned_data['classname']
-	qpagination = form.cleaned_data['pagination']
-	qgroup = form.cleaned_data['group']
+	qnature             = form.cleaned_data['nature']
+	qlocation           = form.cleaned_data['location']
+	qtimegroup          = form.cleaned_data['timegroup']
+	qshape              = form.cleaned_data['shape']
+	qshelfmark          = form.cleaned_data['name']
+	qclassname          = form.cleaned_data['classname']
+	qgroup              = form.cleaned_data['group']
+
+	try:
+		qpagination = max(1, int(form.cleaned_data.get('pagination') or 1))
+	except (ValueError, TypeError):
+		qpagination = 1
 
 	if qrepository.isdigit():
 		if int(qrepository) > 0:
@@ -3434,18 +3567,12 @@ def sealsearchfilter(manifestation_object, form):
 	if qtimegroup.isdigit():
 		if int(qtimegroup) > 0:
 			qtimegroup_int = int(qtimegroup)
-			temporalperiod_target = (TimegroupC.objects.get(timegroup_c = qtimegroup_int))   
-			yearstart = (temporalperiod_target.timegroup_c_startdate)
-			yearend = (temporalperiod_target.timegroup_c_finaldate)
-			# manifestation_object = manifestation_object.filter(
-			# 	fk_support__fk_part__fk_event__repository_startdate__lt=datetime.strptime(str(yearstart), "%Y")).filter(
-			# 	fk_support__fk_part__fk_event__repository_enddate__gt=datetime.strptime(str(yearstart+50), "%Y"))
+			temporalperiod_target = TimegroupC.objects.get(timegroup_c=qtimegroup_int)
+			yearstart = temporalperiod_target.timegroup_c_startdate
+			yearend   = temporalperiod_target.timegroup_c_finaldate
 			manifestation_object = manifestation_object.filter(
 				fk_support__fk_part__fk_event__startdate__lt=datetime.strptime(str(yearend), "%Y")).filter(
 				fk_support__fk_part__fk_event__enddate__gt=datetime.strptime(str(yearstart), "%Y"))
-
-
-
 
 	if qshape.isdigit():
 		if int(qshape) > 0:
@@ -3459,50 +3586,60 @@ def sealsearchfilter(manifestation_object, form):
 
 	if qclassname.isdigit():
 		if int(qclassname) > 0:
-			searchclassification =  Classification.objects.get(id_class = qclassname)
+			searchclassification = Classification.objects.get(id_class=qclassname)
 			manifestation_object = manifestation_object.filter(
 				fk_face__fk_class__level1=searchclassification.level1)
-
 			if searchclassification.level2 > 0:
 				manifestation_object = manifestation_object.filter(
-				fk_face__fk_class__level2=searchclassification.level2)
-
+					fk_face__fk_class__level2=searchclassification.level2)
 				if searchclassification.level3 > 0:
 					manifestation_object = manifestation_object.filter(
-					fk_face__fk_class__level3=searchclassification.level3)
-
+						fk_face__fk_class__level3=searchclassification.level3)
 					if searchclassification.level4 > 0:
 						manifestation_object = manifestation_object.filter(
-						fk_face__fk_class__level4=searchclassification.level4)
-
+							fk_face__fk_class__level4=searchclassification.level4)
 						if searchclassification.level5 > 0:
 							manifestation_object = manifestation_object.filter(
-							fk_face__fk_class__level5=searchclassification.level5)
-
+								fk_face__fk_class__level5=searchclassification.level5)
 							if searchclassification.level6 > 0:
 								manifestation_object = manifestation_object.filter(
-								fk_face__fk_class__level6=searchclassification.level6)
-
+									fk_face__fk_class__level6=searchclassification.level6)
 								if searchclassification.level7 > 0:
 									manifestation_object = manifestation_object.filter(
-									fk_face__fk_class__level7=searchclassification.level7)
+										fk_face__fk_class__level7=searchclassification.level7)
 
-	if len(qshelfmark) > 0:
+	if qshelfmark:
 		manifestation_object = manifestation_object.filter(
-		fk_support__fk_part__fk_item__shelfmark__icontains=qshelfmark)
+			fk_support__fk_part__fk_item__shelfmark__icontains=qshelfmark)
 
-	if qpagination < 1: qapgination =1 
+	return (manifestation_object, qpagination)
 
-	return(manifestation_object, qpagination)
+
+# @sync_to_async
+# def defaultpagination(pagination_object, qpagination):
+
+# 	pagination_object = Paginator(pagination_object, 10).page(qpagination)
+# 	totalrows = pagination_object.paginator.count
+# 	totaldisplay = str(pagination_object.start_index()) + "-" + str(pagination_object.end_index())
+
+# 	return(pagination_object, totalrows, totaldisplay)
 
 @sync_to_async
 def defaultpagination(pagination_object, qpagination):
+	paginator = Paginator(pagination_object, 10)
+	
+	# Clamp page number to valid range to avoid EmptyPage errors
+	qpagination = min(qpagination, paginator.num_pages)
+	qpagination = max(qpagination, 1)
+	
+	page = paginator.page(qpagination)
+	totalrows   = paginator.count
+	totaldisplay = str(page.start_index()) + "–" + str(page.end_index())
+	has_next    = page.has_next()
+	has_previous = page.has_previous()
+	
+	return page, totalrows, totaldisplay, has_next, has_previous
 
-	pagination_object = Paginator(pagination_object, 10).page(qpagination)
-	totalrows = pagination_object.paginator.count
-	totaldisplay = str(pagination_object.start_index()) + "-" + str(pagination_object.end_index())
-
-	return(pagination_object, totalrows, totaldisplay)
 
 @sync_to_async
 def sealdescription_fetchobject(digisig_entity_number):
