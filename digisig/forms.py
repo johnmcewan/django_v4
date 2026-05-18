@@ -127,7 +127,7 @@ class CollectionForm_digisig(forms.Form):
 # 		collections_options.append((e.id_collection, e.collection_shorttitle))
 
 class SealdescriptionForm(forms.Form):
-	pagination = forms.IntegerField(initial=1, widget=forms.HiddenInput)
+	pagination = forms.IntegerField(required=False, initial=1, widget=forms.HiddenInput)
 	collection = forms.ChoiceField(choices=collections_options, required=False)
 	cataloguecode = forms.CharField(label='Entry', max_length=100, required=False, widget=forms.TextInput(attrs={'placeholder': 'Example: P281'}))
 	#cataloguedescription = forms.CharField(label='Description', max_length=100, required=False)

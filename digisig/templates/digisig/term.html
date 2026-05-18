@@ -4,60 +4,158 @@
 
 {% block content %}
 
-	<div class="search-banner"></div>
-	<div class="sidepanel-left"></div>
-	<div class="sidepanel-right"></div>
+<!-- Permalink overlay — hidden on load, opened by button click -->
+<div class="entity-permalink" id="entity-permalink" style="display:none;">
+  <div class="entity-permalink-card">
+    <div class="entity-permalink-head">
+      Permalink
+      <button onclick="toggle('entity-permalink')" class="entity-permalink-close">&times;</button>
+    </div>
+    <label for="term-permalink-input">Copy this URL to link to this page:</label>
+    <input id="term-permalink-input" class="entity-permalink-input"
+           value="http://www.digisig.org/entity/{{term_object.id_term}}"
+           type="text" readonly>
+  </div>
+</div>
 
 
-	<div class="main-title">
-		<h1>{{term_object.term_name}}</h1>
-	</div>
+<div class="entity-page">
 
-	<div class="mainpage"></div>
-			
-	<div class="entity_detail" id="entity_detail">
-		<h3>Τerm details <button onclick="toggle('entity-permalink')" class="permalink">Permalink</button></h3>
-		<table>
-			<tr>
-				<td>Term</td>
-				<th>{{term_object.term_name}}</th>
-			</tr>
-			<tr>
-				<td>Definition</td>
-				<th style="width:90%">{{term_object.term_definition}}</th>
-		</table>
-	</div>
+  <!-- ═══════════════════════════════════════════════════
+       PAGE HEADER
+       ═══════════════════════════════════════════════════ -->
+  <header class="entity-page-header">
+    <p class="entity-eyebrow">Terminology &mdash; Glossary</p>
+    <h1 class="entity-title entity-title--display">{{term_object.term_name}}</h1>
+    <hr class="entity-divider">
+  </header>
 
-	<div class="entity-permalink" id="entity-permalink">
-		<div class="permalinkinfo" id="permalinkinfo">
-		Permalink
-		<button onclick="toggle('entity-permalink')" class="closebutton">X</button>
-		<form action="#">
-			<label>Copy this URL to link to this page:</label>
-			<input id="input" class="text" name="" value="http://www.digisig.org/entity/{{term_object.id_term}}" type="text" readonly>
-		</form>
-		</div>
-	</div>
 
-	<div class="entity_main">
-		<div class="div-caption">
-			Related terms <button id="entitybutton1" onclick="tbtoggle('entity1', 'entitybutton1')" class="entity">+</button>
-		</div>
-		<table id="entity1" style="display:none;">
-			<tr>
-				<td>Subject</td>
-				<td>Predicate</td>
-				<td>Object</td>
-			</tr>
+  <!-- ═══════════════════════════════════════════════════
+       BODY: 8-col main + 4-col sticky sidebar
+       ═══════════════════════════════════════════════════ -->
+  <div class="term-layout">
 
-		{% for key, statement in statement_object.items %}
-			<tr>			
-				<th>{{statement.subject__term_name}}</th>
-				<th>{{statement.predicate__vocabulary_uri}}</th>
-				<th><a href="{% url 'entity' digisig_entity_number=statement.skos_data_object %}">{{statement.object__term_name}}</a></th>
-			</tr>
-		{% endfor %}
-		</table>
-	</div>
+    <!-- ─── LEFT: main content ──────────────────────────── -->
+    <div class="term-main-col">
+
+      <!-- Definition -->
+      <section class="term-section">
+        <div class="entity-section-heading">
+          <i class="fas fa-book-open term-section-icon"></i>
+          <h2 class="entity-section-title">Definition</h2>
+          <span class="entity-section-rule"></span>
+        </div>
+
+        <div class="term-definition-card entity-card">
+          <p class="term-definition-text">{{term_object.term_definition}}</p>
+        </div>
+      </section>
+
+
+      <!-- Related Terms (collapsible) -->
+      <section class="term-section">
+        <div class="entity-section-heading entity-section-heading--split">
+          <i class="fas fa-project-diagram term-section-icon"></i>
+          <h2 class="entity-section-title">Related terms</h2>
+          <span class="entity-section-rule"></span>
+          <button id="entitybutton1"
+                  onclick="tbtoggle('entity1', 'entitybutton1')"
+                  class="entity-toggle-btn">+</button>
+        </div>
+
+        <div id="entity1" style="display:none;">
+          {% if statement_object %}
+          <div class="entity-card" style="padding:0;overflow:hidden;">
+            <table class="term-related-table">
+              <thead>
+                <tr>
+                  <th>Subject</th>
+                  <th>Predicate</th>
+                  <th>Object</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for key, statement in statement_object.items %}
+                <tr>
+                  <td class="term-related-subject">{{statement.subject__term_name}}</td>
+                  <td class="term-related-predicate">
+                    <code class="term-predicate-chip">{{statement.predicate__vocabulary_uri}}</code>
+                  </td>
+                  <td class="term-related-object">
+                    <a class="entity-detail-link"
+                       href="{% url 'entity' digisig_entity_number=statement.skos_data_object %}">
+                      {{statement.object__term_name}}
+                    </a>
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+          {% else %}
+          <div class="term-related-empty">
+            <i class="fas fa-info-circle"></i>
+            No related terms recorded for this entry.
+          </div>
+          {% endif %}
+        </div>
+      </section>
+
+    </div><!-- /term-main-col -->
+
+
+    <!-- ─── RIGHT: sticky sidebar ──────────────────────── -->
+    <aside class="term-side-col">
+
+      <!-- Term metadata card -->
+      <div class="entity-card term-meta-card">
+        <div class="entity-card-header">
+          <h2 class="entity-card-title">
+            <i class="fas fa-tag" style="margin-right:6px;"></i> Term
+          </h2>
+        </div>
+
+        <dl class="entity-detail-list">
+          <div class="entity-detail-row">
+            <dt class="entity-detail-label">Name</dt>
+            <dd class="entity-detail-value term-meta-name">{{term_object.term_name}}</dd>
+          </div>
+          <div class="entity-detail-row">
+            <dt class="entity-detail-label">Identifier</dt>
+            <dd class="entity-detail-value">
+              <code class="term-id-chip">{{term_object.id_term}}</code>
+            </dd>
+          </div>
+        </dl>
+
+        <div class="term-meta-actions">
+          <button onclick="toggle('entity-permalink')" class="actor-permalink-btn term-permalink-btn">
+            <i class="fas fa-link"></i> Permalink
+          </button>
+        </div>
+      </div>
+
+      <!-- Citation box -->
+      <div class="entity-cite-box">
+        <p class="entity-cite-title">
+          <i class="fas fa-quote-left"></i>&ensp;Cite this entry
+        </p>
+        <p class="entity-cite-body">
+          &ldquo;{{term_object.term_name}}.&rdquo; <em>Digisig: Digital Sigillography Resource</em>.
+          http://www.digisig.org/entity/{{term_object.id_term}}
+        </p>
+        <div class="manif-cite-links">
+          <a class="manif-cite-link" href="#">BibTeX</a>
+          <a class="manif-cite-link" href="#">RIS</a>
+          <button class="manif-cite-link" onclick="toggle('entity-permalink')">Copy Permalink</button>
+        </div>
+      </div>
+
+    </aside><!-- /term-side-col -->
+
+  </div><!-- /term-layout -->
+
+</div><!-- /entity-page -->
 
 {% endblock %}

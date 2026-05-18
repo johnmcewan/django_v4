@@ -81,7 +81,7 @@
 
                     <div class="filter-actions">
                         <button class="btn btn-primary" type="submit">Submit Search</button>
-                        <button class="btn btn-secondary" type="reset" id="filterclear_button" onclick="myFunction()">Clear Filters</button>
+                        <button class="btn btn-secondary" type="button" id="filterclear_button" onclick="myFunction()">Clear Filters</button>
                     </div>
                 </form>
             </aside>
@@ -233,7 +233,17 @@ function page_button(numberofpages) {
 }
 
 function myFunction() {
-    document.getElementById("form").reset();
+    console.log("hello");
+    // Text fields → empty string
+    document.getElementById("id_cataloguecode").value  = "";
+    document.getElementById("id_cataloguemotif").value = "";
+    document.getElementById("id_cataloguename").value  = "";
+
+    // Select → first option (or whichever index means "all collections")
+    document.getElementById("id_collection").selectedIndex = 30000287;
+
+    // Reset pagination
+    document.getElementById("id_pagination").value = "1";
 }
 </script>
 

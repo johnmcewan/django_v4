@@ -1631,45 +1631,45 @@ def roundedoval(height, width):
 
 @sync_to_async
 def collection_cases(qcollection):
-    collection_dic = {}
-    collection_dic["id_collection"] = qcollection
-    
-    # Base queryset
-    qs = Sealdescription.objects.filter(fk_seal__gt=1)
+	collection_dic = {}
+	collection_dic["id_collection"] = qcollection
+	
+	# Base queryset
+	qs = Sealdescription.objects.filter(fk_seal__gt=1)
 
-    if qcollection != 30000287:
-        qs = qs.filter(fk_collection=qcollection)
+	if qcollection != 30000287:
+		qs = qs.filter(fk_collection=qcollection)
 
-    # Perform all calculations in a single SQL query
-    metrics = qs.aggregate(
-        total_desc=Count('sealdescription_identifier', distinct=True),
-        total_seals=Count('fk_seal', distinct=True),
-        actors=Count('fk_seal', distinct=True, filter=Q(
-            fk_seal__fk_individual_realizer__gt=10000019
-        )),
-        dates=Count('fk_seal', distinct=True, filter=Q(
-            fk_seal__date_origin__gt=1
-        )),
-        classes=Count('fk_seal', distinct=True, filter=(
-            Q(fk_seal__fk_seal_face__fk_class__isnull=False) & 
-            ~Q(fk_seal__fk_seal_face__fk_class__in=[10000367, 10001007])
-        )),
-        faces=Count('fk_seal__fk_seal_face', distinct=True, filter=Q(
-            fk_seal__fk_seal_face__fk_faceterm=1
-        ))
-    )
+	# Perform all calculations in a single SQL query
+	metrics = qs.aggregate(
+		total_desc=Count('sealdescription_identifier', distinct=True),
+		total_seals=Count('fk_seal', distinct=True),
+		actors=Count('fk_seal', distinct=True, filter=Q(
+			fk_seal__fk_individual_realizer__gt=10000019
+		)),
+		dates=Count('fk_seal', distinct=True, filter=Q(
+			fk_seal__date_origin__gt=1
+		)),
+		classes=Count('fk_seal', distinct=True, filter=(
+			Q(fk_seal__fk_seal_face__fk_class__isnull=False) & 
+			~Q(fk_seal__fk_seal_face__fk_class__in=[10000367, 10001007])
+		)),
+		faces=Count('fk_seal__fk_seal_face', distinct=True, filter=Q(
+			fk_seal__fk_seal_face__fk_faceterm=1
+		))
+	)
 
-    # Map the results back to your dictionary
-    collection_dic.update({
-        "totalsealdescriptions": metrics['total_desc'],
-        "totalseals": metrics['total_seals'],
-        "actorscount": metrics['actors'],
-        "datecount": metrics['dates'],
-        "classcount": metrics['classes'],
-        "facecount": metrics['faces'],
-    })
+	# Map the results back to your dictionary
+	collection_dic.update({
+		"totalsealdescriptions": metrics['total_desc'],
+		"totalseals": metrics['total_seals'],
+		"actorscount": metrics['actors'],
+		"datecount": metrics['dates'],
+		"classcount": metrics['classes'],
+		"facecount": metrics['faces'],
+	})
 
-    return collection_dic
+	return collection_dic
 
 
 @sync_to_async
@@ -1965,25 +1965,25 @@ def map_counties(placeset):
 
 @sync_to_async
 def map_regionset(qcollection, qtimechoice=None, qsealtypechoice=None):
-    status_1_filter = Q(region__location__locationname__locationreference__fk_locationstatus=1)
-    
-    dynamic_filters = {}
-    if qtimechoice:
-        dynamic_filters['region__location__locationname__locationreference__fk_event__part__fk_part__fk_support__fk_face__fk_seal__fk_timegroupc'] = qtimechoice
-    if qsealtypechoice:
-        dynamic_filters['region__location__locationname__locationreference__fk_event__part__fk_part__fk_support__fk_face__fk_seal__fk_sealtype'] = qsealtypechoice
+	status_1_filter = Q(region__location__locationname__locationreference__fk_locationstatus=1)
+	
+	dynamic_filters = {}
+	if qtimechoice:
+		dynamic_filters['region__location__locationname__locationreference__fk_event__part__fk_part__fk_support__fk_face__fk_seal__fk_timegroupc'] = qtimechoice
+	if qsealtypechoice:
+		dynamic_filters['region__location__locationname__locationreference__fk_event__part__fk_part__fk_support__fk_face__fk_seal__fk_sealtype'] = qsealtypechoice
 
-    if qcollection == 30000287:
-        count_target = 'region__location__locationname__locationreference__fk_event__part__fk_part__fk_support'
-    else:
-        dynamic_filters['region__location__locationname__locationreference__fk_event__part__fk_part__fk_support__fk_face__fk_seal__fk_sealsealdescription__fk_collection'] = qcollection
-        count_target = 'region__location__locationname__locationreference'
+	if qcollection == 30000287:
+		count_target = 'region__location__locationname__locationreference__fk_event__part__fk_part__fk_support'
+	else:
+		dynamic_filters['region__location__locationname__locationreference__fk_event__part__fk_part__fk_support__fk_face__fk_seal__fk_sealsealdescription__fk_collection'] = qcollection
+		count_target = 'region__location__locationname__locationreference'
 
-    queryset = Regiondisplay.objects.filter(**dynamic_filters).annotate(
-        # 1. Coalesce the counts so they are 0 instead of NULL
-        total_cases=Coalesce(Count(count_target), Value(0)),
-        number_cases=Coalesce(Count(count_target, filter=status_1_filter), Value(0))
-    )
+	queryset = Regiondisplay.objects.filter(**dynamic_filters).annotate(
+		# 1. Coalesce the counts so they are 0 instead of NULL
+		total_cases=Coalesce(Count(count_target), Value(0)),
+		number_cases=Coalesce(Count(count_target, filter=status_1_filter), Value(0))
+	)
 
 # .annotate(
 #         # 2. Calculate percentage with safety checks
@@ -2000,14 +2000,14 @@ def map_regionset(qcollection, qtimechoice=None, qsealtypechoice=None):
 #         )
 #     )
 
-    return queryset.values(
-        'number_cases',  
-        'total_cases', 
-        'id_regiondisplay', 
-        'regiondisplay_label',
-        'regiondisplay_long',
-        'regiondisplay_lat' 
-    )
+	return queryset.values(
+		'number_cases',  
+		'total_cases', 
+		'id_regiondisplay', 
+		'regiondisplay_label',
+		'regiondisplay_long',
+		'regiondisplay_lat' 
+	)
 
 
 
@@ -2913,33 +2913,37 @@ def sealdescription_search():
 
 @sync_to_async
 def sealdescriptionsearchfilter(sealdescription_object, form):
-
-	qcollection = form.cleaned_data['collection']   
-	qcataloguecode = form.cleaned_data['cataloguecode']
+	qcollection     = form.cleaned_data['collection']
+	qcataloguecode  = form.cleaned_data['cataloguecode']
 	qcataloguemotif = form.cleaned_data['cataloguemotif']
-	qcataloguename = form.cleaned_data['cataloguename']
-	qpagination = form.cleaned_data['pagination']
+	qcataloguename  = form.cleaned_data['cataloguename']
+	qpagination = form.cleaned_data.get('pagination') or 1
+	#qpagination     = form.cleaned_data['pagination']
 
-	if qcollection.isdigit():
-		if int(qcollection) > 0:
-			if int(qcollection) == 30000287:
-				print("all collections")
-			else: sealdescription_object = sealdescription_object.filter(fk_collection=qcollection)
-			
-	if len(qcataloguecode) > 0:
-		sealdescription_object = sealdescription_object.filter(sealdescription_identifier__icontains=qcataloguecode)
+	try:
+		collection_id = int(qcollection)
+		if collection_id > 0 and collection_id != 30000287:
+			sealdescription_object = sealdescription_object.filter(fk_collection=collection_id)
+	except (TypeError, ValueError):
+		pass
 
-	if len(qcataloguemotif) > 0:
+	if qcataloguecode:
 		sealdescription_object = sealdescription_object.filter(
-			Q(motif_obverse__contains=qcataloguemotif) | Q(motif_reverse__icontains=qcataloguemotif)
-			)
+			sealdescription_identifier__icontains=qcataloguecode)
 
-	if len(qcataloguename) > 0:
-		sealdescription_object = sealdescription_object.filter(sealdescription_title__icontains=qcataloguename)
+	if qcataloguemotif:
+		sealdescription_object = sealdescription_object.filter(
+			Q(motif_obverse__icontains=qcataloguemotif) |
+			Q(motif_reverse__icontains=qcataloguemotif))
 
-	if qpagination < 1: qapgination =1 
+	if qcataloguename:
+		sealdescription_object = sealdescription_object.filter(
+			sealdescription_title__icontains=qcataloguename)
 
-	return(sealdescription_object, qpagination)
+	if qpagination < 1:
+		qpagination = 1
+
+	return sealdescription_object, qpagination
 
 @sync_to_async
 def sealdescription_displaysetgenerate(sealdescription_object):
@@ -3149,15 +3153,18 @@ def seal_displaysetgenerate(manifestation_display_dic, description_set, digisig_
 		'fk_faceterm__faceterm',
 		'fk_seal__date_origin',
 		'fk_seal__fk_individual_realizer',
-		'fk_class')
+		'fk_class',
+		'fk_class__class_name')
 
 	for f in face_set:
 		if f['fk_faceterm__faceterm'] == "Obverse":         
 			obverse['faceterm'] = f['fk_faceterm__faceterm']
 			obverse['fk_class'] = f['fk_class']
+			obverse['classname'] = f['fk_class__class_name']
 		if f['fk_faceterm__faceterm'] == "Reverse":         
 			reverse['faceterm'] = f['fk_faceterm__faceterm']
 			reverse['fk_class'] = f['fk_class']
+			reverse['classname'] = f['fk_class__class_name']
 
 		seal_info['date_origin'] = f['fk_seal__date_origin']
 		seal_info['id_individual'] = f['fk_seal__fk_individual_realizer']
@@ -3213,6 +3220,7 @@ def manifestation_searchsetgenerate(searchvalue, searchtype=None):
 		'fk_support__fk_number_currentposition',
 		'fk_support__fk_number_currentposition__number',
 		'fk_support__fk_nature',
+		'fk_support__fk_nature__nature_name',
 		'label_manifestation_repository',
 		'fk_imagestate',
 		'fk_support__fk_part',
@@ -3263,6 +3271,7 @@ def manifestation_displaysetgenerate(manifestation_set, representation_set):
 		manifestation_dic["fk_attachment"] = e['fk_support__fk_attachment']
 		manifestation_dic["attachment"] = e['fk_support__fk_attachment__attachment'] 
 		manifestation_dic["number"] = e['fk_support__fk_number_currentposition__number']
+		manifestation_dic["support_typename"] = e['fk_support__fk_nature__nature_name']
 		manifestation_dic["support_type"] = e['fk_support__fk_nature']
 		manifestation_dic["label_manifestation_repository"] = e['label_manifestation_repository']
 		

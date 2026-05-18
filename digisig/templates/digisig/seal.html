@@ -57,20 +57,24 @@
                         <dt class="entity-detail-label">Class (Obverse)</dt>
                         <dd class="entity-detail-value">
                             <ul class="entity-class-list">
-                                {% for c, value in seal_info.obverse.items %}
-                                <li><a class="entity-class-link" href="" target="_blank">{{ value }}</a></li>
-                                {% endfor %}
+                                {% if seal_info.obverse.classname %}
+                                    <li>
+                                        <a class="entity-class-link" href="{% url 'entity' digisig_entity_number=seal_info.obverse.fk_class %}" target="_blank">
+                                            {{ seal_info.obverse.classname }}
+                                        </a>
+                                    </li>
+                                {% endif %}
                             </ul>
                         </dd>
                     </div>
 
-                    {% if seal_info.reverse != null %}
+                    {% if seal_info.reverse %}
                     <div class="entity-detail-row">
                         <dt class="entity-detail-label">Class (Reverse)</dt>
                         <dd class="entity-detail-value">
                             <ul class="entity-class-list">
                                 {% for c, value in seal_info.reverse.items %}
-                                <li><a class="entity-class-link" href="" target="_blank">{{ value }}</a></li>
+                                <li><a class="entity-class-link" href="{% url 'entity' digisig_entity_number=seal_info.reverse.fk_class %}" target="_blank">{{ value }}</a></li>
                                 {% endfor %}
                             </ul>
                         </dd>
@@ -92,7 +96,7 @@
                             {% for k2, value2 in value.items %}
                                 <li>
                                     <a class="entity-detail-link entity-detail-link--italic" href="{% url 'entity' digisig_entity_number=value2.sealdescription_id %}">
-                                        {{ value2.collection }}{% if value2.identifier != null %} ({{ value2.identifier }}){% endif %}
+                                        {{ value2.collection }}{% if value2.identifier %} ({{ value2.identifier }}){% endif %}
                                     </a>
                                 </li>
                             {% endfor %}
@@ -132,7 +136,7 @@
                 <article class="seal-manifest-card">
 
                     <div class="seal-manifest-image">
-                        {% if manifestation.representation_filename_hash != null %}
+                        {% if manifestation.representation_filename_hash %}
                         <figure>
                             <img class="modalimage img-desat"
                                  id="modalimagebase{{ forloop.counter }}"
@@ -156,7 +160,7 @@
                     <div class="seal-manifest-info">
                         <div>
                             <div class="seal-manifest-meta">
-                                <span class="seal-manifest-badge">Manifestation</span>
+                                <span class="seal-manifest-badge">{{manifestation.imagestate_term}}</span>
                                 {% if manifestation.id_representation %}
                                 <span class="seal-manifest-ref">Ref: {{ manifestation.id_representation }}</span>
                                 {% endif %}
@@ -175,10 +179,10 @@
                                         <a class="entity-detail-link entity-detail-link--mono" href="{% url 'entity' digisig_entity_number=manifestation.id_item %}">{{ manifestation.shelfmark }}</a>{% if manifestation.number != null and fk_number_currentposition < 100 %}, support {{ manifestation.number }}{% endif %}
                                     </dd>
                                 </div>
-                                {% if manifestation.support_type != null %}
+                                {% if manifestation.support_typename %}
                                 <div class="seal-manifest-row">
                                     <dt>Support Type</dt>
-                                    <dd>{{ manifestation.support_type }}</dd>
+                                    <dd>{{ manifestation.support_typename}}</dd>
                                 </div>
                                 {% endif %}
                             </dl>
@@ -192,7 +196,7 @@
                 </article>
 
                 {# ── Preserved image modal markup ── #}
-                {% if manifestation.representation_filename_hash != null %}
+                {% if manifestation.representation_filename_hash %}
                 <div id="myModal{{ forloop.counter }}" class="modal" style="display: none;">
                     <span class="close" onclick="modalclose({{ forloop.counter }})">&times;</span>
                     <img class="modal-content"

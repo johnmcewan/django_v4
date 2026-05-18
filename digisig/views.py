@@ -137,18 +137,18 @@ def registration_pending(request):
 
 
 def verify_email(request, token):
-    try:
-        digisig_user = Digisiguser.objects.get(verification_token=token)
-        if not digisig_user.digisiguser_emailverified:
-            digisig_user.digisiguser_emailverified = True
-            digisig_user.save()
-            messages.success(request, 'Your email address has been successfully verified. You can now log in.')
-        else:
-            messages.info(request, 'This email address has already been verified.')
-    except Digisiguser.DoesNotExist:
-        messages.error(request, 'Invalid verification link.')
+	try:
+		digisig_user = Digisiguser.objects.get(verification_token=token)
+		if not digisig_user.digisiguser_emailverified:
+			digisig_user.digisiguser_emailverified = True
+			digisig_user.save()
+			messages.success(request, 'Your email address has been successfully verified. You can now log in.')
+		else:
+			messages.info(request, 'This email address has already been verified.')
+	except Digisiguser.DoesNotExist:
+		messages.error(request, 'Invalid verification link.')
 
-    return redirect('login')
+	return redirect('login')
 
 
 #@cache_page(cache_timeout)
@@ -158,8 +158,6 @@ async def index(request):
 	template = loader.get_template('digisig/index.html')
 
 	manifestation_total, seal_total, item_total, catalogue_total = await index_info()
-
-	# user = await request.auser()
 
 	context = {
 		'pagetitle': pagetitle,
@@ -566,8 +564,8 @@ async def search(request, searchtype):
 		sealdescription_object = await sealdescription_search()
 
 		if request.method == 'POST':
-
-			if form.is_valid(): 
+			if form.is_valid():
+				qpagination = form.cleaned_data.get('pagination') or 1 
 				sealdescription_object, qpagination = await sealdescriptionsearchfilter(sealdescription_object, form)
 
 		sealdescription_object, totalrows, totaldisplay = await defaultpagination(sealdescription_object, qpagination) 

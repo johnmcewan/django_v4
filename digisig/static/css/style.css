@@ -7564,3 +7564,269 @@ details.analysis-guidance[open] .analysis-guidance-icon {
     .info-changelog-row--dated { border-top: 1px solid var(--ent-parchment-border, #dcc0bf); }
 }
 
+/* =============================================================
+   TERM / GLOSSARY PAGE  (term.html)
+
+   A focused two-column layout: definition + related-terms on
+   the left, metadata card + cite box in the sticky sidebar.
+   Uses entity-* base classes throughout; adds only the small
+   number of term-specific rules below.
+
+   Append after info_style.css in the combined stylesheet.
+   ============================================================= */
+
+/* ─── Layout: 8fr main + 4fr sidebar ─────────────────────── */
+.term-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 8fr) minmax(0, 4fr);
+    gap: 40px;
+    align-items: start;
+}
+
+@media (max-width: 960px) {
+    .term-layout { grid-template-columns: 1fr; gap: 32px; }
+}
+
+.term-main-col {
+    display: flex;
+    flex-direction: column;
+    gap: 48px;
+    min-width: 0;
+}
+
+.term-side-col {
+    position: sticky;
+    top: 80px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    min-width: 0;
+}
+
+@media (max-width: 960px) {
+    .term-side-col { position: static; }
+}
+
+/* ─── Section icon accent ─────────────────────────────────── */
+.term-section-icon {
+    color: var(--secondary);
+    font-size: 15px;
+    flex-shrink: 0;
+}
+
+/* ─── Definition card ─────────────────────────────────────── */
+/* entity-card gives border / shadow / background; we add the
+   gold left accent and generous typesetting for the text.     */
+.term-definition-card {
+    border-left: 4px solid var(--secondary-container) !important;
+    padding: 28px 32px;
+}
+
+.term-definition-text {
+    font-family: 'Inter', sans-serif;
+    font-size: 17px;
+    line-height: 28px;
+    color: var(--on-surface);
+    margin: 0;
+}
+
+/* ─── Related terms table ─────────────────────────────────── */
+.term-related-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.term-related-table thead tr {
+    background: var(--surface-container);
+    border-bottom: 2px solid var(--ent-parchment-border, #dcc0bf);
+}
+
+.term-related-table th {
+    padding: 11px 20px;
+    font-family: 'Inter', sans-serif;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--on-surface-variant);
+    text-align: left;
+}
+
+.term-related-table td {
+    padding: 13px 20px;
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    line-height: 20px;
+    color: var(--on-surface);
+    border-bottom: 1px solid var(--ent-parchment-border, #dcc0bf);
+    vertical-align: top;
+}
+
+.term-related-table tbody tr:last-child td { border-bottom: 0; }
+.term-related-table tbody tr:nth-child(even) { background: rgba(107, 20, 29, 0.022); }
+
+/* Subject cell — italic since it often echoes the page title */
+.term-related-subject {
+    font-style: italic;
+    color: var(--on-surface-variant);
+    width: 22%;
+}
+
+/* Predicate cell — monospace chip for the SKOS URI */
+.term-related-predicate {
+    width: 48%;
+}
+
+.term-predicate-chip {
+    display: inline-block;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-size: 12px;
+    line-height: 18px;
+    color: var(--secondary);
+    background: rgba(119, 90, 23, 0.07);
+    border: 1px solid rgba(119, 90, 23, 0.2);
+    padding: 2px 7px;
+    word-break: break-all;
+}
+
+/* Object cell — linked term */
+.term-related-object {
+    width: 30%;
+}
+
+/* Empty state */
+.term-related-empty {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 24px;
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    color: var(--on-surface-variant);
+    font-style: italic;
+    border: 1px dashed var(--outline-variant);
+}
+
+.term-related-empty i {
+    color: var(--outline-variant);
+    font-size: 16px;
+    flex-shrink: 0;
+}
+
+/* ─── Sidebar: term metadata card ─────────────────────────── */
+.term-meta-card {
+    /* entity-card provides background, border, shadow */
+}
+
+/* Term name displayed at normal weight in the DL */
+.term-meta-name {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 18px;
+    line-height: 24px;
+    font-weight: 600;
+    color: var(--on-surface);
+}
+
+/* Monospace identifier chip */
+.term-id-chip {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-size: 13px;
+    color: var(--on-surface-variant);
+    letter-spacing: 0.02em;
+}
+
+/* Actions row (Permalink button) */
+.term-meta-actions {
+    padding: 16px 32px 24px;
+    border-top: 1px solid var(--ent-parchment-border, #dcc0bf);
+    margin-top: 4px;
+}
+
+/* Permalink button inherits actor-permalink-btn; just full-width here */
+.term-permalink-btn {
+    width: 100%;
+    justify-content: center;
+}
+
+
+/* =============================================================
+   REPRESENTATION PAGE  (representation.html)
+
+   The vast majority of layout and component classes are reused
+   directly from the accumulated stylesheet:
+     - manif-layout / manif-main-col / manif-side-col
+     - manif-image-panel / manif-image-full / manif-image-caption
+     - manif-repr-card / manif-repr-image / manif-repr-info
+     - manif-actor-link / manif-external-link / manif-cite-links
+     - analysis-no-image
+     - entity-* base classes throughout
+
+   New classes here cover only the RTI viewer panel and the
+   two small cosmetic additions (section icon, dims chip).
+
+   ============================================================= */
+
+/* ─── Section icon accent (matches manif-section-icon) ────── */
+.repr-section-icon {
+    color: var(--secondary);
+    font-size: 15px;
+    flex-shrink: 0;
+}
+
+/* ─── Section spacing ─────────────────────────────────────── */
+/* manif-main-col already has gap:56px between flex children;
+   repr-section adds no extra margin of its own.              */
+
+/* ─── Dimensions chip ─────────────────────────────────────── */
+.repr-dims-chip {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-size: 13px;
+    color: var(--on-surface-variant);
+    letter-spacing: 0.02em;
+    background: var(--surface-container);
+    padding: 2px 8px;
+    border: 1px solid var(--outline-variant);
+}
+
+/* ─── RTI / OpenLIME viewer section ──────────────────────── */
+.repr-rti-section {
+    /* Shown or hidden by the inline JS check — no extra CSS */
+}
+
+.repr-rti-panel {
+    padding: 0;
+    overflow: hidden;
+}
+
+/* The div OpenLIME mounts into */
+.repr-rti-viewer {
+    width: 100%;
+    height: 520px;
+    background: #111;
+    display: block;
+}
+
+@media (max-width: 768px) {
+    .repr-rti-viewer { height: 320px; }
+}
+
+/* Instructional hint shown beneath the viewer for RTI images */
+.repr-rti-hint {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 24px;
+    font-family: 'Inter', sans-serif;
+    font-size: 13px;
+    line-height: 20px;
+    color: var(--on-surface-variant);
+    font-style: italic;
+    border-top: 1px solid var(--ent-parchment-border, #dcc0bf);
+    margin: 0;
+}
+
+.repr-rti-hint i {
+    color: var(--secondary);
+    font-size: 14px;
+    flex-shrink: 0;
+}

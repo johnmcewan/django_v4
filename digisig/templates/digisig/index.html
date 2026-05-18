@@ -16,14 +16,18 @@
         <h1>Digital Sigillography Resource</h1>
         <p class="hero-subtitle">Register of Seal Catalogues, Seal Impressions, and Seal Matrices</p>
 
-        <form class="hero-search" action="{% url 'search' searchtype='seals' %}" method="get" role="search">
+        <form class="hero-search" action="/search/sealdescriptions" method="post" role="search">
+            {% csrf_token %}
             <div class="hero-search-row">
                 <i class="fas fa-magnifying-glass search-icon" aria-hidden="true"></i>
                 <label class="sr-only" for="hero-search-input">Search the archive</label>
-                <input id="hero-search-input" name="q" type="text" placeholder="Search the archive for seals, catalogs, or actors..." autocomplete="off">
+                
+                <input id="hero-search-input" name="cataloguemotif" type="text" placeholder="Search motif descriptions (e.g., lily)..." autocomplete="off">
+                
                 <button type="submit" class="hero-search-submit">SEARCH</button>
             </div>
         </form>
+
     </div>
 </section>
 
