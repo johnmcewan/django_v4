@@ -12,7 +12,7 @@
     {# ── Collection / page title ───────────────────────────────── #}
     <section class="sd-title-section">
         <h1>{{ pagetitle }}</h1>
-        <p class="sd-subtitle">Digital Preservation Archive &amp; Academic Catalogue Raisonné.</p>
+        <!-- <p class="sd-subtitle">Digital Preservation Archive &amp; Academic Catalogue Raisonné.</p> -->
     </section>
 
     {# ── Two-column layout ──────────────────────────────────────── #}
@@ -26,7 +26,7 @@
 
                 <div class="sd-meta-header">
                     <div>
-                        <span class="sd-identifier">Item Identifier: {{ sealdescription_object.sealdescription_identifier }}</span>
+                        <!-- <span class="sd-identifier">Item Identifier: {{ sealdescription_object.sealdescription_identifier }}</span> -->
                         <h2>{{ sealdescription_object.sealdescription_title }}</h2>
                     </div>
                     <button class="sd-permalink-btn" onclick="document.getElementById('sd-permalink-panel').classList.add('is-open')">
@@ -65,7 +65,7 @@
                     {# Identifier with external links #}
                     <div class="sd-meta-row">
                         <span class="sd-meta-label">
-                            Identifier
+                            Entry or Identifier
                             <a class="help" href="{% url 'entity' digisig_entity_number=10001597 %}" target="_blank">
                                 <i class="fas fa-question-circle"></i>
                             </a>

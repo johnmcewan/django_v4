@@ -312,7 +312,7 @@ p {
     border-bottom: 1px solid var(--outline-variant);
     position: sticky;
     top: 0;
-    z-index: 50;
+    z-index: 1000;
     width: 100%;
 }
 
@@ -4438,6 +4438,8 @@ p {
 .item-map-card {
     padding: 4px;
     overflow: hidden;
+    position: relative;
+    z-index: 0;
 }
 
 .item-image-frame {
