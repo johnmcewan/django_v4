@@ -934,6 +934,9 @@ class EntityView(View):
 			'pagecounternextnext': pagecounternextnext,
 			'reference_set': reference_set,
 		}
+
+		print (context)
+
 		return render(request, 'digisig/actor.html', context)
 
 

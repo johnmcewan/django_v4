@@ -3167,6 +3167,7 @@ def seal_displaysetgenerate(manifestation_display_dic, description_set, digisig_
 
 	seal_info = {}
 	seal_info['sealdescription'] = description_set
+	seal_info['id_seal'] = digisig_entity_number
 
 	obverse = {}
 	reverse = {}
@@ -4108,7 +4109,9 @@ def referenceset_references(witness_entity_number):
 			#date
 			if r['fk_event__startdate'] != None:
 				startyear = int(str(r['fk_event__startdate'])[:4])
-				endyear = int(str(r['fk_event__enddate'])[:4])
+				try:
+					endyear = int(str(r['fk_event__enddate'])[:4])
+				except: endyear = 0
 
 				if endyear > startyear:
 					reference_row['date'] = str(startyear) + " - " + str(endyear)
@@ -4116,7 +4119,10 @@ def referenceset_references(witness_entity_number):
 					reference_row['date'] = str(startyear)
 			elif r['fk_event__repository_startdate'] != None:
 				startyear = int(str(r['fk_event__repository_startdate'])[:4])
-				endyear = int(str(r['fk_event__repository_enddate'])[:4])
+				try:
+					endyear = int(str(r['fk_event__repository_enddate'])[:4])
+				except:
+					endyear = 0
 
 				if endyear > startyear:
 					reference_row['date'] = str(startyear) + " - " + str(endyear)

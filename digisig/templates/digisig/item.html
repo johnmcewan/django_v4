@@ -126,7 +126,7 @@
 								{% if reference.fk_individual != 10000019 %}
 								<tr>
 									<td>
-										<a href="{% url 'entity' digisig_entity_number=10000019 %}" class="item-participant-link">{{reference.fullname_original}}</a>
+										<a href="{% url 'entity' digisig_entity_number=reference.fk_individual %}" class="item-participant-link">{{reference.fullname_original}}</a>
 									</td>
 									<td class="item-role">{{reference.fk_referencerole}}</td>
 								</tr>
@@ -256,7 +256,7 @@
 			<section class="sd-citation-box">
 				<h3 class="sd-citation-title label-style">Cite this Record</h3>
 				<p class="sd-citation-text">
-					McEwan, J. ({% now "Y" %}). {{item_dic.fk_repository}} {{item_dic.shelfmark}}. Digisig: Digital Sigillography Resource. [URL: digisig.org/entity/{{item_dic.id_item}}]
+					McEwan, J. ({% now "Y" %}). {{item_dic.fk_repository}} {{item_dic.shelfmark}}. Digital Sigillography Resource. [URL: digisig.org/entity/{{item_dic.id_item}}]
 				</p>
 				<button class="item-copy-btn" onclick="navigator.clipboard.writeText('McEwan, J. ({% now "Y" %}). {{item_dic.fk_repository}} {{item_dic.shelfmark}}. Digisig: Digital Sigillography Resource. [URL: digisig.org/entity/{{item_dic.id_item}}]')">
 					<span class="material-symbols-outlined" style="font-size:14px;">content_copy</span>

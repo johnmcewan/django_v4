@@ -111,7 +111,7 @@
             <aside class="entity-cite-box">
                 <h3 class="entity-cite-title">Cite this Record</h3>
                 <p class="entity-cite-body">
-                    Sigillum Archive, &ldquo;Seal Record {{ seal_info.seal.id_seal }}{% if seal_info.actorname %}: {{ seal_info.actorname }}{% endif %}{% if seal_info.date_origin >= 1 %} (c.{{ seal_info.date_origin }}){% endif %}&rdquo;, Digital Sigillography Resource. Accessed {% now "F Y" %}.
+                    Digital Sigillography Resource, &ldquo;Seal Record {{ seal_info.seal.id_seal }}, Digital Sigillography Resource. Accessed {% now "F Y" %}.[www.digisig.org/entity/{{ seal_info.id_seal }}] 
                 </p>
             </aside>
 
@@ -240,7 +240,7 @@
                 <input id="input"
                        class="entity-permalink-input"
                        name=""
-                       value="http://www.digisig.org/entity/{{ seal_info.seal.id_seal }}"
+                       value="http://www.digisig.org/entity/{{ seal_info.id_seal }}"
                        type="text"
                        readonly>
             </form>
