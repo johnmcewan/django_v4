@@ -271,6 +271,8 @@ async def analyze(request, analysistype):
 		region_dict = []
 		mapcounties = []
 		location_dict = []
+		qtimechoice = None
+		qsealtypechoice = None
 
 		form = CollectionForm_digisig(request.POST or None)
 		form = await collectionform_options(form)
@@ -934,8 +936,6 @@ class EntityView(View):
 			'pagecounternextnext': pagecounternextnext,
 			'reference_set': reference_set,
 		}
-
-		print (context)
 
 		return render(request, 'digisig/actor.html', context)
 

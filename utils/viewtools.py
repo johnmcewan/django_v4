@@ -19,6 +19,7 @@ from datetime import datetime
 from asgiref.sync import sync_to_async
 
 from django.urls import reverse
+from django.utils.html import escape
 
 from django.db.models import Count, Q, F, Case, When, FloatField, Value
 from django.db.models.functions import Cast, Coalesce
@@ -39,7 +40,8 @@ def index_info():
 def registervisit(request, digisig_entity_number):
 
 	## record visit if it is not the admin....
-	if request.user.id > 1:
+	if request.user_is_athenticated and is_superuser:
+#	if request.user.id > 1:
 		 Digisigpagevisit.objects.create(
 			pagevisit_user = request.user.id,
 			pagevisit_entitynumber = digisig_entity_number,
@@ -2135,7 +2137,8 @@ def mapgenerator(location_object, count_in=0):
 	value4 = location_object.longitude
 	value5 = location_object.latitude
 
-	popupcontent = '<a href="entity/' + str(value1) + '">' + str(value2) + '</a>'
+	#popupcontent = '<a href="entity/' + str(value1) + '">' + str(value2) + '</a>'
+	popupcontent = '<a href="entity/' + escape(str(value1)) + '">' + escape(str(value2)) + '</a>'
 
 	if count_in > 0:
 		popupcontent = popupcontent + ' ' + str(value3)
@@ -2170,12 +2173,18 @@ def mapgenerator2(location_object):
 		value4 = loc.longitude
 		value5 = loc.latitude
 
-		if type(loc.longitude) == int or type(loc.longitude) == float:
-			long_values.append(loc.longitude)
-		if type(loc.latitude) == int or type(loc.latitude) == float:
-			lat_values.append(loc.latitude)
+		if isinstance(loc.longitude, numbers.Number):
+			long_values.append(float(loc.longitude))
+		if isinstance(loc.latitude, numbers.Number):
+			lat_values.append(float(loc.latitude))
 
-		popupcontent = '<a href="entity/' + str(value1) + '">' + str(value2) + '</a>'
+		# if type(loc.longitude) == int or type(loc.longitude) == float:
+		# 	long_values.append(loc.longitude)
+		# if type(loc.latitude) == int or type(loc.latitude) == float:
+		# 	lat_values.append(loc.latitude)
+
+		popupcontent = '<a href="entity/' + escape(str(value1)) + '">' + escape(str(value2)) + '</a>'
+		#popupcontent = '<a href="entity/' + str(value1) + '">' + str(value2) + '</a>'
 
 		if value3 > 0:
 			popupcontent = popupcontent + ' ' + str(value3)
@@ -2187,8 +2196,8 @@ def mapgenerator2(location_object):
 
 	mapdic["features"] = placelist
 
-	center_long = statistics.median(long_values)
-	center_lat = statistics.median(lat_values)
+	center_long = statistics.median(long_values) if long_values else 0
+	center_lat = statistics.median(lat_values) if lat_vales else 0
 
 	return(mapdic, center_long, center_lat)
 
@@ -2671,9 +2680,9 @@ def itemsearchfilter(item_object, form):
 
 	try:
 		qsearchphrase = form.cleaned_data['searchphrase']
-		if len(searchphrase) > 0:                                    
+		if len(qsearchphrase) > 0:                                    
 			item_object = item_object.filter(
-				part_description__icontains=searchphrase)
+				part_description__icontains=qsearchphrase)
 	except:
 		pass
 
@@ -3985,7 +3994,10 @@ def namecompiler_group(listofactors):
 
 	for i in individual_set:
 		name_temp = ""
-		name_temp += group_name_map.get(i.get('i.fk_group'), "") + " " if group_name_map else ""
+		group_part = group_name_map.get(i.get('fk_group'), "")
+		if group_part:
+			name_temp += group_part + " "
+		#name_temp += group_name_map.get(i.get('i.fk_group'), "") + " " if group_name_map else ""
 		name_temp += descriptor_modern_map.get(i.get('fk_descriptor_title'), "") + " "
 		name_temp += descriptor_modern_map.get(i.get('fk_descriptor_name'), "") + " "
 		name_temp += prefix_english_map.get(i.get('fk_descriptor_prefix1'), "") + " "
