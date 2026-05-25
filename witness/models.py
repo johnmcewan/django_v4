@@ -1,3 +1,7 @@
+###### note that on 5/23/2026 I altered views.py to call models.py from the digisig
+#version so this is effectively redundant
+
+
 from django.db import models
 from django.forms import ModelForm
 from django.utils.safestring import mark_safe

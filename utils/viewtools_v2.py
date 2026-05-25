@@ -11,7 +11,6 @@ import math
 import os
 import pandas as pd 
 import json
-import numbers
 
 from django.conf import settings
 
@@ -41,15 +40,16 @@ def index_info():
 def registervisit(request, digisig_entity_number):
 
 	## record visit if it is not the admin....
-	if request.user.is_authenticated and not request.user.is_superuser:
-		Digisigpagevisit.objects.create(
+	if request.user_is_athenticated and is_superuser:
+#	if request.user.id > 1:
+		 Digisigpagevisit.objects.create(
 			pagevisit_user = request.user.id,
 			pagevisit_entitynumber = digisig_entity_number,
 			pagevisit_timestamp = datetime.now(),
 			pagevisit_site = 1
 			)
-
-	return
+	
+	return()
 
 
 #### exhibitions
@@ -1928,7 +1928,7 @@ def mapgenerator2(location_object):
 	mapdic["features"] = placelist
 
 	center_long = statistics.median(long_values) if long_values else 0
-	center_lat = statistics.median(lat_values) if lat_values else 0
+	center_lat = statistics.median(lat_values) if lat_vales else 0
 
 	return(mapdic, center_long, center_lat)
 
@@ -2392,21 +2392,21 @@ def itemsearchfilter(item_object, form):
 		qrepository = int(form.cleaned_data['repository'])
 		if qrepository > 0:
 			item_object = item_object.filter(fk_repository=qrepository)
-	except (ValueError, TypeError, KeyError):
+	except: 
 		pass
 	
 	try:        
 		qseries = int(form.cleaned_data['series'])
 		if qseries > 0:
 			item_object = item_object.filter(fk_series=qseries)
-	except (ValueError, TypeError, KeyError):
+	except: 
 		pass
 	
 	try:
 		qshelfmark = form.cleaned_data['shelfmark']
 		if len(qshelfmark) > 0:
 			item_object = item_object.filter(shelfmark__icontains=qshelfmark)
-	except (TypeError, KeyError):
+	except: 
 		pass
 
 	try:
@@ -2414,12 +2414,12 @@ def itemsearchfilter(item_object, form):
 		if len(qsearchphrase) > 0:                                    
 			item_object = item_object.filter(
 				part_description__icontains=qsearchphrase)
-	except (TypeError, KeyError):
+	except:
 		pass
 
 	try:
 		qpagination = int(form.cleaned_data['pagination'])
-	except (ValueError, TypeError, KeyError): 
+	except: 
 		qpagination = 1
 
 	return (item_object, qpagination)
@@ -2885,47 +2885,6 @@ def representationsetgenerate2(manifestation_object, primacy=False):
 		return Representation.objects.none() # Returns an empty queryset
 
 	return representation_set
-
-
-
-
-# Consolidates the "paginated display" pipeline shared by the search-manifestations,
-# actor_page and place_page views. Takes an already-paginated manifestation queryset
-# and returns the assembled display set together with the total manifestation count.
-# Note: this is a plain async def (not @sync_to_async) because it only awaits other
-# already-async helpers and performs no direct ORM access itself.
-async def manifestation_dataassemble(manifestation_pageobject):
-
-	representation_set = await representationsetgenerate(manifestation_pageobject)
-	manifestation_set, totalmanifestation_count = await manifestation_searchsetgenerate(manifestation_pageobject)
-	manifestation_display_dic, listofseals, listofevents, listofactors = await manifestation_displaysetgenerate(manifestation_set, representation_set)
-	description_set = await sealdescription_displaysetgenerate2(listofseals)
-	location_set = await location_displaysetgenerate(listofevents)
-	manifestation_displayset = await finalassembly_displaysetgenerate(manifestation_display_dic, location_set, description_set)
-
-	return (manifestation_displayset, totalmanifestation_count)
-
-
-# Consolidates the "entity detail" pipeline shared by the manifestation_page and
-# seal_page views. Unlike manifestation_dataassemble, this path starts from an entity
-# number (not a paginated queryset), uses representationsetgenerate2, compiles actor
-# names, and assembles via seal_displaysetgenerate (no location/finalassembly step).
-# searchtype selects the query ("manifestation" or "seal"); primacy is passed through
-# to representationsetgenerate2 (manifestation_page uses True, seal_page uses the
-# default False). Returns the assembled info dict plus the two intermediates that
-# manifestation_page needs downstream (the raw manifestation_set for actorfinder, and
-# the display dic for its first-item extraction); seal_page simply ignores those.
-async def seal_dataassemble(digisig_entity_number, searchtype, primacy=False):
-
-	manifestation_set, totalmanifestation_count = await manifestation_searchsetgenerate(digisig_entity_number, searchtype=searchtype)
-	representation_set = await representationsetgenerate2(manifestation_set, primacy=primacy)
-	manifestation_display_dic, listofseals, listofevents, listofactors = await manifestation_displaysetgenerate(manifestation_set, representation_set)
-	description_set = await sealdescription_displaysetgenerate2(listofseals)
-	name_set = await namecompiler_group(listofactors)
-	seal_info = await seal_displaysetgenerate(manifestation_display_dic, description_set, digisig_entity_number, name_set)
-
-	return (seal_info, manifestation_set, manifestation_display_dic)
-
 
 @sync_to_async
 def seal_displaysetgenerate(manifestation_display_dic, description_set, digisig_entity_number, name_set):

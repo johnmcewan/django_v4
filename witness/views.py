@@ -14,7 +14,7 @@ from django.core import serializers
 from django.db.models import IntegerField, Value
 from django.db.models.functions import Concat
 
-from .models import *
+from digisig.models import *
 from .forms import * 
 # from utils.mltools import * 
 from utils.generaltools import *

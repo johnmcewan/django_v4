@@ -188,7 +188,7 @@ async def discover(request, discovertype):
 	if discovertype == "map":
 
 		pagetitle = 'Map'
-		qcollection= ALL_COLLECTIONS
+		qcollection= 30000287
 		qmapchoice = 1
 		mapdic = []
 		regiondisplayset = []
@@ -246,7 +246,7 @@ async def analyze(request, analysistype):
 	if analysistype == "time":
 
 		pagetitle = 'Time'
-		qcollection= ALL_COLLECTIONS
+		qcollection= 30000287
 		qmapchoice = 1
 		mapdic = []
 		regiondisplayset = []
@@ -516,7 +516,12 @@ async def search(request, searchtype):
 		pagecounternext     = qpagination + 1
 		pagecounternextnext = qpagination + 2
 
-		manifestation_displayset, totalmanifestation_count = await manifestation_dataassemble(manifestation_pageobject)
+		representation_set = await representationsetgenerate(manifestation_pageobject)
+		manifestation_set, totalmanifestation_count = await manifestation_searchsetgenerate(manifestation_pageobject)
+		manifestation_display_dic, listofseals, listofevents, listofactors = await manifestation_displaysetgenerate(manifestation_set, representation_set)
+		description_set = await sealdescription_displaysetgenerate2(listofseals)
+		location_set = await location_displaysetgenerate(listofevents)
+		manifestation_displayset = await finalassembly_displaysetgenerate(manifestation_display_dic, location_set, description_set)
 
 		context = {
 			'pagetitle': pagetitle, 
@@ -688,7 +693,7 @@ async def information(request, infotype):
 	if infotype == "collections":
 
 		#default
-		digisig_entity_number= ALL_COLLECTIONS
+		digisig_entity_number= 30000287
 
 		form = CollectionForm_digisig(request.POST or None)
 		form = await digisigcollection_options(form)
@@ -736,7 +741,7 @@ async def information(request, infotype):
 		pagetitle = 'ML'
 
 		form = MLpredictionForm(initial={'classification': 10000487})
-		qcollection = ALL_COLLECTIONS
+		qcollection = 30000047
 		qclassification = 10000487
 
 		#adjust values if form submitted
@@ -804,6 +809,8 @@ async def information(request, infotype):
 			}
 
 		return HttpResponse(template.render(context, request))
+
+
 
 
 
@@ -886,7 +893,12 @@ class EntityView(View):
 		pagecounternext     = qpagination + 1
 		pagecounternextnext = qpagination + 2
 
-		manifestation_object, totalmanifestation_count = await manifestation_dataassemble(manifestation_pageobject)
+		representation_set = await representationsetgenerate(manifestation_pageobject)
+		manifestation_set, totalmanifestation_count = await manifestation_searchsetgenerate(manifestation_pageobject)
+		manifestation_display_dic, listofseals, listofevents, listofactors = await manifestation_displaysetgenerate(manifestation_set, representation_set)
+		description_set = await sealdescription_displaysetgenerate2(listofseals)
+		location_set = await location_displaysetgenerate(listofevents)
+		manifestation_object = await finalassembly_displaysetgenerate(manifestation_display_dic, location_set, description_set)
 		relationship_object, relationshipnumber = await relationship_dataset(digisig_entity_number)
 		reference_set = await referenceset_references(digisig_entity_number)
 		pagetitle = namecompiler(individual_object)
@@ -1001,7 +1013,12 @@ class EntityView(View):
 	async def manifestation_page(self, request, digisig_entity_number): 
 		pagetitle = 'title'
 
-		manifestation_info, manifestation_set, manifestation_display_dic = await seal_dataassemble(digisig_entity_number, "manifestation", primacy=True)
+		manifestation_set, totalmanifestation_count = await manifestation_searchsetgenerate(digisig_entity_number, searchtype="manifestation")
+		representation_set = await representationsetgenerate2(manifestation_set, primacy=True)
+		manifestation_display_dic, listofseals, listofevents, listofactors = await manifestation_displaysetgenerate(manifestation_set, representation_set)
+		description_set = await sealdescription_displaysetgenerate2(listofseals)
+		name_set = await namecompiler_group(listofactors)
+		manifestation_info = await seal_displaysetgenerate(manifestation_display_dic, description_set, digisig_entity_number, name_set)
 		outname, actor_id = await actorfinder(manifestation_set)
 
 		first_item = next(iter(manifestation_display_dic.items()))
@@ -1044,7 +1061,14 @@ class EntityView(View):
 		pagecounternext     = qpagination + 1
 		pagecounternextnext = qpagination + 2
 
-		manifestation_output, totalmanifestation_count = await manifestation_dataassemble(manifestation_pageobject)
+		representation_set = await representationsetgenerate(manifestation_pageobject)
+		manifestation_set, totalmanifestation_count = await manifestation_searchsetgenerate(manifestation_pageobject)
+		manifestation_display_dic, listofseals, listofevents, listofactors = \
+			await manifestation_displaysetgenerate(manifestation_set, representation_set)
+		description_set = await sealdescription_displaysetgenerate2(listofseals)
+		location_set = await location_displaysetgenerate(listofevents)
+		manifestation_output = await finalassembly_displaysetgenerate(
+			manifestation_display_dic, location_set, description_set)
 
 		context = {
 			'pagetitle': pagetitle,
@@ -1102,7 +1126,14 @@ class EntityView(View):
 	async def seal_page(self, request, digisig_entity_number):
 		pagetitle = 'title'
 
-		seal_info, _, _ = await seal_dataassemble(digisig_entity_number, "seal")
+		manifestation_set, totalmanifestation_count = await manifestation_searchsetgenerate(digisig_entity_number, searchtype="seal")
+		representation_set = await representationsetgenerate2(manifestation_set)
+		manifestation_display_dic, listofseals, listofevents, listofactors = await manifestation_displaysetgenerate(manifestation_set, representation_set)
+		description_set = await sealdescription_displaysetgenerate2(listofseals)
+		name_set = await namecompiler_group(listofactors)
+		# location_set = await location_displaysetgenerate(listofevents)
+
+		seal_info = await seal_displaysetgenerate(manifestation_display_dic, description_set, digisig_entity_number, name_set)
 
 		context = {
 			'pagetitle': pagetitle,
