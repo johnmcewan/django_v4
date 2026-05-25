@@ -21,12 +21,15 @@
         <!-- Left: title + notes + metadata -->
         <div class="coll-header-text">
 
-            <div class="coll-title-row">
-                <h1 class="display-lg">{{pagetitle}}</h1>
-                <button class="coll-permalink-btn" onclick="navigator.clipboard.writeText('http://www.digisig.org/entity/{{collection_dic.id_collection}}')">
-                    <i class="fas fa-link"></i> Permalink
-                </button>
-            </div>
+<div class="coll-title-row">
+    <div class="coll-title-stack">
+        <p class="entity-eyebrow">Collection</p>
+        <h1 class="display-lg">{{collection_dic.collection_shorttitle}}</h1>
+    </div>
+    <button onclick="toggle('entity-permalink')" class="entity-permalink-link">
+        <i class="fas fa-link"></i> Permalink
+    </button>
+</div>
 
             {% if collection_dic.notes %}
             <div class="coll-notes-box">
@@ -54,9 +57,9 @@
                         {% for key, value in collection_dic.contributors.items %}
                         <span class="coll-meta-label">{% cycle 'Credit' '' '' '' '' '' '' '' '' %}</span>
                         <p class="coll-meta-value">
-                            {{value.contribution}} {{value.name}}
-                            {% if value.uricontributor %}
-                            <a href="{{value.uricontributor}}" target="_blank" class="coll-meta-link">External Link</a>
+                            {{value.contribution}}
+                            <a href="{{value.uricontributor}}" target="_blank" class="coll-meta-link"> {{value.name}}
+                            {% if value.uricontributor %}</a>
                             {% endif %}
                         </p>
                         {% endfor %}
@@ -86,22 +89,22 @@
 
         </div>
 
-        <!-- Right: Catalog Filter card (repositioned from bento grid) -->
+        <!-- Right: Collection Filter card (repositioned from bento grid) -->
         <div class="coll-header-filter">
             <div class="bento-card coll-filter-card-header">
                 <div class="coll-filter-body">
                     <div>
-                        <h3 class="headline-md">Catalog Filter</h3>
+                        <h3 class="headline-md">Collection Filter</h3>
                         <!-- <p class="coll-filter-desc">Select a catalogue</p> -->
 
                         <form id="form" action="/information/collections" method="post">
                             {% csrf_token %}
                             {{ form.non_field_errors }}
                             <div class="coll-filter-field">
-                                <label class="coll-filter-label" for="{{ form.collection.id_for_label }}">
+<!--                                 <label class="coll-filter-label" for="{{ form.collection.id_for_label }}">
                                     Collection
                                     <a class="help" href="{% url 'entity' digisig_entity_number=10001607 %}" target="_blank"><i class="fas fa-question-circle"></i></a>
-                                </label>
+                                </label> -->
                                 {{ form.collection }}
                             </div>
                             <button class="btn btn-primary coll-filter-submit" type="submit">Submit Query</button>
@@ -188,6 +191,30 @@
 
 
 {{ region_dict|json_script:"mapdata" }}
+
+
+   {# ── Permalink overlay (preserved JS behaviour) ─────────────── #}
+    <div class="entity-permalink" id="entity-permalink" style="display:none;">
+        <div class="entity-permalink-card" id="permalinkinfo">
+            <div class="entity-permalink-head">
+                <span>Permalink</span>
+                <button onclick="toggle('entity-permalink')" class="entity-permalink-close" aria-label="Close">&times;</button>
+            </div>
+            <form action="#">
+                <label for="input">Copy this URL to link to this page:</label>
+                <input id="input"
+                       class="entity-permalink-input"
+                       name=""
+                       value="http://www.digisig.org/entity/{{collection_dic.id_collection}}"
+                       type="text"
+                       readonly>
+            </form>
+        </div>
+    </div>
+
+
+
+
 
 
 <!-- ═══════════════════════════════════════════════════════════

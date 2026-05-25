@@ -16,8 +16,8 @@
 
 	<!-- ── Page header ───────────────────────────────────────────── -->
 	<header class="item-title-section">
+        <p class="entity-eyebrow">Item</p>
 		<h1>{{item_dic.pagetitle}}</h1>
-		<!-- <p class="item-subtitle">Archival Item Reference • Sigillographic Repository</p> -->
 	</header>
 
 
@@ -27,67 +27,63 @@
 		<!-- LEFT COLUMN (8 of 12) -->
 		<div class="bento-col-8 bento-stack">
 
-			<!-- Item Details card -->
-			<section class="sd-card sd-meta-card">
-				<div class="sd-meta-header">
-					<h2>Item Details</h2>
-					<button onclick="toggle('entity-permalink')" class="sd-permalink-btn">
-						<span class="material-symbols-outlined" style="font-size:16px;">link</span>
-						Permalink
-					</button>
-				</div>
+<!-- Item Details card -->
+<section class="sd-card sd-meta-card">
+    <div class="sd-meta-header">
+        <h2>Item Details</h2>
+        <button onclick="toggle('entity-permalink')" class="sd-permalink-btn">
+            <i class="fas fa-link"></i> Permalink
+        </button>
+    </div>
 
-				<div class="item-meta-grid">
-					<div>
-						<span class="sd-meta-label label-style">Held by</span>
-						<p class="sd-meta-value body-lg">{{item_dic.fk_repository}}</p>
-					</div>
-					<div>
-						<span class="sd-meta-label label-style">Reference Identifier</span>
-						<p class="sd-meta-value body-lg item-mono">{{item_dic.shelfmark}}</p>
-					</div>
-				</div>
+    <div class="sd-meta-rows">
 
-				{% if item_dic.year1 != null or item_dic.year3 != null or item_dic.repository_location != null or item_dic.location_name != null %}
-				<div class="sd-meta-rows" style="margin-top: 24px;">
+        <div class="sd-meta-row">
+            <span class="sd-meta-label">Held by</span>
+            <span class="sd-meta-value">{{item_dic.fk_repository}}</span>
+        </div>
 
-					{% if item_dic.year1 != null %}
-					<div class="sd-meta-row">
-						<span class="sd-meta-label label-style">Date (Repository)</span>
-						<span class="sd-meta-value">
-							{{item_dic.year1}}{% if item_dic.year2 > item_dic.year1 %} – {{item_dic.year2}}{% endif %}
-						</span>
-					</div>
-					{% endif %}
+        <div class="sd-meta-row">
+            <span class="sd-meta-label">Reference Identifier</span>
+            <span class="sd-meta-value item-mono">{{item_dic.shelfmark}}</span>
+        </div>
 
-					{% if item_dic.year3 != null %}
-					<div class="sd-meta-row">
-						<span class="sd-meta-label label-style">Date (Digisig)</span>
-						<span class="sd-meta-value">
-							{{item_dic.year3}}{% if item_dic.year4 > item_dic.year3 %} – {{item_dic.year4}}{% endif %}
-						</span>
-					</div>
-					{% endif %}
+        {% if item_dic.year1 != null %}
+        <div class="sd-meta-row">
+            <span class="sd-meta-label">Date (Repository)</span>
+            <span class="sd-meta-value">
+                {{item_dic.year1}}{% if item_dic.year2 > item_dic.year1 %} – {{item_dic.year2}}{% endif %}
+            </span>
+        </div>
+        {% endif %}
 
-					{% if item_dic.repository_location != null %}
-					<div class="sd-meta-row">
-						<span class="sd-meta-label label-style">Location (Repository)</span>
-						<span class="sd-meta-value">{{item_dic.repository_location}}</span>
-					</div>
-					{% endif %}
+        {% if item_dic.year3 != null %}
+        <div class="sd-meta-row">
+            <span class="sd-meta-label">Date (Digisig)</span>
+            <span class="sd-meta-value">
+                {{item_dic.year3}}{% if item_dic.year4 > item_dic.year3 %} – {{item_dic.year4}}{% endif %}
+            </span>
+        </div>
+        {% endif %}
 
-					{% if item_dic.location_name != null %}
-					<div class="sd-meta-row">
-						<span class="sd-meta-label label-style">Location (Digisig)</span>
-						<span class="sd-meta-value">
-							<a href="{% url 'entity' part_object.location_id %}">{{item_dic.location_name}}</a>
-						</span>
-					</div>
-					{% endif %}
+        {% if item_dic.repository_location != null %}
+        <div class="sd-meta-row">
+            <span class="sd-meta-label">Location (Repository)</span>
+            <span class="sd-meta-value">{{item_dic.repository_location}}</span>
+        </div>
+        {% endif %}
 
-				</div>
-				{% endif %}
-			</section>
+        {% if item_dic.location_name != null %}
+        <div class="sd-meta-row">
+            <span class="sd-meta-label">Location (Digisig)</span>
+            <span class="sd-meta-value">
+                <a href="{% url 'entity' part_object.location_id %}">{{item_dic.location_name}}</a>
+            </span>
+        </div>
+        {% endif %}
+
+    </div>
+</section>
 
 
 			<!-- Event & Participants card -->

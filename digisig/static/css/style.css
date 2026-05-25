@@ -7832,3 +7832,12 @@ details.analysis-guidance[open] .analysis-guidance-icon {
     font-size: 14px;
     flex-shrink: 0;
 }
+
+
+
+/* Groups eyebrow + title so they stack vertically within the flex row */
+.coll-title-stack {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}

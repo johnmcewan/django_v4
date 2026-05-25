@@ -1517,6 +1517,7 @@ def collection_details(collection_dic):
 	collection_dic["collection_thumbnail"] = collection.collection_thumbnail
 	collection_dic["collection_publicationdata"] = collection.collection_publicationdata
 	collection_dic["collection_fulltitle"] = collection.collection_fulltitle
+	collection_dic["collection_shorttitle"] = collection.collection_shorttitle
 	collection_dic["notes"] = collection.notes
 
 	#if collection is set then limit the scope of the dataset

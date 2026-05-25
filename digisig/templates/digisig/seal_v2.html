@@ -6,6 +6,17 @@
 
 <div class="entity-page seal-page">
 
+<!--     {# ── Centered page header (eyebrow + serif title + accent rule) ── #}
+    <header class="entity-page-header entity-page-header--centered">
+         <span class="entity-eyebrow">Seal</span>
+         <h1 class="entity-title">Seal 
+            {% if seal_info.fk_individual_realizer != 10000019 %}
+             of {{ seal_info.actorname }}
+            {% endif %}
+        </h1>
+        <span class="entity-title-rule"></span>
+    </header> -->
+
 <section class="sd-title-section">
     <p class="entity-eyebrow">Seal</p>
     <h1>Seal{% if seal_info.fk_individual_realizer != 10000019 %} of {{ seal_info.actorname }}{% endif %}</h1>
@@ -17,84 +28,94 @@
         <aside class="seal-detail-col">
 
             <div class="entity-card entity-detail-card">
-                <div class="sd-meta-header">
-                    <h2>Seal Details</h2>
-                    <button onclick="toggle('entity-permalink')" class="sd-permalink-btn">
+                <div class="entity-card-header">
+                    <h2 class="entity-card-title">Seal Details</h2>
+                    <button onclick="toggle('entity-permalink')" class="entity-permalink-link">
                         <i class="fas fa-link"></i> Permalink
                     </button>
                 </div>
 
-                <div class="sd-meta-rows">
+                <dl class="entity-detail-list">
 
-                    <div class="sd-meta-row">
-                        <span class="sd-meta-label">
+                    <div class="entity-detail-row">
+                        <dt class="entity-detail-label">
                             Date
                             <a class="entity-help-link" href="{% url 'entity' digisig_entity_number=10001357 %}" target="_blank" title="About this field">
                                 <i class="fas fa-question-circle"></i>
                             </a>
-                        </span>
-                        <span class="sd-meta-value">
+                        </dt>
+                        <dd class="entity-detail-value">
                             {% if seal_info.date_origin < 1 %}
                                 <span class="entity-detail-muted">Not available</span>
                             {% else %}
                                 c.{{ seal_info.date_origin }}
                             {% endif %}
-                        </span>
+                        </dd>
                     </div>
 
                     {% if seal_info.fk_individual_realizer != 10000019 %}
-                    <div class="sd-meta-row">
-                        <span class="sd-meta-label">Actor</span>
-                        <span class="sd-meta-value">
+                    <div class="entity-detail-row">
+                        <dt class="entity-detail-label">Actor</dt>
+                        <dd class="entity-detail-value">
                             <a class="entity-detail-link" href="{% url 'entity' digisig_entity_number=seal_info.id_individual %}">{{ seal_info.actorname }}</a>
-                        </span>
+                        </dd>
                     </div>
                     {% endif %}
 
-                    <div class="sd-meta-row">
-                        <span class="sd-meta-label">Class (Obverse)</span>
-                        <span class="sd-meta-value">
-                            {% if seal_info.obverse.classname %}
-                                <a class="entity-detail-link" href="{% url 'entity' digisig_entity_number=seal_info.obverse.fk_class %}" target="_blank">
-                                    {{ seal_info.obverse.classname }}
-                                </a>
-                            {% endif %}
-                        </span>
+                    <div class="entity-detail-row">
+                        <dt class="entity-detail-label">Class (Obverse)</dt>
+                        <dd class="entity-detail-value">
+                            <ul class="entity-class-list">
+                                {% if seal_info.obverse.classname %}
+                                    <li>
+                                        <a class="entity-class-link" href="{% url 'entity' digisig_entity_number=seal_info.obverse.fk_class %}" target="_blank">
+                                            {{ seal_info.obverse.classname }}
+                                        </a>
+                                    </li>
+                                {% endif %}
+                            </ul>
+                        </dd>
                     </div>
 
                     {% if seal_info.reverse %}
-                    <div class="sd-meta-row">
-                        <span class="sd-meta-label">Class (Reverse)</span>
-                        <span class="sd-meta-value">
-                            {% for c, value in seal_info.reverse.items %}
-                                <a class="entity-detail-link" href="{% url 'entity' digisig_entity_number=seal_info.reverse.fk_class %}" target="_blank">{{ value }}</a>
-                            {% endfor %}
-                        </span>
+                    <div class="entity-detail-row">
+                        <dt class="entity-detail-label">Class (Reverse)</dt>
+                        <dd class="entity-detail-value">
+                            <ul class="entity-class-list">
+                                {% for c, value in seal_info.reverse.items %}
+                                <li><a class="entity-class-link" href="{% url 'entity' digisig_entity_number=seal_info.reverse.fk_class %}" target="_blank">{{ value }}</a></li>
+                                {% endfor %}
+                            </ul>
+                        </dd>
                     </div>
                     {% endif %}
 
                     {% for k, value in seal_info.sealdescription.items %}
-                    <div class="sd-meta-row">
-                        <span class="sd-meta-label">
+                    <div class="entity-detail-row">
+                        <dt class="entity-detail-label">
                             {% if forloop.first %}
                                 Described In
                                 <a class="entity-help-link" href="{% url 'entity' digisig_entity_number=10001527 %}" target="_blank" title="About this field">
                                     <i class="fas fa-question-circle"></i>
                                 </a>
                             {% endif %}
-                        </span>
-                        <span class="sd-meta-value">
+                        </dt>
+                        <dd class="entity-detail-value">
+                            <ul class="entity-cite-list">
                             {% for k2, value2 in value.items %}
-                                <a class="entity-detail-link entity-detail-link--italic" href="{% url 'entity' digisig_entity_number=value2.sealdescription_id %}">
-                                    {{ value2.collection }}{% if value2.identifier %} ({{ value2.identifier }}){% endif %}
-                                </a>
+                                <li>
+                                    <a class="entity-detail-link entity-detail-link--italic" href="{% url 'entity' digisig_entity_number=value2.sealdescription_id %}">
+                                        {{ value2.collection }}{% if value2.identifier %} ({{ value2.identifier }}){% endif %}
+                                    </a>
+                                </li>
                             {% endfor %}
-                        </span>
+                            </ul>
+                        </dd>
                     </div>
                     {% endfor %}
 
-                </div>{# /sd-meta-rows #}
-            </div>{# /entity-card #}
+                </dl>
+            </div>
 
         </aside>
 
@@ -142,7 +163,12 @@
                         <div>
                             <div class="seal-manifest-meta">
                                 <span class="seal-manifest-badge">{{manifestation.imagestate_term}}</span>
+                                {% if manifestation.id_representation %}
+                                <!-- <span class="seal-manifest-ref">Ref: {{ manifestation.id_representation }}</span> -->
+                                {% endif %}
                             </div>
+
+                            <!-- <h3 class="seal-manifest-title">Primary Impression</h3> -->
 
                             <dl class="seal-manifest-details">
                                 <div class="seal-manifest-row">
@@ -152,13 +178,13 @@
                                 <div class="seal-manifest-row">
                                     <dt>Part of Item</dt>
                                     <dd>
-                                        <a class="entity-detail-link" href="{% url 'entity' digisig_entity_number=manifestation.id_item %}">{{ manifestation.shelfmark }}</a>{% if manifestation.number != null and fk_number_currentposition < 100 %}, support {{ manifestation.number }}{% endif %}
+                                        <a class="entity-detail-link entity-detail-link--mono" href="{% url 'entity' digisig_entity_number=manifestation.id_item %}">{{ manifestation.shelfmark }}</a>{% if manifestation.number != null and fk_number_currentposition < 100 %}, support {{ manifestation.number }}{% endif %}
                                     </dd>
                                 </div>
                                 {% if manifestation.support_typename %}
                                 <div class="seal-manifest-row">
                                     <dt>Support Type</dt>
-                                    <dd>{{ manifestation.support_typename }}</dd>
+                                    <dd>{{ manifestation.support_typename}}</dd>
                                 </div>
                                 {% endif %}
                             </dl>

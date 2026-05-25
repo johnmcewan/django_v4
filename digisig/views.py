@@ -917,8 +917,6 @@ class EntityView(View):
 
 	async def collection_page(self, request, digisig_entity_number):
 		
-		pagetitle = 'Collection'
-
 		### This code prepares collection info box and the data for charts on the collection page
 		form = CollectionForm_digisig(request.POST or None)
 		collection_choices = await digisigcollection_options(form)
@@ -952,11 +950,11 @@ class EntityView(View):
 		# ### generate the collection info data for chart 5 --  'Percentage of actors per class',
 		data5, labels5 = await collection_printgroup(qcollection, collection_dic)
 
+		pagetitle = 'Collection'
+
 		context = {
 			'pagetitle': pagetitle,
-			#'collection': collection,
 			'collection_dic': collection_dic,
-			#'contributor_dic': contributor_dic,
 			'labels1': labels1,
 			'data1': data1,
 			'labels2': labels2,
@@ -1111,7 +1109,7 @@ class EntityView(View):
 
 		#template = loader.get_template('digisig/seal.html')
 
-		return render(request, 'digisig/seal.html', context)
+		return render(request, 'digisig/seal_v2.html', context)
 
 
 ############################## Seal description #############################

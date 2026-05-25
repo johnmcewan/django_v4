@@ -15,15 +15,20 @@
 
 <div class="entity-page place-page">
 
+<section class="sd-title-section">
+    <p class="entity-eyebrow">Place</p>
+    <h1>{{ pagetitle }}</h1>
+</section>
+
     {# ── Hero: title + coordinates on left, map on right ───────── #}
-    <section class="place-hero">
+    <!-- <section class="place-hero">
 
         <div class="place-hero-text">
-            <span class="entity-eyebrow">Archival Place Record</span>
-            <h1 class="entity-title entity-title--display">{{ pagetitle }}</h1>
-
             <div class="place-coords-box">
-                <h2 class="place-coords-title">Geographic Coordinates</h2>
+                <h2 class="place-coords-title">Place Details</h2>
+
+                <button onclick="toggle('entity-permalink')" class="btn btn-primary place-action-btn">Permalink</button>
+
                 <div class="place-coords-row">
                     <span class="place-coords-label">Longitude</span>
                     <span class="place-coords-value">{{ place_object.longitude }}</span>
@@ -35,8 +40,7 @@
             </div>
 
             <div class="place-actions">
-                <button onclick="toggle('entity-permalink')" class="btn btn-primary place-action-btn">Permalink</button>
-                <a href="#metadata-table" class="btn btn-secondary place-action-btn">Export Data</a>
+
             </div>
         </div>
 
@@ -51,7 +55,55 @@
 
     </section>
 
-    <hr class="entity-divider">
+    <hr class="entity-divider"> -->
+
+{# ── Bento grid: place details + map ──────────────────────── #}
+<div class="bento-grid">
+
+    {# ── LEFT (8 of 12): Place Details card ── #}
+    <div class="bento-col-8">
+        <section class="sd-card sd-meta-card">
+            <div class="sd-meta-header">
+                <h2>Place Details</h2>
+                <button onclick="toggle('entity-permalink')" class="sd-permalink-btn">
+                    <i class="fas fa-link"></i> Permalink
+                </button>
+            </div>
+
+            <div class="sd-meta-rows">
+                {% if place_object.location %}
+                <div class="sd-meta-row">
+                    <span class="sd-meta-label">Location Name</span>
+                    <span class="sd-meta-value">{{ place_object.location }}</span>
+                </div>
+                {% endif %}
+                <div class="sd-meta-row">
+                    <span class="sd-meta-label">Longitude</span>
+                    <span class="sd-meta-value">{{ place_object.longitude }}</span>
+                </div>
+                <div class="sd-meta-row">
+                    <span class="sd-meta-label">Latitude</span>
+                    <span class="sd-meta-value">{{ place_object.latitude }}</span>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    {# ── RIGHT (4 of 12): Map card ── #}
+    <aside class="bento-col-4">
+        <section class="sd-card item-map-card">
+            <div id="mapid" class="item-leaflet-map"></div>
+            {% if place_object.location %}
+            <div class="item-map-caption">
+                <p class="caption" style="color: var(--on-surface-variant); font-style: italic;">
+                    {{ place_object.location }}
+                </p>
+            </div>
+            {% endif %}
+        </section>
+    </aside>
+
+</div>{# /bento-grid #}
 
     {# ── Impressions / Matrices / Casts ────────────────────────── #}
     <section class="place-objects">
@@ -221,13 +273,13 @@
 
     </section>
 
-    {# ── Citation block ───────────────────────────────────────── #}
+<!--     {# ── Citation block ───────────────────────────────────────── #}
     <aside class="entity-cite-box entity-cite-box--full">
         <h3 class="entity-cite-title">How to Cite This Resource</h3>
         <p class="entity-cite-body">
             &ldquo;{{ pagetitle }}: Archival Place Detail.&rdquo; Sigillum Archive: Digital Sigillography Resource, {% now "Y" %}. Available at: http://www.digisig.org/entity/{{ place_object.id_location }}. Accessed {% now "F Y" %}.
         </p>
-    </aside>
+    </aside> -->
 
     {# ── Permalink overlay (preserved) ───────────────────────── #}
     <div class="entity-permalink" id="entity-permalink" style="display:none;">

@@ -6,27 +6,13 @@
 
 <div class="entity-page actor-page">
 
-    {# ── Top bar: breadcrumbs + permalink ──────────────────────── #}
-    <div class="actor-topbar">
-        <nav class="actor-breadcrumbs" aria-label="Breadcrumb">
-            <a href="{% url 'search' searchtype='actors' %}">Actors</a>
-            {% if individual_object.fk_group.fk_group_class %}
-                <span class="actor-breadcrumbs-sep">/</span>
-                <span>{{ individual_object.fk_group.fk_group_class }}</span>
-            {% endif %}
-        </nav>
-        <button onclick="toggle('entity-permalink')" class="actor-permalink-btn">
-            <i class="fas fa-link"></i> Permalink
-        </button>
-    </div>
-
-    {# ── Hero: large display title + italic subtitle ───────────── #}
-    <header class="actor-hero">
-        <h1 class="entity-title entity-title--display">{{ pagetitle }}</h1>
-        {% if individual_object.fk_group.fk_group_order %}
-        <p class="entity-subtitle">{{ individual_object.fk_group.fk_group_order }}</p>
-        {% endif %}
-    </header>
+<section class="sd-title-section">
+    <p class="entity-eyebrow">Actor{% if individual_object.fk_group.fk_group_class %} &mdash; {{ individual_object.fk_group.fk_group_class }}{% endif %}</p>
+    <h1>{{ pagetitle }}</h1>
+    {% if individual_object.fk_group.fk_group_order %}
+    <p class="entity-subtitle">{{ individual_object.fk_group.fk_group_order }}</p>
+    {% endif %}
+</section>
 
     {# ── Two-column layout: main + sidebar ─────────────────────── #}
     <div class="actor-layout">
@@ -34,14 +20,22 @@
         <main class="actor-main-col">
 
             {# ── Actor Details ─────────────────────────────────── #}
-            <section class="actor-section">
-                <h2 class="entity-section-title">Actor Details</h2>
-                <div class="entity-card actor-detail-card">
-                    <dl class="actor-detail-grid">
+<section class="actor-section">
+    <div class="entity-card actor-detail-card">
+        <div class="sd-meta-header">
+            <h2>Actor Details</h2>
+            <button class="sd-permalink-btn" onclick="toggle('entity-permalink')">
+                <i class="fas fa-link"></i> Permalink
+            </button>
+        </div>
+
+
+                    <!-- <dl class="actor-detail-grid">
                         <div class="actor-detail-field">
                             <dt class="entity-detail-label">Standardized Name</dt>
                             <dd class="entity-detail-value entity-detail-value--bold">{{ pagetitle }}</dd>
                         </div>
+
 
                         {% if individual_object.fk_group.fk_group_class %}
                         <div class="actor-detail-field">
@@ -63,7 +57,38 @@
                             <dd class="entity-detail-value">{{ individual_object.notes }}</dd>
                         </div>
                         {% endif %}
-                    </dl>
+                    </dl> -->
+
+<div class="sd-meta-rows">
+
+    <div class="sd-meta-row">
+        <span class="sd-meta-label">Standardized Name</span>
+        <span class="sd-meta-value">{{ pagetitle }}</span>
+    </div>
+
+    {% if individual_object.fk_group.fk_group_class %}
+    <div class="sd-meta-row">
+        <span class="sd-meta-label">Class</span>
+        <span class="sd-meta-value">{{ individual_object.fk_group.fk_group_class }}</span>
+    </div>
+    {% endif %}
+
+    {% if individual_object.fk_group.fk_group_order %}
+    <div class="sd-meta-row">
+        <span class="sd-meta-label">Order</span>
+        <span class="sd-meta-value">{{ individual_object.fk_group.fk_group_order }}</span>
+    </div>
+    {% endif %}
+
+    {% if individual_object.notes %}
+    <div class="sd-meta-row">
+        <span class="sd-meta-label">Notes</span>
+        <span class="sd-meta-value">{{ individual_object.notes }}</span>
+    </div>
+    {% endif %}
+
+</div>
+                    
                 </div>
             </section>
 
@@ -239,15 +264,8 @@
         {# ── Right column: Sidebar ─────────────────────────────── #}
         <aside class="actor-side-col">
 
-            <div class="entity-cite-box">
-                <h3 class="entity-cite-title">Cite this Entry</h3>
-                <p class="entity-cite-body">
-                    Digital Sigillography Resource, &ldquo;{{ pagetitle }}&rdquo;, Entity #{{ individual_object.id_individual }}. Accessed {% now "F Y" %}. [www.digisig.org/entity/{{ individual_object.id_individual }}]
-                </p>
-            </div>
-
             <div class="entity-card actor-side-card">
-                <h3 class="entity-card-title">Archival Context</h3>
+                <h3 class="entity-card-title">Seal</h3>
 
                 {% if individual_object.fk_group.fk_group_class %}
                 <div class="actor-context-row">
