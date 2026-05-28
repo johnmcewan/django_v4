@@ -5,7 +5,7 @@
 {% block content %}
 
 <!-- RTI / OpenLIME assets (preserved from original) -->
-<script src="{% static 'js/rtidisplay.js' %}"></script>
+<!-- <script src="{% static 'js/rtidisplay.js' %}"></script> -->
 <link  rel="stylesheet" href="{% static 'openlime/css/skin.css' %}">
 <script src="{% static 'openlime/js/openlime.js' %}"></script>
 
@@ -30,11 +30,10 @@
   <!-- ═══════════════════════════════════════════════════
        PAGE HEADER
        ═══════════════════════════════════════════════════ -->
-  <header class="entity-page-header">
-    <p class="entity-eyebrow">Digital Resource &mdash; Representation</p>
-    <h1 class="entity-title entity-title--display">{{representation_dic.main_title}}</h1>
-    <hr class="entity-divider">
-  </header>
+  <section class="sd-title-section">
+    <p class="entity-eyebrow">Representation</p>
+    <h1>{{representation_dic.main_title}}</h1>
+  </section>
 
 
   <!-- ═══════════════════════════════════════════════════
@@ -46,81 +45,88 @@
     <div class="manif-main-col">
 
 
-      <!-- ── SECTION 1: Representation Details ─────────── -->
+
+<!-- ── SECTION 1: Representation Details ─────────── -->
       <section class="repr-section">
-        <div class="entity-section-heading">
-          <i class="fas fa-camera repr-section-icon"></i>
-          <h2 class="entity-section-title">Representation Details</h2>
-          <span class="entity-section-rule"></span>
-        </div>
+        <div class="sd-card sd-meta-card">
+          <div class="sd-meta-header">
+            <h2>Representation Details</h2>
+            <button onclick="toggle('entity-permalink')" class="sd-permalink-btn">
+              <i class="fas fa-link"></i> Permalink
+            </button>
+          </div>
 
-        <div class="entity-card">
-          <dl class="entity-detail-list">
+          <div class="sd-meta-rows">
 
-            <div class="entity-detail-row">
-              <dt class="entity-detail-label">Creator</dt>
-              <dd class="entity-detail-value">{{representation_dic.contributorcreator_name}}</dd>
+            <div class="sd-meta-row">
+              <span class="sd-meta-label">Creator</span>
+              <span class="sd-meta-value">{{representation_dic.contributorcreator_name}}</span>
             </div>
 
             {% if representation_dic.representation_type != null %}
-            <div class="entity-detail-row">
-              <dt class="entity-detail-label">Type</dt>
-              <dd class="entity-detail-value">{{representation_dic.representation_type}}</dd>
+            <div class="sd-meta-row">
+              <span class="sd-meta-label">Type</span>
+              <span class="sd-meta-value">{{representation_dic.representation_type}}</span>
             </div>
             {% endif %}
 
             {% if representation_dic.datecreated != null %}
-            <div class="entity-detail-row">
-              <dt class="entity-detail-label">Date Created</dt>
-              <dd class="entity-detail-value">{{representation_dic.datecreated}}</dd>
+            <div class="sd-meta-row">
+              <span class="sd-meta-label">Date Created</span>
+              <span class="sd-meta-value">{{representation_dic.datecreated}}</span>
             </div>
             {% endif %}
 
             {% if representation_dic.width != null %}
-            <div class="entity-detail-row">
-              <dt class="entity-detail-label">Dimensions</dt>
-              <dd class="entity-detail-value">
+            <div class="sd-meta-row">
+              <span class="sd-meta-label">Dimensions</span>
+              <span class="sd-meta-value">
                 <code class="repr-dims-chip">{{representation_dic.width}}&thinsp;&times;&thinsp;{{representation_dic.height}}&thinsp;px</code>
-              </dd>
+              </span>
             </div>
             {% endif %}
 
             {% if representation_dic.collection_fulltitle != null %}
-            <div class="entity-detail-row">
-              <dt class="entity-detail-label">Source</dt>
-              <dd class="entity-detail-value">{{representation_dic.collection_fulltitle}}</dd>
+            <div class="sd-meta-row">
+              <span class="sd-meta-label">Source</span>
+              <span class="sd-meta-value">{{representation_dic.collection_fulltitle}}</span>
             </div>
             {% endif %}
 
             {% if representation_dic.rightsholder != null %}
-            <div class="entity-detail-row">
-              <dt class="entity-detail-label">Rights Holder</dt>
-              <dd class="entity-detail-value">{{representation_dic.rightsholder}}</dd>
+            <div class="sd-meta-row">
+              <span class="sd-meta-label">Rights Holder</span>
+              <span class="sd-meta-value">{{representation_dic.rightsholder}}</span>
             </div>
             {% endif %}
 
-          </dl>
-        </div>
+          </div>{# /sd-meta-rows #}
+        </div>{# /sd-card #}
       </section>
 
 
       <!-- ── SECTION 2: Seal (entity_type == 2) ────────── -->
       {% if representation_dic.entity_type == 2 %}
       <section class="repr-section">
-        <div class="entity-section-heading entity-section-heading--split">
+        
+<div class="entity-section-heading entity-section-heading--split">
           <i class="fas fa-stamp repr-section-icon"></i>
           <h2 class="entity-section-title">Seal</h2>
           <span class="entity-section-rule"></span>
-          <a class="entity-permalink-link" href="{% url 'entity' representation_dic.id_seal %}">
-            Seal record <i class="fas fa-arrow-right"></i>
-          </a>
           <button id="entitybutton4" onclick="tbtoggle('entity4', 'entitybutton4')"
                   class="entity-toggle-btn">+</button>
         </div>
 
         <div id="entity4" style="display:none;">
           <div class="entity-card">
+            <div class="sd-meta-header">
+              <h2>Seal</h2>
+              <a class="sd-permalink-btn" href="{% url 'entity' representation_dic.id_seal %}">
+                Seal record <i class="fas fa-arrow-right"></i>
+              </a>
+            </div>
             <dl class="entity-detail-list">
+
 
               <div class="entity-detail-row">
                 <dt class="entity-detail-label">
@@ -182,21 +188,25 @@
       <!-- ── SECTION 3: Item (entity_type == 2 or 8) ───── -->
       {% if representation_dic.entity_type == 2 or representation_dic.entity_type == 8 %}
       <section class="repr-section">
-        <div class="entity-section-heading entity-section-heading--split">
+        
+
+<div class="entity-section-heading entity-section-heading--split">
           <i class="fas fa-file-alt repr-section-icon"></i>
           <h2 class="entity-section-title">Item</h2>
           <span class="entity-section-rule"></span>
-          <a class="entity-permalink-link" href="{% url 'entity' representation_dic.id_item %}">
-            Item record <i class="fas fa-arrow-right"></i>
-          </a>
           <button id="entitybutton2" onclick="tbtoggle('entity2', 'entitybutton2')"
                   class="entity-toggle-btn">+</button>
         </div>
 
         <div id="entity2" style="display:none;">
           <div class="entity-card">
+            <div class="sd-meta-header">
+              <h2>Item</h2>
+              <a class="sd-permalink-btn" href="{% url 'entity' representation_dic.id_item %}">
+                Item record <i class="fas fa-arrow-right"></i>
+              </a>
+            </div>
             <dl class="entity-detail-list">
-
               <div class="entity-detail-row">
                 <dt class="entity-detail-label">
                   Reference
@@ -243,7 +253,7 @@
 
 
       <!-- ── SECTION 4: Manifestation (entity_type check) ─ -->
-      {% if representation_dic.representation_dic.entity_type is "2" %}
+      {% if representation_dic.representation_dic.entity_type == "2" %}
       <section class="repr-section">
         <div class="entity-section-heading entity-section-heading--split">
           <i class="fas fa-layer-group repr-section-icon"></i>
@@ -261,7 +271,7 @@
           <div class="entity-card">
             <dl class="entity-detail-list">
 
-              {% if representation_dic.manifestation_object.label_manifestation_repository != null %}
+              {% if representation_dic.manifestation_object.label_manifestation_repository %}
               <div class="entity-detail-row">
                 <dt class="entity-detail-label">
                   Reference
@@ -304,7 +314,7 @@
               </div>
               {% endif %}
 
-              {% if representation_dic.support_object.fk_attachment != null %}
+              {% if representation_dic.support_object.fk_attachment %}
               <div class="entity-detail-row">
                 <dt class="entity-detail-label">
                   Attachment
@@ -335,25 +345,22 @@
         </div>
 
         <div id="entity1" style="display:none;">
-          {% for representation in representation_dic.representation_objectset %}
+          {% for repr_id, representation in representation_dic.representation_objectset.items %}
           <div class="manif-repr-card entity-card{% if not forloop.last %} manif-repr-card--spaced{% endif %}">
 
-            {% if representation.representation_thumbnail_hash != null %}
+            {% if representation.representation_thumbnail_hash %}
             <div class="manif-repr-image">
-              <img class="modalimage" id="modalimagebase_r{{forloop.counter}}"
-                   src="{{representation.fk_connection}}{{representation.representation_thumbnail_hash}}"
-                   alt="{{representation.id_representation}}"
-                   onclick="image({{forloop.counter}})">
-              <!-- Modal -->
-              <div id="myModal_r{{forloop.counter}}" class="modal" style="display: none;">
-                <span class="close" onclick="modalclose({{forloop.counter}})">&times;</span>
-                <img class="modal-content" id="modalimg_r{{forloop.counter}}"
-                     src="{{representation.fk_connection}}{{representation.representation_filename_hash}}"
-                     alt="{{representation.id_representation}}">
-                <div class="modal-caption" id="caption_r{{forloop.counter}}">
-                  <a href="{% url 'entity' representation.id_representation %}">{{representation.id_representation}}</a>
-                </div>
-              </div>
+              <a href="{{representation.fk_connection}}{{representation.representation_filename_hash}}"
+                 class="glightbox"
+                 data-gallery="further-representations"
+                 data-alt="{{representation.id_representation}}"
+                 data-type="image"
+                 data-description="<a href='{% url 'entity' repr_id %}'> {{representation.id_representation}}</a>"
+                 >
+                <img class="modalimage" id="modalimagebase_r{{forloop.counter}}"
+                     src="{{representation.fk_connection}}{{representation.representation_thumbnail_hash}}"
+                     alt="{{repr_id}}">
+              </a>
             </div>
             {% else %}
             <div class="manif-repr-image analysis-no-image">
@@ -365,7 +372,7 @@
               <div class="entity-card-header">
                 <h4 class="entity-card-title">
                   <a class="entity-detail-link"
-                     href="{% url 'entity' representation.id_representation %}">Representation details</a>
+                     href="{% url 'entity' repr_id %}">Representation details</a>
                 </h4>
               </div>
               <dl class="entity-detail-list">
@@ -373,7 +380,7 @@
                   <dt class="entity-detail-label">Type</dt>
                   <dd class="entity-detail-value">{{representation.fk_representation_type}}</dd>
                 </div>
-                {% if representation.fk_contributor_creator != null %}
+                {% if representation.fk_contributor_creator %}
                 <div class="entity-detail-row">
                   <dt class="entity-detail-label">Creator</dt>
                   <dd class="entity-detail-value">{{representation.fk_contributor_creator}}</dd>
@@ -421,49 +428,23 @@
     <!-- ─── RIGHT: sticky sidebar ──────────────────────── -->
     <aside class="manif-side-col">
 
-      <!-- Primary image -->
-      {% if representation_dic.representation_thumbnail_hash != null %}
+     <!-- Primary image -->
+      {% if representation_dic.representation_thumbnail_hash %}
       <div class="manif-image-panel entity-card">
         <figure class="manif-image-figure">
-          <img class="manif-image-full modalimage" id="modalimagebase1"
-               src="{{representation_dic.thumb}}{{representation_dic.representation_thumbnail_hash}}"
-               alt="{{representation_dic.id_representation}}"
-               onclick="image(1)">
-          <figcaption class="manif-image-caption">Fig&thinsp;1.&ensp;{{representation_dic.main_title}}</figcaption>
+          <a href="{{representation_dic.medium}}{{representation_dic.representation_filename_hash}}"
+             class="glightbox"
+             data-alt="{{representation_dic.id_representation}}"
+             data-type="image"
+             data-description="<a href='{% url 'entity' representation_dic.id_representation %}'>Representation details</a>">
+            <img class="manif-image-full modalimage" id="modalimagebase1"
+                 src="{{representation_dic.thumb}}{{representation_dic.representation_thumbnail_hash}}"
+                 alt="{{representation_dic.id_representation}}">
+          </a>
+          <figcaption class="manif-image-caption">{{representation_dic.main_title}}</figcaption>
         </figure>
-        <!-- Modal -->
-        <div id="myModal1" class="modal" style="display: none;">
-          <span class="close" onclick="modalclose(1)">&times;</span>
-          <img class="modal-content" id="modalimg1"
-               src="{{representation_dic.medium}}{{representation_dic.representation_filename_hash}}"
-               alt="{{representation_dic.id_representation}}">
-          <div class="modal-caption" id="caption1">
-            <a href="{% url 'entity' representation_dic.id_representation %}">Representation details</a>
-          </div>
-        </div>
       </div>
       {% endif %}
-
-      <!-- Permalink button -->
-      <button onclick="toggle('entity-permalink')" class="actor-permalink-btn" style="width:100%;justify-content:center;">
-        <i class="fas fa-link"></i> Permalink
-      </button>
-
-      <!-- Citation box -->
-      <div class="entity-cite-box">
-        <p class="entity-cite-title">
-          <i class="fas fa-quote-left"></i>&ensp;Cite this record
-        </p>
-        <p class="entity-cite-body">
-          &ldquo;{{representation_dic.main_title}}.&rdquo; <em>Digisig: Digital Sigillography Resource</em>.
-          http://www.digisig.org/entity/{{representation_dic.id_representation}}
-        </p>
-        <div class="manif-cite-links">
-          <a class="manif-cite-link" href="#">BibTeX</a>
-          <a class="manif-cite-link" href="#">RIS</a>
-          <button class="manif-cite-link" onclick="toggle('entity-permalink')">Copy Permalink</button>
-        </div>
-      </div>
 
     </aside><!-- /manif-side-col -->
 
@@ -476,60 +457,105 @@
 {{ location_dict|json_script:"mapdata1" }}
 
 
-<!-- ── RTI / OpenLIME script (logic unchanged) ──────────── -->
+<!-- ── RTI / OpenLIME script ──────────── -->
 <script>
-var choice1 = document.getElementById("choice").innerHTML.trim();
 var choice2 = document.getElementById("RTItest").innerHTML.trim();
 
 if (choice2 === "RTI") {
 
-    // Show the RTI hint text
     var hint = document.getElementById("repr-rti-hint");
     if (hint) hint.style.display = "flex";
 
-    let rti  = rtiselect(choice1);
-    const dzi  = rti[0],
-          info = rti[1];
-
-    async function autodetect() {
-        let response = await fetch(dzi);
-        if (response.status === 200) return "deepzoom";
-        alert("Could not detect an RTI here");
-        return "";
-    }
-
-    async function autodetectNormals(layout) { return false; }
+    var baseUrl = "{{representation_dic.rti}}{{representation_dic.representation_folder}}/";
+    var infoUrl = baseUrl + "info.json";
 
     async function init() {
-        let layout  = await autodetect();
-        let normals = await autodetectNormals(layout);
-        var lime    = new OpenLIME.Viewer('#openlime', { background: 'black' });
+        // Fetch and patch info.json to add the missing url field
+        const response = await fetch(infoUrl);
+        const info = await response.json();
+        if (!info.url) {
+            info.url = "plane_%d.dzi";
+        }
 
-        let layer = new OpenLIME.Layer({
-            layout:  layout,
-            type:    'rti',
-            url:     info,
-            normals: normals
+        var lime = new OpenLIME.Viewer('#openlime', { background: 'black' });
+
+        // Use LayerRTI directly with the patched config object
+        let layer = new OpenLIME.LayerRTI({
+            label:   'RTI',
+            layout:  'deepzoom',
+            url:     infoUrl,
+            normals: false,
+            ...info        // spread the patched info.json fields into the config
         });
 
         lime.canvas.addLayer('RTI', layer);
         OpenLIME.Skin.setUrl("{% static 'openlime/skin/skin.svg' %}");
         let ui = new OpenLIME.UIBasic(lime, { skin: 'skin.svg', showLightDirections: true });
-        ui.actions.light.active  = true;
-        ui.actions.layers.display = true;
-        lime.camera.maxFixedZoom  = 1;
+        ui.actions.light.active    = true;
+        ui.actions.layers.display  = true;
+        ui.actions.zoomin.display  = true;
+        ui.actions.zoomout.display = true;
+        lime.camera.maxFixedZoom   = 4;
         window.lime = lime;
     }
 
     init();
 
 } else {
-    // Not an RTI — collapse the viewer section to zero height
-    var rtiPanel = document.querySelector('.repr-rti-panel');
     var rtiSection = document.querySelector('.repr-rti-section');
     if (rtiSection) rtiSection.style.display = 'none';
-    console.log("Not an RTI");
 }
 </script>
+
+
+// if (choice2 === "RTI") {
+
+//     // Show the RTI hint text
+//     var hint = document.getElementById("repr-rti-hint");
+//     if (hint) hint.style.display = "flex";
+
+//     let rti  = rtiselect(choice1);
+//     const dzi  = rti[0],
+//           info = rti[1];
+
+//     async function autodetect() {
+//         let response = await fetch(dzi);
+//         if (response.status === 200) return "deepzoom";
+//         alert("Could not detect an RTI here");
+//         return "";
+//     }
+
+//     async function autodetectNormals(layout) { return false; }
+
+//     async function init() {
+//         let layout  = await autodetect();
+//         let normals = await autodetectNormals(layout);
+//         var lime    = new OpenLIME.Viewer('#openlime', { background: 'black' });
+
+//         let layer = new OpenLIME.Layer({
+//             layout:  layout,
+//             type:    'rti',
+//             url:     info,
+//             normals: normals
+//         });
+
+//         lime.canvas.addLayer('RTI', layer);
+//         OpenLIME.Skin.setUrl("{% static 'openlime/skin/skin.svg' %}");
+//         let ui = new OpenLIME.UIBasic(lime, { skin: 'skin.svg', showLightDirections: true });
+//         ui.actions.light.active  = true;
+//         ui.actions.layers.display = true;
+//         lime.camera.maxFixedZoom  = 1;
+//         window.lime = lime;
+//     }
+
+//     init();
+
+// } else {
+//     // Not an RTI — collapse the viewer section to zero height
+//     var rtiPanel = document.querySelector('.repr-rti-panel');
+//     var rtiSection = document.querySelector('.repr-rti-section');
+//     if (rtiSection) rtiSection.style.display = 'none';
+//     console.log("Not an RTI");
+// }
 
 {% endblock %}

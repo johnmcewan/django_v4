@@ -112,8 +112,27 @@
 
                 <div class="result-list" id="results">
                     {% for item in itemset.values %}
-                    {% with item_idx=forloop.counter %}
-                    <article class="result-card result-card-stacked">
+                    <article class="result-card">
+
+                        <div class="result-thumb">
+                            {% for part_id, part in item.part.items %}
+                            {% if forloop.first %}
+                            {% if part.representation.connection %}
+                                <a href="{{ part.representation.connection }}{{ part.representation.thumb }}"
+                                   class="glightbox"
+                                   data-gallery="search-results"
+                                   data-alt="{{ part.representation.id_representation }}"
+                                   data-description="<a href='{% url 'representation_page' entity_type='representation' digisig_entity_number=part.representation.id_representation %}'>Representation details</a>">
+                                    <img class="modalimage"
+                                        id="modalimagebase{{ forloop.parentloop.counter }}"
+                                        src="{{ part.representation.connection }}{{ part.representation.thumb }}"
+                                        alt="{{ part.representation.id_representation }}"
+                                        loading="lazy">
+                                </a>
+                            {% endif %}
+                            {% endif %}
+                            {% endfor %}
+                        </div>
 
                         <div class="result-body">
                             <a class="result-tag" href="{% url 'item_page' entity_type='item' digisig_entity_number=item.id_item %}">Archival item</a>
@@ -121,43 +140,12 @@
                             <h3 class="result-title">
                                 <a href="{% url 'item_page' entity_type='item' digisig_entity_number=item.id_item %}">{{ item.repository }}, {{ item.shelfmark }}</a>
                             </h3>
-
-                            <div class="thumb-strip">
-                                {% for key, value in item.part.items %}
-                                    {% if value.representation.connection != null %}
-                                    <a class="thumb-strip-item"
-                                       onclick="image2('{{ item_idx }}_{{ forloop.counter }}', 'item'); return false;"
-                                       href="#">
-                                        <img class="modalimage"
-                                            id="modalimagebaseitem{{ item_idx }}_{{ forloop.counter }}"
-                                            src="{{ value.representation.connection }}{{ value.representation.thumb }}"
-                                            alt="{{ value.representation.id_representation }}"
-                                            loading="lazy">
-                                    </a>
-
-                                    <div id="myModalitem{{ item_idx }}_{{ forloop.counter }}" class="modal" style="display: none;">
-                                        <span class="close" onclick="modalclose2('{{ item_idx }}_{{ forloop.counter }}', 'item')">&times;</span>
-                                        <img class="modal-content"
-                                            id="modalimgitem{{ item_idx }}_{{ forloop.counter }}"
-                                            src="{{ value.representation.connection }}{{ value.representation.thumb }}"
-                                            alt="{{ value.representation.id_representation }}"
-                                            loading="lazy">
-                                        <div class="modal-caption" id="captionitem{{ item_idx }}_{{ forloop.counter }}">
-                                            <a href="{% url 'representation_page' entity_type='representation' digisig_entity_number=value.representation.id_representation %}">Representation details</a>
-                                        </div>
-                                    </div>
-                                    {% endif %}
-                                {% empty %}
-                                    <span class="thumb-strip-empty">No representations</span>
-                                {% endfor %}
-                            </div>
                         </div>
 
                         <button class="bookmark-btn" type="button" aria-label="Bookmark this item">
                             <i class="far fa-bookmark"></i>
                         </button>
                     </article>
-                    {% endwith %}
                     {% empty %}
                     <div class="no-results">No matching items found. Try adjusting your filters.</div>
                     {% endfor %}
@@ -197,6 +185,14 @@
 
 <!-- Preserved JS from the original template -->
 <script>
+// GLightbox initialisation
+GLightbox({
+    selector: '.glightbox',
+    touchNavigation: true,
+    loop: false,
+    descPosition: 'bottom',
+});
+
 // reset page counter when filter inputs change
 document.getElementById("form").addEventListener("input", formupdate_event);
 function formupdate_event() {

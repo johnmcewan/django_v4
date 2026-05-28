@@ -1,0 +1,239 @@
+{% extends "digisig/base.html" %}
+
+{% load static %}
+{% block content %}
+
+<section class="search-page">
+    <div class="container">
+
+        <!-- =====================================================
+             PAGE HEADER
+             ===================================================== -->
+        <header class="page-header">
+            <h1>Archival Items</h1>
+            <p class="page-header-subtitle">Charters, documents, and physical objects bearing seal impressions</p>
+        </header>
+
+        <!-- =====================================================
+             GUIDANCE
+             ===================================================== -->
+        <details class="guidance-block">
+            <summary>Guidance Notes</summary>
+            <div class="guidance-content">
+                <p><em>Under construction.</em></p>
+            </div>
+        </details>
+
+        <!-- =====================================================
+             FILTER SIDEBAR + RESULTS
+             ===================================================== -->
+        <div class="search-layout">
+
+            <!-- ===== FILTER SIDEBAR ===== -->
+            <aside class="filter-panel">
+                <h2 class="filter-panel-title">
+                    <i class="fas fa-filter" aria-hidden="true"></i> Filter
+                </h2>
+
+                <form id="form" action="/search/items" method="post">
+                    {% csrf_token %}
+                    {{ form.non_field_errors }}
+
+                    <div class="filter-field filter-field-hidden">
+                        {{ form.pagination.errors }}
+                        <label for="{{ form.pagination.id_for_label }}">Pagination</label>
+                        {{ form.pagination }}
+                    </div>
+
+                    <div class="filter-section">
+                        <h3 class="filter-section-heading">Item Fields</h3>
+
+                        <div class="filter-field">
+                            {{ form.repository.errors }}
+                            <label for="{{ form.repository.id_for_label }}">Repository</label>
+                            {{ form.repository }}
+                        </div>
+
+                        <div class="filter-field">
+                            {{ form.series.errors }}
+                            <label for="{{ form.series.id_for_label }}">Series</label>
+                            {{ form.series }}
+                        </div>
+
+                        <div class="filter-field">
+                            {{ form.shelfmark.errors }}
+                            <label for="{{ form.shelfmark.id_for_label }}">Shelfmark</label>
+                            {{ form.shelfmark }}
+                        </div>
+
+                        <div class="filter-field">
+                            {{ form.searchphrase.errors }}
+                            <label for="{{ form.searchphrase.id_for_label }}">Phrase</label>
+                            {{ form.searchphrase }}
+                        </div>
+                    </div>
+
+                    <div class="filter-actions">
+                        <button class="btn btn-primary" type="submit">Submit Search</button>
+                        <button class="btn btn-secondary" type="reset" id="filterclear_button">Clear Filters</button>
+                    </div>
+                </form>
+            </aside>
+
+            <!-- ===== RESULTS COLUMN ===== -->
+            <section class="search-results">
+
+                <div class="results-header">
+                    <span class="results-count">Results ({{ totaldisplay }} of {{ totalrows }})</span>
+                    <div class="view-toggle" role="group" aria-label="View mode">
+                        <button class="view-toggle-btn" type="button" aria-label="Grid view"><i class="fas fa-th"></i></button>
+                        <button class="view-toggle-btn view-toggle-btn-active" type="button" aria-label="List view"><i class="fas fa-list"></i></button>
+                    </div>
+                </div>
+
+                <!-- Facet breakdown: only shown if at least one count > 0 -->
+                {% if Repositorycases > 0 or Seriescases > 0 or Shelfmarkcases > 0 or Phrasecases > 0 %}
+                <div class="facet-counts">
+                    <span class="facet-counts-label">Matches by field:</span>
+                    {% if Repositorycases > 0 %}
+                    <span class="facet-pill">Repository <span class="facet-pill-count">{{ Repositorycases }}</span></span>
+                    {% endif %}
+                    {% if Seriescases > 0 %}
+                    <span class="facet-pill">Series <span class="facet-pill-count">{{ Seriescases }}</span></span>
+                    {% endif %}
+                    {% if Shelfmarkcases > 0 %}
+                    <span class="facet-pill">Shelfmark <span class="facet-pill-count">{{ Shelfmarkcases }}</span></span>
+                    {% endif %}
+                    {% if Phrasecases > 0 %}
+                    <span class="facet-pill">Phrase <span class="facet-pill-count">{{ Phrasecases }}</span></span>
+                    {% endif %}
+                </div>
+                {% endif %}
+
+                <div class="result-list" id="results">
+                    {% for item in itemset.values %}
+                    {% with item_idx=forloop.counter %}
+                    <article class="result-card result-card-stacked">
+
+                        <div class="result-body">
+                            <a class="result-tag" href="{% url 'item_page' entity_type='item' digisig_entity_number=item.id_item %}">Archival item</a>
+
+                            <h3 class="result-title">
+                                <a href="{% url 'item_page' entity_type='item' digisig_entity_number=item.id_item %}">{{ item.repository }}, {{ item.shelfmark }}</a>
+                            </h3>
+
+                            <div class="thumb-strip">
+                                {% for key, value in item.part.items %}
+                                    {% if value.representation.connection != null %}
+                                    <a class="thumb-strip-item"
+                                       onclick="image2('{{ item_idx }}_{{ forloop.counter }}', 'item'); return false;"
+                                       href="#">
+                                        <img class="modalimage"
+                                            id="modalimagebaseitem{{ item_idx }}_{{ forloop.counter }}"
+                                            src="{{ value.representation.connection }}{{ value.representation.thumb }}"
+                                            alt="{{ value.representation.id_representation }}"
+                                            loading="lazy">
+                                    </a>
+
+                                    <div id="myModalitem{{ item_idx }}_{{ forloop.counter }}" class="modal" style="display: none;">
+                                        <span class="close" onclick="modalclose2('{{ item_idx }}_{{ forloop.counter }}', 'item')">&times;</span>
+                                        <img class="modal-content"
+                                            id="modalimgitem{{ item_idx }}_{{ forloop.counter }}"
+                                            src="{{ value.representation.connection }}{{ value.representation.thumb }}"
+                                            alt="{{ value.representation.id_representation }}"
+                                            loading="lazy">
+                                        <div class="modal-caption" id="captionitem{{ item_idx }}_{{ forloop.counter }}">
+                                            <a href="{% url 'representation_page' entity_type='representation' digisig_entity_number=value.representation.id_representation %}">Representation details</a>
+                                        </div>
+                                    </div>
+                                    {% endif %}
+                                {% empty %}
+                                    <span class="thumb-strip-empty">No representations</span>
+                                {% endfor %}
+                            </div>
+                        </div>
+
+                        <button class="bookmark-btn" type="button" aria-label="Bookmark this item">
+                            <i class="far fa-bookmark"></i>
+                        </button>
+                    </article>
+                    {% endwith %}
+                    {% empty %}
+                    <div class="no-results">No matching items found. Try adjusting your filters.</div>
+                    {% endfor %}
+                </div>
+
+                {% if totalrows > 9 %}
+                <nav class="pagination" aria-label="Results pagination">
+                    {% if has_previous %}
+                    <button class="page-btn"
+                            onclick="go_to_page({{ pagecountercurrent|add:'-1' }})">Previous</button>
+                    {% endif %}
+
+                    {% if has_previous %}
+                    <button class="page-btn"
+                            onclick="go_to_page({{ pagecountercurrent|add:'-1' }})">{{ pagecountercurrent|add:'-1' }}</button>
+                    {% endif %}
+
+                    <button class="page-btn page-btn-active"
+                            onclick="go_to_page({{ pagecountercurrent }})">{{ pagecountercurrent }}</button>
+
+                    {% if has_next %}
+                    <button class="page-btn"
+                            onclick="go_to_page({{ pagecounternext }})">{{ pagecounternext }}</button>
+                    <button class="page-btn"
+                            onclick="go_to_page({{ pagecounternextnext }})">{{ pagecounternextnext }}</button>
+                    <button class="page-btn"
+                            onclick="go_to_page({{ pagecounternext }})">Next</button>
+                    {% endif %}
+                </nav>
+                {% endif %}
+
+            </section>
+        </div>
+    </div>
+</section>
+
+
+<!-- Preserved JS from the original template -->
+<script>
+// reset page counter when filter inputs change
+document.getElementById("form").addEventListener("input", formupdate_event);
+function formupdate_event() {
+    document.getElementById("id_pagination").value = 1;
+}
+
+// series/repository dependent dropdown
+const series_data = JSON.parse('{{ series_object|safe }}');
+
+document.getElementById("id_repository").onchange = function () {
+    var statusrepository = document.getElementById('id_repository').value;
+
+    if (statusrepository == "") {
+        document.getElementById('series_label').style = "opacity:0.6";
+    } else {
+        var seriesoptionslength = document.getElementById('id_series').options.length;
+        var x = document.getElementById('id_series');
+
+        for (var j = 0; j < seriesoptionslength; j++) {
+            document.getElementById("id_series").options[j].hidden = true;
+            var t = document.getElementById("id_series").options[j].value;
+            var statusrepository = document.getElementById('id_repository').value;
+
+            for (var key in series_data) {
+                if (series_data[key].pk == t) {
+                    var repositorynumber = series_data[key].fields.fk_repository;
+                }
+            }
+
+            var repositorynumber2 = Number(repositorynumber);
+
+            if (repositorynumber2 == statusrepository) {
+                document.getElementById("id_series").options[j].hidden = false;
+            }
+        }
+    }
+}
+</script>
+
+{% endblock %}

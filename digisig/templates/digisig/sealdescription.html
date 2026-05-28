@@ -4,7 +4,7 @@
 
 {% block content %}
 
-{# ── Background banner (matches other catalogue pages) ─── #}
+{# ── Background banner ─── #}
 <div class="search-catalogue-banner"></div>
 
 <div class="sd-page">
@@ -18,7 +18,7 @@
     {# ── Two-column layout ──────────────────────────────────────── #}
     <div class="sd-layout">
 
-        {# ── LEFT COLUMN: metadata + contents + citation ── #}
+        {# ── LEFT COLUMN: metadata + contents ── #}
         <div class="sd-main-col">
 
             {# ── Metadata card ── #}
@@ -191,18 +191,6 @@
                 </div>{# /.sd-contents-body #}
 
             </section>{# /.sd-contents-card #}
-
-<!--             {# ── Citation box ── #}
-            <div class="sd-citation-box">
-                <p class="sd-citation-title">How to Cite this Record</p>
-                <p class="sd-citation-text">
-                    {{ sealdescription_object.fk_collection.collection_title }}.
-                    Item {{ sealdescription_object.sealdescription_identifier }}:
-                    {{ sealdescription_object.sealdescription_title }}.
-                    Digisig Digital Sigillography Resource. [Accessed {% now "Y" %}].
-                    &lt;https://www.digisig.org/entity/{{ sealdescription_object.id_sealdescription }}&gt;
-                </p>
-            </div> -->
 
         </div>{# /.sd-main-col #}
 

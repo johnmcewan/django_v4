@@ -103,10 +103,15 @@
 
                         <div class="result-thumb">
                             {% if sealdescription.collection_thumbnail %}
-                                <img class="modalimage" id="modalimagebase{{ forloop.counter }}"
-                                    src="{% static 'digisig/images/collections_cover/' %}{{ sealdescription.collection_thumbnail }}"
-                                    alt="Catalogue cover"
-                                    onclick="image({{ forloop.counter }})">
+                                <a href="{% static 'digisig/images/collections_cover/' %}{{ sealdescription.collection_thumbnail }}"
+                                   class="glightbox"
+                                   data-gallery="sealdescription-results"
+                                   data-alt="Catalogue cover"
+                                   data-description="{{ sealdescription.collection_shorttitle }}">
+                                    <img class="modalimage" id="modalimagebase{{ forloop.counter }}"
+                                        src="{% static 'digisig/images/collections_cover/' %}{{ sealdescription.collection_thumbnail }}"
+                                        alt="Catalogue cover">
+                                </a>
                             {% endif %}
                         </div>
 
@@ -193,14 +198,7 @@
                             <i class="far fa-bookmark"></i>
                         </button>
 
-                        {% if sealdescription.collection_thumbnail %}
-                        <div id="myModal{{ forloop.counter }}" class="modal" style="display: none;">
-                            <span class="close" onclick="modalclose({{ forloop.counter }})">&times;</span>
-                            <img class="modal-content" id="modalimg{{ forloop.counter }}"
-                                src="{% static 'digisig/images/collections_cover/' %}{{ sealdescription.collection_thumbnail }}"
-                                alt="Catalogue cover">
-                        </div>
-                        {% endif %}
+
                     </article>
                     {% empty %}
                     <div class="no-results">No matching seal descriptions found. Try adjusting your filters.</div>
@@ -238,10 +236,13 @@
 
 
 <script>
-// function go_to_page(pageNumber) {
-//     document.getElementById("id_pagination").value = pageNumber;
-//     document.getElementById("form").submit();
-// }
+// GLightbox initialisation
+GLightbox({
+    selector: '.glightbox',
+    touchNavigation: true,
+    loop: false,
+    descPosition: 'bottom',
+});
 
 function myFunction() {
     // Text fields → empty string

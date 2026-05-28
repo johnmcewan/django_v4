@@ -1,0 +1,359 @@
+{% extends "digisig/base.html" %}
+
+{% load static %}
+
+{% block content %}
+
+<!-- Permalink overlay (toggled by JS) -->
+<div class="entity-permalink" id="entity-permalink">
+  <div class="entity-permalink-card">
+    <div class="entity-permalink-head">
+      Permalink
+      <button onclick="toggle('entity-permalink')" class="entity-permalink-close">&times;</button>
+    </div>
+    <label for="manif-permalink-input">Copy this URL to link to this page:</label>
+    <input id="manif-permalink-input" class="entity-permalink-input"
+           value="http://www.digisig.org/entity/{{manifestation_dic.id_manifestation}}"
+           type="text" readonly>
+  </div>
+</div>
+
+
+<div class="entity-page">
+
+  <!-- ═══════════════════════════════════════════════════
+       PAGE HEADER
+       ═══════════════════════════════════════════════════ -->
+  <section class="sd-title-section">
+    <p class="entity-eyebrow">Manifestation</p>
+    <h1>{{manifestation_dic.imagestate_term}}</h1>
+  </section>
+
+
+  <!-- ═══════════════════════════════════════════════════
+       MAIN GRID: 8-col content + 4-col sticky sidebar
+       ═══════════════════════════════════════════════════ -->
+  <div class="manif-layout">
+
+    <!-- ─── LEFT: main content column ─────────────────── -->
+    <div class="manif-main-col">
+
+
+<!-- ── SECTION 1: Seal Impression Details ────────── -->
+      <section class="manif-section">
+        <div class="sd-card sd-meta-card">
+          <div class="sd-meta-header">
+            <h2>Seal Impression Details</h2>
+            <button onclick="toggle('entity-permalink')" class="sd-permalink-btn">
+              <i class="fas fa-link"></i> Permalink
+            </button>
+          </div>
+
+          <div class="sd-meta-rows">
+
+            <div class="sd-meta-row">
+              <span class="sd-meta-label">Held by</span>
+              <span class="sd-meta-value">{{manifestation_dic.repository_fulltitle}}</span>
+            </div>
+
+            {% if manifestation_dic.label_manifestation_repository %}
+            <div class="sd-meta-row">
+              <span class="sd-meta-label">
+                Reference
+                <a class="entity-help-link" href="{% url 'entity' digisig_entity_number=10001567 %}" target="_blank">
+                  <i class="fas fa-question-circle"></i>
+                </a>
+              </span>
+              <span class="sd-meta-value">
+                {{manifestation_dic.label_manifestation_repository}}
+                {% if manifestation_dic.connection != null %}
+                <a class="manif-external-link"
+                   href="{{manifestation_dic.connection}}{{manifestation_dic.ui_manifestation_repository}}"
+                   target="_blank">
+                  External link <i class="fas fa-external-link-alt"></i>
+                </a>
+                {% endif %}
+              </span>
+            </div>
+            {% endif %}
+
+            <div class="sd-meta-row">
+              <span class="sd-meta-label">Part of</span>
+              <span class="sd-meta-value">
+                <a class="entity-detail-link"
+                   href="{% url 'entity' manifestation_dic.id_item %}">{{manifestation_dic.shelfmark}}</a>
+              </span>
+            </div>
+
+            {% if manifestation_dic.fk_attachment != null %}
+            <div class="sd-meta-row">
+              <span class="sd-meta-label">
+                Attachment
+                <a class="entity-help-link" href="{% url 'entity' digisig_entity_number=10001427 %}" target="_blank">
+                  <i class="fas fa-question-circle"></i>
+                </a>
+              </span>
+              <span class="sd-meta-value">{{manifestation_dic.attachment}}</span>
+            </div>
+            {% endif %}
+
+            {% if manifestation_dic.number != 'Undetermined' %}
+            <div class="sd-meta-row">
+              <span class="sd-meta-label">
+                Position
+                <a class="entity-help-link" href="{% url 'entity' digisig_entity_number=10001447 %}" target="_blank">
+                  <i class="fas fa-question-circle"></i>
+                </a>
+              </span>
+              <span class="sd-meta-value">
+                support {{manifestation_dic.fk_number_currentposition}}, {{manifestation_dic.fk_support.position}}
+              </span>
+            </div>
+            {% endif %}
+
+            <div class="sd-meta-row">
+              <span class="sd-meta-label">
+                Support status
+                <a class="entity-help-link" href="{% url 'entity' digisig_entity_number=10001377 %}" target="_blank">
+                  <i class="fas fa-question-circle"></i>
+                </a>
+              </span>
+              <span class="sd-meta-value">
+                {% if manifestation_dic.fk_support.fk_supportstatus != null %}
+                  {{manifestation_dic.fk_support.supportstatus}}{% if manifestation_dic.fk_support.fk_supportstatus.supportstatus != 'undetermined' %} {{manifestation_dic.fk_support.fk_supportstatus.supportstatus}}{% endif %}
+                {% endif %}
+              </span>
+            </div>
+
+            <div class="sd-meta-row">
+              <span class="sd-meta-label">
+                Support type
+                <a class="entity-help-link" href="{% url 'entity' digisig_entity_number=10001377 %}" target="_blank">
+                  <i class="fas fa-question-circle"></i>
+                </a>
+              </span>
+              <span class="sd-meta-value">
+                {% if manifestation_dic.fk_support.fk_nature != null %}
+                  {{manifestation_dic.fk_support.fk_nature.nature_name}}{% if manifestation_dic.fk_support.fk_material != null %} ({{manifestation_dic.fk_support.fk_material.material}}){% endif %}
+                {% endif %}
+              </span>
+            </div>
+
+          </div>{# /sd-meta-rows #}
+        </div>{# /sd-card #}
+      </section>
+
+
+
+      <!-- ── SECTION 2: Seal Details ────────────────────── -->
+      <section class="manif-section">
+        <div class="entity-section-heading">
+          <i class="fas fa-stamp manif-section-icon"></i>
+          <h2 class="entity-section-title">Seal</h2>
+          <span class="entity-section-rule"></span>
+          <a class="entity-permalink-link" href="{% url 'entity' manifestation_dic.id_seal %}">
+            Seal record <i class="fas fa-arrow-right"></i>
+          </a>
+          <button id="entitybutton1" onclick="tbtoggle('entity1', 'entitybutton1')"
+                  class="entity-toggle-btn">+</button>
+        </div>
+
+        <div id="entity1" style="display:none;">
+          <div class="entity-card">
+            <dl class="entity-detail-list">
+
+              <div class="entity-detail-row">
+                <dt class="entity-detail-label">
+                  Date
+                  <a class="entity-help-link" href="{% url 'entity' digisig_entity_number=10001357 %}" target="_blank">
+                    <i class="fas fa-question-circle"></i>
+                  </a>
+                </dt>
+                <dd class="entity-detail-value">
+                  {% if seal_object.date_origin %}
+                    c.{{seal_object.date_origin}}
+                  {% else %}
+                    <span class="entity-detail-muted">Not Available</span>
+                  {% endif %}
+                </dd>
+              </div>
+
+              <div class="entity-detail-row">
+                <dt class="entity-detail-label">
+                  Actor
+                  <a class="entity-help-link" href="{% url 'entity' digisig_entity_number=10001537 %}" target="_blank">
+                    <i class="fas fa-question-circle"></i>
+                  </a>
+                </dt>
+                <dd class="entity-detail-value manif-actor-name">
+                  <a class="entity-detail-link manif-actor-link"
+                     href="{% url 'entity' manifestation_dic.id_individual %}">{{outname}}</a>
+                </dd>
+              </div>
+
+              {% for description in sealdescription_object %}
+              <div class="entity-detail-row">
+                {% if forloop.first %}
+                <dt class="entity-detail-label">
+                  Described in
+                  <a class="entity-help-link" href="{% url 'entity' digisig_entity_number=10001527 %}" target="_blank">
+                    <i class="fas fa-question-circle"></i>
+                  </a>
+                </dt>
+                {% else %}
+                <dt class="entity-detail-label" aria-hidden="true">&nbsp;</dt>
+                {% endif %}
+                <dd class="entity-detail-value">
+                  <a class="entity-detail-link entity-detail-link--italic"
+                     href="{% url 'entity' description.id_sealdescription %}">
+                    {{description.fk_collection.collection_shorttitle}}{% if description.sealdescription_identifier != null %} ({{description.sealdescription_identifier}}){% endif %}
+                  </a>
+                </dd>
+              </div>
+              {% endfor %}
+
+            </dl>
+          </div>
+        </div>
+      </section>
+
+
+      <!-- ── SECTION 3: Event ───────────────────────────── -->
+      <section class="manif-section">
+        <div class="entity-section-heading">
+          <i class="fas fa-calendar-alt manif-section-icon"></i>
+          <h2 class="entity-section-title">Event</h2>
+          <span class="entity-section-rule"></span>
+          <button id="entitybutton2" onclick="tbtoggle('entity2', 'entitybutton2')"
+                  class="entity-toggle-btn">+</button>
+        </div>
+
+        <div id="entity2" style="display:none;">
+          <div class="entity-card">
+            <dl class="entity-detail-list">
+
+              <div class="entity-detail-row">
+                <dt class="entity-detail-label">Date</dt>
+                <dd class="entity-detail-value">
+                  {{manifestation_dic.fk_support.fk_part.fk_event.startdate}}
+                  {% if manifestation_dic.fk_support.fk_part.fk_event.enddate %}
+                  &ndash; {{manifestation_dic.fk_support.fk_part.fk_event.enddate}}
+                  {% endif %}
+                </dd>
+              </div>
+
+              <div class="entity-detail-row">
+                <dt class="entity-detail-label">Region</dt>
+                <dd class="entity-detail-value">{{region}}</dd>
+              </div>
+
+            </dl>
+          </div>
+        </div>
+      </section>
+
+
+      <!-- ── SECTION 4: Representations (conditional) ──── -->
+      {% if representation_object.count > 0 %}
+      <section class="manif-section">
+        <div class="entity-section-heading entity-section-heading--split">
+          <i class="fas fa-images manif-section-icon"></i>
+          <h2 class="entity-section-title">Representations</h2>
+          <span class="entity-section-rule"></span>
+          <span class="entity-section-count">Showing {{representation_object.count}} of {{totalrows}}</span>
+          <button id="entitybutton3" onclick="tbtoggle('entity3', 'entitybutton3')"
+                  class="entity-toggle-btn">+</button>
+        </div>
+
+        <div id="entity3" style="display:none;">
+          {% for representation in representation_object %}
+          <div class="manif-repr-card entity-card{% if not forloop.last %} manif-repr-card--spaced{% endif %}">
+
+            {% if representation.representation_thumbnail != null %}
+            <div class="manif-repr-image">
+              <img class="modalimage" id="modalimagebase{{forloop.counter}}"
+                   src="{{representation.thumb}}{{representation.representation_thumbnail}}"
+                   alt="{{representation.id_representation}}"
+                   onclick="image({{forloop.counter}})">
+              <!-- Modal -->
+              <div id="myModal{{forloop.counter}}" class="modal" style="display: none;">
+                <span class="close" onclick="modalclose({{forloop.counter}})">&times;</span>
+                <img class="modal-content" id="modalimg{{forloop.counter}}"
+                     src="{{representation.medium}}{{representation.representation_filename}}"
+                     alt="{{representation.id_representation}}">
+                <div class="modal-caption" id="caption{{forloop.counter}}">
+                  <a href="{% url 'entity' representation.id_representation %}">{{representation.id_representation}}</a>
+                </div>
+              </div>
+            </div>
+            {% endif %}
+
+            <div class="manif-repr-info">
+              <div class="entity-card-header">
+                <h4 class="entity-card-title">
+                  <a class="entity-detail-link"
+                     href="{% url 'entity' representation.id_representation %}">Representation details</a>
+                </h4>
+              </div>
+              <dl class="entity-detail-list">
+                <div class="entity-detail-row">
+                  <dt class="entity-detail-label">Creator</dt>
+                  <dd class="entity-detail-value">
+                    {{representation.name_first}} {{representation.name_middle}} {{representation.name_last}}
+                  </dd>
+                </div>
+                <div class="entity-detail-row">
+                  <dt class="entity-detail-label">Type</dt>
+                  <dd class="entity-detail-value">{{representation.representation_type}}</dd>
+                </div>
+                <div class="entity-detail-row">
+                  <dt class="entity-detail-label">Date taken</dt>
+                  <dd class="entity-detail-value">{{representation.represenation_datecreated}}</dd>
+                </div>
+              </dl>
+            </div>
+
+          </div>
+          {% endfor %}
+        </div>
+      </section>
+      {% endif %}
+
+
+    </div><!-- /manif-main-col -->
+
+
+    <!-- ─── RIGHT: sticky sidebar ──────────────────────── -->
+    <div class="manif-side-col">
+
+      <!-- Artifact image (only if there is a representation attached) -->
+      {% if manifestation_dic.fk_representation_type != 0 %}
+      <div class="manif-image-panel entity-card">
+        <figure class="manif-image-figure">
+          <img class="manif-image-full modalimage" id="modalimagebase1"
+               src="{{manifestation_dic.thumb}}{{manifestation_dic.representation_thumbnail_hash}}"
+               alt="{{manifestation_dic.id_representation}}"
+               onclick="image(1)">
+          <figcaption class="manif-image-caption">Fig&thinsp;1.&ensp;Physical Impression</figcaption>
+        </figure>
+        <!-- Modal for primary image -->
+        <div id="myModal1" class="modal" style="display: none;">
+          <span class="close" onclick="modalclose(1)">&times;</span>
+          <img class="modal-content" id="modalimg1"
+               src="{{manifestation_dic.medium}}{{manifestation_dic.representation_filename_hash}}"
+               alt="{{manifestation_dic.id_representation}}">
+          <div class="modal-caption" id="caption1">
+            <a href="{% url 'entity' manifestation_dic.id_representation %}">Representation details</a>
+          </div>
+        </div>
+      </div>
+
+      {% endif %}
+
+    </div><!-- /manif-side-col -->
+
+  </div><!-- /manif-layout -->
+
+</div><!-- /entity-page -->
+
+{% endblock %}

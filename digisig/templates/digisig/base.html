@@ -11,6 +11,10 @@
 <!-- Font Awesome -->
 <script src="https://kit.fontawesome.com/1bf00dda24.js" crossorigin="anonymous"></script>
 
+<!-- GLightbox CSS -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/glightbox/dist/css/glightbox.min.css">
+<script src="https://cdn.jsdelivr.net/npm/glightbox/dist/js/glightbox.min.js"></script>
+
 <!-- Google Fonts: Archival Scholasticism pairing -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -177,6 +181,15 @@
 
     </div>
 </footer>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    GLightbox({
+        selector: '.glightbox'
+    });
+});
+</script>
+
 
 </body>
 </html>

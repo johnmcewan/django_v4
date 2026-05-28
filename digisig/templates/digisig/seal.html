@@ -119,17 +119,17 @@
                     <div class="seal-manifest-image">
                         {% if manifestation.representation_filename_hash %}
                         <figure>
-                            <img class="modalimage img-desat"
-                                 id="modalimagebase{{ forloop.counter }}"
-                                 src="{{ manifestation.thumb }}{{ manifestation.representation_thumbnail_hash }}"
-                                 alt="{{ manifestation.id_representation }}"
-                                 onclick="image({{ forloop.counter }})">
+                            <a href="{{ manifestation.medium }}{{ manifestation.representation_filename_hash }}"
+                               class="glightbox"
+                               data-gallery="seal-manifestations"
+                               data-alt="{{ manifestation.id_representation }}"
+                               data-description="<a href='{% url 'entity' manifestation.id_representation %}'>Representation details</a>">
+                                <img class="modalimage img-desat"
+                                     id="modalimagebase{{ forloop.counter }}"
+                                     src="{{ manifestation.thumb }}{{ manifestation.representation_thumbnail_hash }}"
+                                     alt="{{ manifestation.id_representation }}">
+                            </a>
                         </figure>
-                        <button class="seal-manifest-zoom"
-                                onclick="image({{ forloop.counter }})"
-                                aria-label="Zoom image">
-                            <i class="fas fa-search-plus"></i>
-                        </button>
                         {% else %}
                         <div class="seal-manifest-noimage">
                             <i class="fas fa-image"></i>
@@ -171,19 +171,6 @@
 
                 </article>
 
-                {# ── Preserved image modal markup ── #}
-                {% if manifestation.representation_filename_hash %}
-                <div id="myModal{{ forloop.counter }}" class="modal" style="display: none;">
-                    <span class="close" onclick="modalclose({{ forloop.counter }})">&times;</span>
-                    <img class="modal-content"
-                         id="modalimg{{ forloop.counter }}"
-                         src="{{ manifestation.medium }}{{ manifestation.representation_filename_hash }}"
-                         alt="{{ manifestation.id_representation }}">
-                    <div class="modal-caption" id="caption{{ forloop.counter }}">
-                        <a href="{% url 'entity' manifestation.id_representation %}">Representation details</a>
-                    </div>
-                </div>
-                {% endif %}
 
                 {% endifchanged %}
             {% empty %}

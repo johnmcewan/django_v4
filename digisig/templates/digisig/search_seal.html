@@ -166,10 +166,6 @@
                 <!-- Results header bar -->
                 <div class="results-header">
                     <span class="results-count">Results ({{ totaldisplay }} of {{ totalrows }})</span>
-<!--                     <div class="view-toggle" role="group" aria-label="View mode">
-                        <button class="view-toggle-btn" type="button" aria-label="Grid view"><i class="fas fa-th"></i></button>
-                        <button class="view-toggle-btn view-toggle-btn-active" type="button" aria-label="List view"><i class="fas fa-list"></i></button>
-                    </div> -->
                 </div>
 
                 <!-- Result cards -->
@@ -179,10 +175,15 @@
 
                         <div class="result-thumb">
                             {% if m.representation_thumbnail_hash != null %}
-                                <img class="modalimage" id="modalimagebase{{ forloop.counter }}" loading="lazy"
-                                    src="{{ m.thumb }}{{ m.representation_thumbnail_hash }}"
-                                    alt="{{ m.id_representation }}"
-                                    onclick="image({{ forloop.counter }})">
+                                <a href="{{ m.medium }}{{ m.representation_filename_hash }}"
+                                   class="glightbox"
+                                   data-gallery="search-results"
+                                   data-description="<a href='{% url 'entity' m.id_representation %}'>Representation details</a>"
+                                   data-alt="{{ m.id_representation }}">
+                                    <img class="modalimage" id="modalimagebase{{ forloop.counter }}" loading="lazy"
+                                        src="{{ m.thumb }}{{ m.representation_thumbnail_hash }}"
+                                        alt="{{ m.id_representation }}">
+                                </a>
                             {% endif %}
                         </div>
 
@@ -245,16 +246,7 @@
                             <i class="far fa-bookmark"></i>
                         </button>
 
-                        <!-- Preserved modal image viewer -->
-                        {% if m.representation_thumbnail_hash != null %}
-                        <div id="myModal{{ forloop.counter }}" class="modal" style="display: none;">
-                            <span class="close" onclick="modalclose({{ forloop.counter }})">&times;</span>
-                            <img class="modal-content" id="modalimg{{ forloop.counter }}" src="{{ m.medium }}{{ m.representation_filename_hash }}" alt="{{ m.id_representation }}">
-                            <div class="modal-caption" id="caption{{ forloop.counter }}">
-                                <a href="{% url 'entity' m.id_representation %}">Representation details</a>
-                            </div>
-                        </div>
-                        {% endif %}
+
 
                     </article>
                     {% endfor %}
@@ -290,11 +282,16 @@
     </div>
 </section>
 
-
-<!-- =====================================================
-     Page JS — preserved from the original template
-     ===================================================== -->
 <script>
+// ----- GLightbox -------------------------------------------------------
+const lightbox = GLightbox({
+    selector: '.glightbox',
+    touchNavigation: true,
+    loop: false,
+    autoplayVideos: false,
+    descPosition: 'bottom',
+});
+
 // reset page counter when filter inputs change
 document.getElementById("form").addEventListener("input", formupdate_event);
 function formupdate_event() {
