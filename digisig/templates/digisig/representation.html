@@ -6,8 +6,8 @@
 
 <!-- RTI / OpenLIME assets (preserved from original) -->
 <!-- <script src="{% static 'js/rtidisplay.js' %}"></script> -->
-<link  rel="stylesheet" href="{% static 'openlime/css/skin.css' %}">
-<script src="{% static 'openlime/js/openlime.js' %}"></script>
+<!-- <link  rel="stylesheet" href="{% static 'openlime/css/skin.css' %}">
+<script src="{% static 'openlime/js/openlime.js' %}"></script> -->
 
 
 <!-- Permalink overlay — hidden on load -->
@@ -23,7 +23,6 @@
            type="text" readonly>
   </div>
 </div>
-
 
 <div class="entity-page">
 
@@ -401,7 +400,7 @@
 
 
       <!-- ── SECTION 6: RTI Viewer ──────────────────────── -->
-      <section class="repr-section repr-rti-section">
+      <!-- <section class="repr-section repr-rti-section">
         <div class="entity-section-heading">
           <i class="fas fa-adjust repr-section-icon"></i>
           <h2 class="entity-section-title">Interactive Viewer</h2>
@@ -409,17 +408,17 @@
         </div>
 
         <div class="repr-rti-panel entity-card">
-          <!-- Hidden metadata read by rtidisplay.js -->
-          <div id="choice"   hidden>{{representation_dic.id_representation}}</div>
-          <div id="RTItest"  hidden>{{representation_dic.representation_type}}</div>
+          Hidden metadata read by rtidisplay.js -->
+          <!-- <div id="choice"   hidden>{{representation_dic.id_representation}}</div>
+          <div id="RTItest"  hidden>{{representation_dic.representation_type}}</div> -->
           <!-- OpenLIME mounts here -->
-          <div id="openlime" class="repr-rti-viewer"></div>
+          <!--<div id="openlime" class="repr-rti-viewer"></div>
           <p class="repr-rti-hint" id="repr-rti-hint" style="display:none;">
             <i class="fas fa-info-circle"></i>
             Use the controls to adjust the light direction on this RTI image.
           </p>
         </div>
-      </section>
+      </section>  -->-->
 
 
     </div><!-- /manif-main-col -->
@@ -506,56 +505,5 @@ if (choice2 === "RTI") {
     if (rtiSection) rtiSection.style.display = 'none';
 }
 </script>
-
-
-// if (choice2 === "RTI") {
-
-//     // Show the RTI hint text
-//     var hint = document.getElementById("repr-rti-hint");
-//     if (hint) hint.style.display = "flex";
-
-//     let rti  = rtiselect(choice1);
-//     const dzi  = rti[0],
-//           info = rti[1];
-
-//     async function autodetect() {
-//         let response = await fetch(dzi);
-//         if (response.status === 200) return "deepzoom";
-//         alert("Could not detect an RTI here");
-//         return "";
-//     }
-
-//     async function autodetectNormals(layout) { return false; }
-
-//     async function init() {
-//         let layout  = await autodetect();
-//         let normals = await autodetectNormals(layout);
-//         var lime    = new OpenLIME.Viewer('#openlime', { background: 'black' });
-
-//         let layer = new OpenLIME.Layer({
-//             layout:  layout,
-//             type:    'rti',
-//             url:     info,
-//             normals: normals
-//         });
-
-//         lime.canvas.addLayer('RTI', layer);
-//         OpenLIME.Skin.setUrl("{% static 'openlime/skin/skin.svg' %}");
-//         let ui = new OpenLIME.UIBasic(lime, { skin: 'skin.svg', showLightDirections: true });
-//         ui.actions.light.active  = true;
-//         ui.actions.layers.display = true;
-//         lime.camera.maxFixedZoom  = 1;
-//         window.lime = lime;
-//     }
-
-//     init();
-
-// } else {
-//     // Not an RTI — collapse the viewer section to zero height
-//     var rtiPanel = document.querySelector('.repr-rti-panel');
-//     var rtiSection = document.querySelector('.repr-rti-section');
-//     if (rtiSection) rtiSection.style.display = 'none';
-//     console.log("Not an RTI");
-// }
 
 {% endblock %}
