@@ -351,7 +351,6 @@ async def analyze(request, analysistype):
 				try:
 					# fetch the current model
 					url = os.path.join(settings.BASE_DIR, 'staticfiles/ml/ml_tree')
-					print ("try")
 
 					with open(url, 'rb') as file:   
 						mlmodel = pickle.load(file)
@@ -359,7 +358,6 @@ async def analyze(request, analysistype):
 				except:
 					# fetch the current model
 					url = os.path.join(settings.BASE_DIR, 'digisig\\static\\ml\\ml_tree')
-					print ("except")
 
 					with open(url, 'rb') as file:   
 						mlmodel = pickle.load(file)
@@ -370,10 +368,8 @@ async def analyze(request, analysistype):
 				# get information about decision path
 				decisionpathout, decisiontreedic = await mlshowpath(mlmodel, df)
 
-				seal_set, resultrange, resultset, labels, data1 = await finalnodevalue_set(finalnodevalue, shape_object, class_object)
-
+				seal_set, resultrange, resultset, labels, data1, data2 = await finalnodevalue_set(finalnodevalue, shape_object, class_object)
 				seal_set, totalrows, totaldisplay, has_next, has_previous = await defaultpagination(seal_set, 1)
-
 				manifestation_set = await mlmanifestation_set(seal_set)
 
 		context = {
@@ -383,6 +379,7 @@ async def analyze(request, analysistype):
 			'resultrange': resultrange,
 			'labels': labels,
 			'data1': data1,
+			'data2': data2,
 			'manifestation_set': manifestation_set,
 			'decisiontreedic': decisiontreedic,
 			'finalnodevalue': finalnodevalue,

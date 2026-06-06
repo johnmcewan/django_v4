@@ -1019,14 +1019,19 @@ def temporaldistribution(timegroupcases):
 				timecount[timegroupupdate] += 1
 
 	labels = []
-	data = []
+	data1 = []
+	data2 = []
 
+	# calculate total cases across all periods
+	total_cases = sum(timecount.values())
 	# determine how many seals should go in each temporal group
 	for key, value in timecount.items():
 		labels.append(key)
-		data.append(value)
-
-	return (labels, data)
+		data1.append(value)
+		# calculate percentage, avoiding division by zero
+		percentage = round((value / total_cases * 100), 2) if total_cases > 0 else 0
+		data2.append(percentage)
+	return (labels, data1, data2)
 
 
 def getquantiles(timegroupcases):
@@ -1211,7 +1216,7 @@ def finalnodevalue_set(finalnodevalue, shape_object, class_object):
 		'date_origin', 'id_seal', 'fk_timegroupc', 'fk_timegroupc__timegroup_c_range', 'fk_seal_face__fk_shape', 'fk_seal_face__fk_class')
 
 	resultrange, resultset = getquantiles(timegroupcases)
-	labels, data1 = temporaldistribution(timegroupcases)
+	labels, data1, data2 = temporaldistribution(timegroupcases)
 	sealtargets = timegroupcases.values_list('id_seal', flat='True')
 
 	# #identify a subset of seal to display as suggestions
@@ -1232,7 +1237,7 @@ def finalnodevalue_set(finalnodevalue, shape_object, class_object):
 		'fk_manifestation__fk_support__fk_part__fk_event').order_by(
 		'fk_manifestation')
 
-	return(seal_set, resultrange, resultset, labels, data1)
+	return(seal_set, resultrange, resultset, labels, data1, data2)
 
 @sync_to_async
 def mlmanifestation_set(seal_set):

@@ -151,7 +151,7 @@
             <i class="fas fa-chart-area" style="margin-right:6px;"></i>
             Cases by period
           </span>
-          <span class="map-panel-hint">Percentage of total cases per year</span>
+          <span class="map-panel-hint">Number of cases by period</span>
         </div>
         <div class="analysis-chart-container">
           <canvas id="Chart1"></canvas>
@@ -350,29 +350,51 @@
 </div><!-- /map-page -->
 
 
+
+
 <script>
-/* ── Chart.js (logic unchanged, colours updated to match palette) */
 var ctx = document.getElementById('Chart1').getContext('2d');
 var chart = new Chart(ctx, {
     type: 'line',
     data: {
         labels: [ {% for i in labels %}'{{i}}', {% endfor %} ],
-        datasets: [{
-            label: 'Cases by period',
-            backgroundColor: 'rgba(75, 0, 11, 0.12)',
-            borderColor: '#4b000b',
-            borderWidth: 2,
-            pointBackgroundColor: '#775a17',
-            pointBorderColor: '#fff',
-            pointRadius: 4,
-            fill: true,
-            tension: 0.35,
-            data: [ {% for i in data1 %}{{i}}, {% endfor %} ]
-        }]
+        datasets: [
+            {
+                label: 'Number of cases',
+                backgroundColor: 'rgba(75, 0, 11, 0.12)',
+                borderColor: '#4b000b',
+                borderWidth: 2,
+                pointBackgroundColor: '#775a17',
+                pointBorderColor: '#fff',
+                pointRadius: 4,
+                fill: true,
+                tension: 0.35,
+                yAxisID: 'y',
+                data: [ {% for i in data1 %}{{i}}, {% endfor %} ]
+            },
+            {
+                label: '% of total cases',
+                backgroundColor: 'rgba(119, 90, 23, 0.08)',
+                borderColor: '#775a17',
+                borderWidth: 2,
+                borderDash: [5, 4],
+                pointBackgroundColor: '#4b000b',
+                pointBorderColor: '#fff',
+                pointRadius: 4,
+                fill: false,
+                tension: 0.35,
+                yAxisID: 'y2',
+                data: [ {% for i in data2 %}{{i}}, {% endfor %} ]
+            }
+        ]
     },
     options: {
         responsive: true,
         maintainAspectRatio: true,
+        interaction: {
+            mode: 'index',
+            intersect: false,
+        },
         plugins: {
             legend: {
                 display: true,
@@ -380,6 +402,16 @@ var chart = new Chart(ctx, {
                 labels: {
                     font: { family: 'Inter, sans-serif', size: 13 },
                     color: '#564242'
+                }
+            },
+            tooltip: {
+                callbacks: {
+                    label: function(context) {
+                        if (context.dataset.yAxisID === 'y2') {
+                            return context.dataset.label + ': ' + context.parsed.y + '%';
+                        }
+                        return context.dataset.label + ': ' + context.parsed.y;
+                    }
                 }
             }
         },
@@ -400,21 +432,41 @@ var chart = new Chart(ctx, {
             },
             y: {
                 display: true,
+                position: 'left',
                 title: {
                     display: true,
-                    text: 'Percentage',
+                    text: 'Number of Cases',
                     font: { family: 'Inter, sans-serif', size: 12 },
-                    color: '#564242'
+                    color: '#4b000b'
                 },
                 ticks: {
                     font: { family: 'Inter, sans-serif', size: 11 },
-                    color: '#897171'
+                    color: '#4b000b'
                 },
                 grid: { color: 'rgba(220, 192, 191, 0.3)' }
+            },
+            y2: {
+                display: true,
+                position: 'right',
+                title: {
+                    display: true,
+                    text: '% of Total Cases',
+                    font: { family: 'Inter, sans-serif', size: 12 },
+                    color: '#775a17'
+                },
+                ticks: {
+                    font: { family: 'Inter, sans-serif', size: 11 },
+                    color: '#775a17',
+                    callback: function(value) { return value + '%'; }
+                },
+                grid: { drawOnChartArea: false }
             }
         }
     }
 });
 </script>
+
+
+
 
 {% endblock %}
