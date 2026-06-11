@@ -4393,15 +4393,25 @@ def partobjectforitem_define(entity_number):
 		for t in representation_part:
 			#for all images
 			connection = t.fk_connection
-			part_dic[t.fk_part]["connection"] = t.fk_connection
-			part_dic[t.fk_part]["connection_thumb"] = t.fk_connection.thumb
-			part_dic[t.fk_part]["connection_medium"] = t.fk_connection.medium
-			part_dic[t.fk_part]["representation_filename_hash"] = t.representation_filename_hash
-			part_dic[t.fk_part]["representation_thumbnail_hash"] = t.representation_thumbnail_hash
-			part_dic[t.fk_part]["id_representation"] = t.id_representation 
+			part_dic[t.fk_part_id]["connection"] = t.fk_connection
+			part_dic[t.fk_part_id]["connection_thumb"] = t.fk_connection.thumb
+			part_dic[t.fk_part_id]["connection_medium"] = t.fk_connection.medium
+			part_dic[t.fk_part_id]["representation_filename_hash"] = t.representation_filename_hash
+			part_dic[t.fk_part_id]["representation_thumbnail_hash"] = t.representation_thumbnail_hash
+			part_dic[t.fk_part_id]["id_representation"] = t.id_representation 
 
-	except:
-		print ('no image of PART available')
+	except Exception as e:
+		print(f'Exception for part {t.fk_part}: {type(e).__name__}: {e}')
+		import traceback
+		traceback.print_exc()
+		print(f'  t.fk_connection = {t.fk_connection}')
+		print(f'  t.fk_part = {t.fk_part}')
+		print(f'  t.fk_connection.thumb = {t.fk_connection.thumb}')
+		print(f'  t.fk_connection.medium = {t.fk_connection.medium}')
+		print(f'  t.representation_filename_hash = {t.representation_filename_hash}')
+		print(f'  t.representation_thumbnail_hash = {t.representation_thumbnail_hash}')
+		print(f'  t.id_representation = {t.id_representation}')
+		print(f'  t.fk_part in part_dic = {t.fk_part in part_dic}')
 
 ### prepare references
 	referenceset = Referenceindividual.objects.filter(
@@ -4430,7 +4440,6 @@ def partobjectforitem_define(entity_number):
 	for partneedingreference in part_dic.values():
 		searchvalue = partneedingreference['fk_event'] 
 		partneedingreference['reference_set'] = reference_dic[searchvalue]
-
 
 ## find seals associated with the parts
 	manifestation_set = Manifestation.objects.filter(

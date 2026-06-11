@@ -38,6 +38,28 @@
 
     <div class="sd-meta-rows">
 
+       	<div class="sd-meta-row">
+	        <div class="result-thumb">
+	            {% for part_id, part in item_dic.part.items %}
+	            {% if forloop.first %}
+	            {% if part.representation.connection %}
+	                <a href="{{ part.representation.connection }}{{ part.representation.thumb }}"
+	                   class="glightbox"
+	                   data-gallery="search-results"
+	                   data-alt="{{ part.representation.id_representation }}"
+	                   data-description="<a href='{% url 'representation_page' entity_type='representation' digisig_entity_number=part.representation.id_representation %}'>Representation details</a>">
+	                    <img class="modalimage"
+	                        id="modalimagebase{{ forloop.parentloop.counter }}"
+	                        src="{{ part.representation.connection }}{{ part.representation.thumb }}"
+	                        alt="{{ part.representation.id_representation }}"
+	                        loading="lazy">
+	                </a>
+	            {% endif %}
+	            {% endif %}
+	            {% endfor %}
+	        </div>
+        </div>
+
         <div class="sd-meta-row">
             <span class="sd-meta-label">Held by</span>
             <span class="sd-meta-value">{{item_dic.fk_repository}}</span>
@@ -251,7 +273,7 @@
 
 
 			<!-- Citation card -->
-			<section class="sd-citation-box">
+<!-- 			<section class="sd-citation-box">
 				<h3 class="sd-citation-title label-style">Cite this Record</h3>
 				<p class="sd-citation-text">
 					McEwan, J. ({% now "Y" %}). {{item_dic.fk_repository}} {{item_dic.shelfmark}}. Digital Sigillography Resource. [URL: digisig.org/entity/{{item_dic.id_item}}]
@@ -260,7 +282,7 @@
 					<span class="material-symbols-outlined" style="font-size:14px;">content_copy</span>
 					Copy Citation
 				</button>
-			</section>
+			</section> -->
 
 		</aside><!-- /right column -->
 
