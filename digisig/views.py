@@ -245,7 +245,7 @@ async def analyze(request, analysistype):
 
 	if analysistype == "time":
 
-		pagetitle = 'Time'
+		pagetitle = 'Space and Time'
 		qcollection= ALL_COLLECTIONS
 		qmapchoice = 1
 		mapdic = []
@@ -338,6 +338,7 @@ async def analyze(request, analysistype):
 		finalnodevalue = ''
 		labels = []
 		data1 = []
+		data2 = []
 		representationset = []
 		manifestation_set = []
 		totalrows = 0
