@@ -1110,7 +1110,7 @@ class EntityView(View):
 
 		#template = loader.get_template('digisig/seal.html')
 
-		return render(request, 'digisig/seal_v2.html', context)
+		return render(request, 'digisig/seal.html', context)
 
 
 ############################## Seal description #############################
