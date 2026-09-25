@@ -119,6 +119,8 @@ async def search(request, searchtype):
 
 ### Actor (Person)
 
+### Actor (Person)
+
 	if searchtype == "person":
 
 		pagetitle = 'title'
@@ -127,28 +129,34 @@ async def search(request, searchtype):
 
 		form = PeopleForm(request.POST or None)
 
-		if request.method == "POST":
-			#form = PeopleForm(request.POST)
-			if form.is_valid():
-				qpagination = form.cleaned_data['pagination']
-				qname = form.cleaned_data['name']
-				qnamelen = len(qname)
-				form = PeopleForm(request.POST)
+		# Defaults — also used if the form fails validation
+		qname = ""
+		qnamelen = 0
+		qpagination = 1
 
-		else:
-			qnamelen = 0
-			qname = ""
-			qpagination = 1
+		if request.method == "POST":
+			# Read pagination directly from POST — resilient to form validation failure
+			try:
+				qpagination = max(1, int(request.POST.get('pagination', '1')))
+			except (ValueError, TypeError):
+				qpagination = 1
+
+			if form.is_valid():
+				qname = form.cleaned_data['name'] or ""
+				qnamelen = len(qname)
 
 		individual_object = await individualsearch()
 
-		individual_object = await personsearch_people(qnamelen, qname, qpagination, londonevents, individual_object) 
+		#individual_object = await personsearch_people(qnamelen, qname, qpagination, londonevents, individual_object)
+		individual_object = await personsearch_people(qnamelen, qname, londonevents, individual_object)
 
-		individual_object, totalrows, totaldisplay = await defaultpagination(individual_object, qpagination) 
+		individual_object, totalrows, totaldisplay, has_next, has_previous = await defaultpagination(individual_object, qpagination)
 
-		pagecountercurrent = qpagination
-		pagecounternext = qpagination + 1
-		pagecounternextnext = qpagination +2  
+		# Use the page number defaultpagination actually served (it may have been clamped)
+		pagecountercurrent = individual_object.number
+		lastpage = individual_object.paginator.num_pages
+		pagecounternext = pagecountercurrent + 1 if pagecountercurrent + 1 <= lastpage else None
+		pagecounternextnext = pagecountercurrent + 2 if pagecountercurrent + 2 <= lastpage else None
 
 		individual_set = await personsearch_prepareset(individual_object)
 
@@ -161,10 +169,61 @@ async def search(request, searchtype):
 			'pagecountercurrent': pagecountercurrent,
 			'pagecounternext': pagecounternext,
 			'pagecounternextnext': pagecounternextnext,
+			'has_next': has_next,
+			'has_previous': has_previous,
 			}
 
 		template = loader.get_template('witness/search_person.html')
 		return HttpResponse(template.render(context, request))
+
+
+
+	# if searchtype == "person":
+
+	# 	pagetitle = 'title'
+
+	# 	londonevents = await personsearch_events()
+
+	# 	form = PeopleForm(request.POST or None)
+
+	# 	if request.method == "POST":
+	# 		#form = PeopleForm(request.POST)
+	# 		if form.is_valid():
+	# 			qpagination = form.cleaned_data['pagination']
+	# 			qname = form.cleaned_data['name']
+	# 			qnamelen = len(qname)
+	# 			form = PeopleForm(request.POST)
+
+	# 	else:
+	# 		qnamelen = 0
+	# 		qname = ""
+	# 		qpagination = 1
+
+	# 	individual_object = await individualsearch()
+
+	# 	individual_object = await personsearch_people(qnamelen, qname, qpagination, londonevents, individual_object) 
+
+	# 	individual_object, totalrows, totaldisplay, has_next, has_previous = await defaultpagination(individual_object, qpagination) 
+
+	# 	pagecountercurrent = qpagination
+	# 	pagecounternext = qpagination + 1
+	# 	pagecounternextnext = qpagination +2  
+
+	# 	individual_set = await personsearch_prepareset(individual_object)
+
+	# 	context = {
+	# 		'pagetitle': pagetitle,
+	# 		'individual_set': individual_set,
+	# 		'totalrows': totalrows,
+	# 		'totaldisplay': totaldisplay,
+	# 		'form': form,
+	# 		'pagecountercurrent': pagecountercurrent,
+	# 		'pagecounternext': pagecounternext,
+	# 		'pagecounternextnext': pagecounternextnext,
+	# 		}
+
+	# 	template = loader.get_template('witness/search_person.html')
+	# 	return HttpResponse(template.render(context, request))
 
 async def person_page(request, witness_entity_number):
 

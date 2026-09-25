@@ -440,7 +440,7 @@ def personsearch_events():
 	return (londonevents)
 
 @sync_to_async
-def personsearch_people(qnamelen, qname, qpagination, londonevents, individual_object):
+def personsearch_people(qnamelen, qname, londonevents, individual_object):
 	
 	# individual_set1 = individual_object.filter(
 	#   fk_individual_event__in=londonevents)
