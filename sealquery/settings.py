@@ -28,6 +28,9 @@ SECRET_KEY = os.environ.get('SECRET_KEY', default='django-insecure-99_+4yj_7)po_
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = 'RENDER' not in os.environ
 
+# Carto key for maps
+CARTO_API_KEY = os.environ.get('CARTO_API_KEY', '')
+
 ALLOWED_HOSTS = ["www.digisig.org", "digisig.org", "www.witnessinglondon.org", "witnessinglondon.org", "127.0.0.1", ".localhost"]
 #ALLOWED_HOSTS = ["*"]
 
@@ -82,6 +85,7 @@ TEMPLATES = [
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
                 'sealquery.context_processors.auth_status',
+                'sealquery.context_processors.carto',
             ],
         },
     },

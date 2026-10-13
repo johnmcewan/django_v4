@@ -119,81 +119,19 @@
   </div>
 
 
-<!-- <script>
-    $(document).ready(function() {
-        var isDataLoaded = false; // Flag to check if the data has already been loaded
-
-        // Attach click event to the button (assuming the button has the id "loadDataButton")
-        $('#entitybutton2').on('click', function() {
-            if (isDataLoaded) {
-                return; // If the data has already been loaded, do nothing on further clicks
-            }
-
-            // Set flag to true after the first click
-            isDataLoaded = true;
-
-            // Send AJAX request to get data
-            $.ajax({
-                url: '{% url "parishpersonajax" witness_entity_number=parish.id_location %}',  // URL for the person_ajax view
-                method: 'GET',
-                success: function(response) {
-                    const jsonData = response;
-                    const data = JSON.parse(jsonData);
-
-                    // Check if we have reference data
-                    if (data.length > 0) {
-                        var tableBody = $('#entity2 tbody');
-                        tableBody.empty();  // Clear existing table rows
-                        
-                        // Loop through the references and add rows to the table
-                        data.forEach(function(item, index) {
-                            var rowClass = (index % 2 === 0) ? '' : 'class="even"';  // Alternate row colors
-
-                            // Check if the id_individual is 10000019
-                            var actorCell = (item.id_individual === 10000019) 
-                                            ? item.actor_name  // No link, just the actor name
-                                            : '<a href="' + item.id_individual + '">' + item.actor_name + '</a>';  // Regular link
-
-                            var row = '<tr ' + rowClass + '>' +
-                                      '<td>' + actorCell + '</td>' +  // Use actorCell with or without link
-                                      '<td>' + item.mindate + '</td>' +
-                                      '<td>' + item.maxdate + '</td>' +
-                                      '<td>' + item.occurences + '</td>' +
-                                      '<td>' + item.witnessref + '</td>' +
-                                      '</tr>';
-
-                            tableBody.append(row);                            
-                        });
-                    } else {
-                        alert("No references found.");
-                    }
-                },
-                error: function() {
-                    alert("Error fetching data.");
-                }
-            });
-        });
-    });
-</script> -->
-
-
-
-
-
-
-
+{{ CARTO_API_KEY|json_script:"carto-key" }}
 
 <script>
 
   //map 2
-
+  var cartoKey = JSON.parse(document.getElementById('carto-key').textContent);
   var geojsonFeature2 = JSON.parse(document.getElementById('mapdata2').textContent);
   var countieslen = Object.keys(geojsonFeature2).length;
 
   if (countieslen > 1) { 
 
   var map1 = L.map('mapid1', {scrollWheelZoom:false}).setView([51.515556,-0.093056], 14);
-var layer2 = new L.tileLayer('https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png', {
+  var layer2 = new L.tileLayer('https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png' + (cartoKey ? '?key=' + encodeURIComponent(cartoKey) : ''), {
   attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
   subdomains: 'abcd',
   maxZoom: 20

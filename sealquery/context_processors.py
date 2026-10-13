@@ -3,3 +3,6 @@ def auth_status(request):
         'is_authenticated': getattr(request, 'resolved_is_authenticated', False),
         'username': getattr(request, 'resolved_username', ''),
     }
+
+def carto(request):
+    return {'CARTO_API_KEY': settings.CARTO_API_KEY}
