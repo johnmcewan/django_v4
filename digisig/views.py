@@ -1010,6 +1010,10 @@ class EntityView(View):
 				'outname': outname,
 		}
 
+		print (manifestation_dic)
+		print ("hello")
+		print (manifestation_info)
+
 		return render(request, 'digisig/manifestation.html', context)
 
 

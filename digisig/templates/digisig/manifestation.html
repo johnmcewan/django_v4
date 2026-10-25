@@ -43,7 +43,7 @@
       <section class="manif-section">
         <div class="sd-card sd-meta-card">
           <div class="sd-meta-header">
-            <h2>Seal Impression Details</h2>
+            <h2>Details</h2>
             <button onclick="toggle('entity-permalink')" class="sd-permalink-btn">
               <i class="fas fa-link"></i> Permalink
             </button>
@@ -106,7 +106,7 @@
                 </a>
               </span>
               <span class="sd-meta-value">
-                support {{manifestation_dic.fk_number_currentposition}}, {{manifestation_dic.fk_support.position}}
+                support {{manifestation_dic.number}}, {{manifestation_dic.position}}
               </span>
             </div>
             {% endif %}
@@ -119,8 +119,8 @@
                 </a>
               </span>
               <span class="sd-meta-value">
-                {% if manifestation_dic.fk_support.fk_supportstatus != null %}
-                  {{manifestation_dic.fk_support.supportstatus}}{% if manifestation_dic.fk_support.fk_supportstatus.supportstatus != 'undetermined' %} {{manifestation_dic.fk_support.fk_supportstatus.supportstatus}}{% endif %}
+                {% if manifestation_dic.fk_supportstatus != null %}
+                  {% if manifestation_dic.supportstatus != 'undetermined' %} {{manifestation_dic.supportstatus}}{% endif %}
                 {% endif %}
               </span>
             </div>
@@ -133,9 +133,11 @@
                 </a>
               </span>
               <span class="sd-meta-value">
-                {% if manifestation_dic.fk_support.fk_nature != null %}
-                  {{manifestation_dic.fk_support.fk_nature.nature_name}}{% if manifestation_dic.fk_support.fk_material != null %} ({{manifestation_dic.fk_support.fk_material.material}}){% endif %}
-                {% endif %}
+                {% if manifestation_dic.support_typename != null %}
+                  {{manifestation_dic.support_typename}}
+                {% if manifestation_dic.material != null %} 
+                 ({{manifestation_dic.material}}){% endif %}
+                    {% endif %}
               </span>
             </div>
 
@@ -151,9 +153,6 @@
           <i class="fas fa-stamp manif-section-icon"></i>
           <h2 class="entity-section-title">Seal</h2>
           <span class="entity-section-rule"></span>
-          <a class="entity-permalink-link" href="{% url 'entity' manifestation_dic.id_seal %}">
-            Seal record <i class="fas fa-arrow-right"></i>
-          </a>
           <button id="entitybutton1" onclick="tbtoggle('entity1', 'entitybutton1')"
                   class="entity-toggle-btn">+</button>
         </div>
@@ -161,8 +160,15 @@
         <div id="entity1" style="display:none;">
           <div class="entity-card">
             <dl class="entity-detail-list">
+              <div class="entity-detail-row">
+                <dt class="entity-detail-label">Seal</dt>
+                <dd class="entity-detail-value">
+                  <a href="{% url 'entity' manifestation_dic.id_seal %}">Seal record
+                </dd>
+              </div>
 
               <div class="entity-detail-row">
+
                 <dt class="entity-detail-label">
                   Date
                   <a class="entity-help-link" href="{% url 'entity' digisig_entity_number=10001357 %}" target="_blank">

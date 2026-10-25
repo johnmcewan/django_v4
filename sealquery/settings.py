@@ -1,4 +1,3 @@
-
 """
 Django settings for mysite project.
 
@@ -115,7 +114,6 @@ EMAIL_USE_TLS = True
 EMAIL_HOST_USER = 'digital.sigillography.resource@gmail.com'
 EMAIL_HOST_PASSWORD = os.environ.get('email')
 DEFAULT_FROM_EMAIL = 'digital.sigillography.resource@gmail.com'
-
 
 
 WSGI_APPLICATION = 'sealquery.wsgi.application'

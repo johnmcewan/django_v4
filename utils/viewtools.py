@@ -2996,6 +2996,7 @@ def manifestation_searchsetgenerate(searchvalue, searchtype=None):
 		'fk_support__fk_attachment',
 		'fk_support__fk_supportstatus',
 		'fk_support__fk_nature',
+		'fk_support__fk_material',
 		'fk_imagestate',
 		'fk_position',
 		'fk_support__fk_part__fk_event',
@@ -3006,6 +3007,7 @@ def manifestation_searchsetgenerate(searchvalue, searchtype=None):
 		'id_manifestation',
 		'fk_support',
 		'fk_position',
+		'fk_position__position',
 		'fk_face',
 		'fk_face__fk_seal',
 		'fk_face__fk_seal__date_origin',
@@ -3014,12 +3016,15 @@ def manifestation_searchsetgenerate(searchvalue, searchtype=None):
 		'fk_support__fk_part__fk_item__fk_repository__repository_fulltitle',
 		'fk_support__fk_part__fk_item__shelfmark',
 		'fk_support__fk_supportstatus',
+		'fk_support__fk_supportstatus__supportstatus',
 		'fk_support__fk_attachment',
 		'fk_support__fk_attachment__attachment',
 		'fk_support__fk_number_currentposition',
 		'fk_support__fk_number_currentposition__number',
 		'fk_support__fk_nature',
 		'fk_support__fk_nature__nature_name',
+		'fk_support__fk_material',
+		'fk_support__fk_material__material',		
 		'label_manifestation_repository',
 		'fk_imagestate',
 		'fk_support__fk_part',
@@ -3059,6 +3064,7 @@ def manifestation_displaysetgenerate(manifestation_set, representation_set):
 		manifestation_dic["id_manifestation"] = e['id_manifestation']
 		manifestation_dic["fk_support"] = e['fk_support']
 		manifestation_dic["fk_position"] = e['fk_position']
+		manifestation_dic["position"] = e['fk_position__position']
 		manifestation_dic["id_seal"] = e['fk_face__fk_seal']
 		manifestation_dic['id_individual'] = e['fk_face__fk_seal__fk_individual_realizer']
 		#manifestation_dic['outname'] = namecompiler(e['fk_face__fk_seal__fk_individual_realizer'])
@@ -3067,9 +3073,11 @@ def manifestation_displaysetgenerate(manifestation_set, representation_set):
 		manifestation_dic["repository_fulltitle"] = e['fk_support__fk_part__fk_item__fk_repository__repository_fulltitle']
 		manifestation_dic["shelfmark"] = e['fk_support__fk_part__fk_item__shelfmark']
 		manifestation_dic["fk_supportstatus"] = e['fk_support__fk_supportstatus']
+		manifestation_dic["supportstatus"] = e['fk_support__fk_supportstatus__supportstatus']		
 		manifestation_dic["fk_attachment"] = e['fk_support__fk_attachment']
 		manifestation_dic["attachment"] = e['fk_support__fk_attachment__attachment'] 
 		manifestation_dic["number"] = e['fk_support__fk_number_currentposition__number']
+		manifestation_dic["material"] = e['fk_support__fk_material__material']
 		manifestation_dic["support_typename"] = e['fk_support__fk_nature__nature_name']
 		manifestation_dic["support_type"] = e['fk_support__fk_nature']
 		manifestation_dic["label_manifestation_repository"] = e['label_manifestation_repository']
