@@ -4790,7 +4790,7 @@ p {
 
 .entity-section-heading--split {
     justify-content: space-between;
-    border-bottom: 1px solid var(--ent-parchment-border);
+    /*border-bottom: 1px solid var(--ent-parchment-border);*/
     padding-bottom: 12px;
 }
 
@@ -7774,6 +7774,7 @@ details.analysis-guidance[open] .analysis-guidance-icon {
     color: var(--secondary);
     font-size: 15px;
     flex-shrink: 0;
+    display:block;
 }
 
 /* ─── Section spacing ─────────────────────────────────────── */
