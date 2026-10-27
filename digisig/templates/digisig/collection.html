@@ -358,10 +358,11 @@ new Chart(document.getElementById('Chart3').getContext('2d'), {
 var geojsonFeature1 = JSON.parse(document.getElementById('mapdata').textContent);
 var map = L.map('mapid2', { scrollWheelZoom: false }).setView([52, 0], 5);
 
-L.tileLayer('https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png', {
+L.tileLayer('https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png?key={apikey}', {
     attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>',
     subdomains: 'abcd',
-    maxZoom: 20
+    maxZoom: 20,
+    apikey:'{{ CARTO_API_KEY|escapejs }}'
 }).addTo(map);
 
 var info = L.control();

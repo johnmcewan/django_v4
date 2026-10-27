@@ -119,22 +119,20 @@
   </div>
 
 
-{{ CARTO_API_KEY|json_script:"carto-key" }}
-
 <script>
 
   //map 2
-  var cartoKey = JSON.parse(document.getElementById('carto-key').textContent);
   var geojsonFeature2 = JSON.parse(document.getElementById('mapdata2').textContent);
   var countieslen = Object.keys(geojsonFeature2).length;
 
-  if (countieslen > 1) { 
+  if (countieslen > 1) {
 
   var map1 = L.map('mapid1', {scrollWheelZoom:false}).setView([51.515556,-0.093056], 14);
-  var layer2 = new L.tileLayer('https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png' + (cartoKey ? '?key=' + encodeURIComponent(cartoKey) : ''), {
+  var layer2 = new L.tileLayer('https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png?key={apikey}', {
   attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
   subdomains: 'abcd',
-  maxZoom: 20
+  maxZoom: 20,
+  apikey:'{{ CARTO_API_KEY|escapejs }}'
 });
   
   map1.addLayer(layer2);

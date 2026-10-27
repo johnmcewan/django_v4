@@ -3687,26 +3687,60 @@ def namecompiler(individual_target):
 
 	if not isinstance(individual_target, Individual):
 		print(f"Warning: Expected Individual object, but received: {type(individual_target)}")
-		individual_object = Individual.objects.get(id_individual=individual_target)
+		individual_object = Individual.objects.get(id_individual=individual_target
+			).select_related('fk_group', 
+			'fk_descriptor_title', 
+			'fk_descriptor_name',
+			'fk_descriptor_prefix1',
+			'fk_descriptor_descriptor1',
+			'fk_descriptor_prefix2',
+			'fk_descriptor_descriptor2',
+			'fk_descriptor_prefix3', 
+			'fk_descriptor_descriptor3')
 
 	else:
 		individual_object= individual_target
 
-	namevariable = ''
+	# (foreign key name, attribute on the related object)
+	components = [
+		('fk_group', 'group_name'),
+		('fk_descriptor_title', 'descriptor_modern'),
+		('fk_descriptor_name', 'descriptor_modern'),
+		('fk_descriptor_prefix1', 'prefix_english'),
+		('fk_descriptor_descriptor1', 'descriptor_modern'),
+		('fk_descriptor_prefix2', 'prefix_english'),
+		('fk_descriptor_descriptor2', 'descriptor_modern'),
+		('fk_descriptor_prefix3', 'prefix_english'),
+		('fk_descriptor_descriptor3', 'descriptor_modern'),
+	]
 
-	if hasattr(individual_object, 'fk_group') and individual_object.fk_group is not None: namevariable = individual_object.fk_group.group_name
-	if hasattr(individual_object, 'fk_descriptor_title') and individual_object.fk_descriptor_title is not None: namevariable = namevariable + " " + individual_object.fk_descriptor_title.descriptor_modern
-	if hasattr(individual_object, 'fk_descriptor_name') and individual_object.fk_descriptor_name is not None: namevariable = namevariable + " " + individual_object.fk_descriptor_name.descriptor_modern
-	if hasattr(individual_object, 'fk_descriptor_prefix1') and individual_object.fk_descriptor_prefix1: namevariable = namevariable + " " + individual_object.fk_descriptor_prefix1.prefix_english
-	if hasattr(individual_object, 'fk_descriptor_descriptor1') and individual_object.fk_descriptor_descriptor1 is not None: namevariable = namevariable + " " + individual_object.fk_descriptor_descriptor1.descriptor_modern
-	if hasattr(individual_object, 'fk_descriptor_prefix2')  and individual_object.fk_descriptor_prefix2: namevariable = namevariable + " " + individual_object.fk_descriptor_prefix2.prefix_english
-	if hasattr(individual_object, 'fk_descriptor_descriptor2') and individual_object.fk_descriptor_descriptor2 is not None: namevariable = namevariable + " " + individual_object.fk_descriptor_descriptor2.descriptor_modern
-	if hasattr(individual_object, 'fk_descriptor_prefix3') and individual_object.fk_descriptor_prefix3: namevariable = namevariable + " " + individual_object.fk_descriptor_prefix3.prefix_english
-	if hasattr(individual_object, 'fk_descriptor_descriptor3') and individual_object.fk_descriptor_descriptor3 is not None: namevariable = namevariable + " " + individual_object.fk_descriptor_descriptor3.descriptor_modern
+	parts = []
+	for fk_name, attr in components:
+		related = getattr(individual_object, fk_name, None)
+		if related is None:
+			continue
+		value = getattr(related, attr, None)
+		if value:  # skips None and empty strings
+			parts.append(str(value).strip())
 
-	nameout = namevariable.strip()
+	return " ".join(parts)
 
-	return(nameout)
+
+	# namevariable = ''
+
+	# if hasattr(individual_object, 'fk_group') and individual_object.fk_group is not None: namevariable = individual_object.fk_group.group_name
+	# if hasattr(individual_object, 'fk_descriptor_title') and individual_object.fk_descriptor_title is not None: namevariable = namevariable + " " + individual_object.fk_descriptor_title.descriptor_original
+	# if hasattr(individual_object, 'fk_descriptor_name') and individual_object.fk_descriptor_name is not None: namevariable = namevariable + " " + individual_object.fk_descriptor_name.descriptor_original
+	# if hasattr(individual_object, 'fk_descriptor_prefix1') and individual_object.fk_descriptor_prefix1: namevariable = namevariable + " " + individual_object.fk_descriptor_prefix1.prefix_english
+	# if hasattr(individual_object, 'fk_descriptor_descriptor1') and individual_object.fk_descriptor_descriptor1 is not None: namevariable = namevariable + " " + individual_object.fk_descriptor_descriptor1.descriptor_original
+	# if hasattr(individual_object, 'fk_descriptor_prefix2')  and individual_object.fk_descriptor_prefix2: namevariable = namevariable + " " + individual_object.fk_descriptor_prefix2.prefix_english
+	# if hasattr(individual_object, 'fk_descriptor_descriptor2') and individual_object.fk_descriptor_descriptor2 is not None: namevariable = namevariable + " " + individual_object.fk_descriptor_descriptor2.descriptor_original
+	# if hasattr(individual_object, 'fk_descriptor_prefix3') and individual_object.fk_descriptor_prefix3: namevariable = namevariable + " " + individual_object.fk_descriptor_prefix3.prefix_english
+	# if hasattr(individual_object, 'fk_descriptor_descriptor3') and individual_object.fk_descriptor_descriptor3 is not None: namevariable = namevariable + " " + individual_object.fk_descriptor_descriptor3.descriptor_original
+
+	# nameout = namevariable.strip()
+
+	# return(nameout)
 
 @sync_to_async
 def namecompiler_group(listofactors):

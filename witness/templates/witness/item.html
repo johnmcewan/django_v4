@@ -182,10 +182,11 @@ function onEachFeature(feature, layer) {
 	var geojsonFeature = JSON.parse(document.getElementById('mapdata', {scrollWheelZoom:false}).textContent);
 	var mymap = L.map('mapid').setView([latitude,longitude], 4);	
 	// var layer = new L.StamenTileLayer("watercolor");
-	var layer = new L.tileLayer('https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png', {
+	var layer = new L.tileLayer('https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png?key={apikey}', {
 	attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
 	subdomains: 'abcd',
-	maxZoom: 20
+	maxZoom: 20,
+	apikey:'{{ CARTO_API_KEY|escapejs }}'
 });
 	mymap.addLayer(layer);
 	L.geoJSON(geojsonFeature, {onEachFeature: onEachFeature}).addTo(mymap);
