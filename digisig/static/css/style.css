@@ -6270,7 +6270,7 @@ p {
 .manif-main-col {
     display: flex;
     flex-direction: column;
-    gap: 56px;
+    gap: 20px;
     min-width: 0;
 }
 
@@ -6297,7 +6297,7 @@ p {
 
 .manif-section-icon {
     color: var(--secondary);
-    font-size: 16px;
+    /*font-size: 16px;*/
     flex-shrink: 0;
 }
 
@@ -7772,7 +7772,7 @@ details.analysis-guidance[open] .analysis-guidance-icon {
 /* ─── Section icon accent (matches manif-section-icon) ────── */
 .repr-section-icon {
     color: var(--secondary);
-    font-size: 15px;
+    /*font-size: 15px;*/
     flex-shrink: 0;
     display:block;
 }

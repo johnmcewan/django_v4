@@ -1063,8 +1063,6 @@ class EntityView(View):
 	async def representation_page(self, request, digisig_entity_number):
 
 		pagetitle = 'Representation'
-		#template = loader.get_template('digisig/representation.html')
-		#template = loader.get_template('digisig/representation_model.html')
 
 		representation_object = await representation_queryformulate(digisig_entity_number)
 
@@ -1091,8 +1089,6 @@ class EntityView(View):
 			'representation_dic': representation_dic,
 			}
 
-		print (context)
-
 		return render(request, 'digisig/representation.html', context)
 
 
@@ -1107,8 +1103,6 @@ class EntityView(View):
 			'pagetitle': pagetitle,
 			'seal_info': seal_info,
 			}
-
-		#template = loader.get_template('digisig/seal.html')
 
 		return render(request, 'digisig/seal.html', context)
 

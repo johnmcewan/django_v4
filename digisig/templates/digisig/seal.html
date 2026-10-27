@@ -141,7 +141,9 @@
                     <div class="seal-manifest-info">
                         <div>
                             <div class="seal-manifest-meta">
-                                <span class="seal-manifest-badge">{{manifestation.imagestate_term}}</span>
+                                <span class="seal-manifest-badge">
+                                    <a href="{% url 'entity' manifestation.id_manifestation %}">
+                                {{manifestation.imagestate_term}}</a></span>
                             </div>
 
                             <dl class="seal-manifest-details">

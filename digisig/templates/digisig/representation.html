@@ -56,7 +56,6 @@
           </div>
 
           <div class="sd-meta-rows">
-
             <div class="sd-meta-row">
               <span class="sd-meta-label">Creator</span>
               <span class="sd-meta-value">{{representation_dic.contributorcreator_name}}</span>
@@ -108,16 +107,16 @@
       {% if representation_dic.entity_type == 2 %}
       <section class="repr-section">
         
-<div class="entity-section-heading entity-section-heading--split">
+      <div class="entity-section-heading entity-section-heading--split">
           <!-- <i class="fas fa-stamp repr-section-icon"></i> -->
-          <span class="repr-section-icon">{% include "digisig/icons/icon-seal-impression_v3.svg" %}</span>
+          <!-- <span class="repr-section-icon">{% include "digisig/icons/icon-seal-impression_v3.svg" %}</span> -->
           <h2 class="entity-section-title">Seal</h2>
           <span class="entity-section-rule"></span>
           <button id="entitybutton4" onclick="tbtoggle('entity4', 'entitybutton4')"
                   class="entity-toggle-btn">+</button>
-        </div>
+      </div>
 
-        <div id="entity4" style="display:none;">
+      <div id="entity4" style="display:none;">
           <div class="entity-card">
             <div class="sd-meta-header">
               <h2>Seal</h2>
@@ -125,61 +124,59 @@
                 Seal record <i class="fas fa-arrow-right"></i>
               </a>
             </div>
-            <dl class="entity-detail-list">
 
-
-              <div class="entity-detail-row">
-                <dt class="entity-detail-label">
-                  Date
+          <div class="sd-meta-rows">
+            <div class="sd-meta-row">
+            {% if representation_dic.date_origin != null %}
+              <span class="sd-meta-label">Date
                   <a class="entity-help-link" href="{% url 'entity' digisig_entity_number=10001357 %}" target="_blank">
                     <i class="fas fa-question-circle"></i>
                   </a>
-                </dt>
-                <dd class="entity-detail-value">
-                  {% if representation_dic.seal.date_origin != null %}
-                    {{representation_dic.seal.date_origin}}
-                  {% else %}
+              </span>
+              <span class="sd-meta-value">{{representation_dic.date_origin}}</span>
+            {% else %}
                     <span class="entity-detail-muted">Not Available</span>
-                  {% endif %}
-                </dd>
-              </div>
-
-              <div class="entity-detail-row">
-                <dt class="entity-detail-label">
-                  Actor
-                  <a class="entity-help-link" href="{% url 'entity' digisig_entity_number=10001537 %}" target="_blank">
+            {% endif %}
+            </div>
+          
+            <div class="sd-meta-row">
+              <span class="sd-meta-label">Actor
+                <a class="entity-help-link" href="{% url 'entity' digisig_entity_number=10001537 %}" target="_blank">
                     <i class="fas fa-question-circle"></i>
                   </a>
-                </dt>
-                <dd class="entity-detail-value">
-                  <a class="entity-detail-link manif-actor-link"
-                     href="{% url 'entity' representation_dic.id_individual %}">{{representation_dic.outname}}</a>
-                </dd>
-              </div>
+              </span>
+              <span class="sd-meta-value">
+                <a class="entity-detail-link manif-actor-link"
+                href="{% url 'entity' representation_dic.id_individual %}">{{representation_dic.outname}}</a>
+              </span>          
+            </div>
 
-              {% for description in representation_dic.sealdescription_objectset %}
+<!-- The function does not call seal description info, so this never fires (10/26/2026)
+         <div class="sd-meta-row">
+            {% for description in representation_dic.sealdescription_objectset %}
               <div class="entity-detail-row">
                 {% if forloop.first %}
-                <dt class="entity-detail-label">
-                  Described in
+                <span class="sd-meta-label">
+                Described in
                   <a class="entity-help-link" href="{% url 'entity' digisig_entity_number=10001527 %}" target="_blank">
                     <i class="fas fa-question-circle"></i>
                   </a>
-                </dt>
+                </span>
                 {% else %}
-                <dt class="entity-detail-label" aria-hidden="true">&nbsp;</dt>
+                 <span class="sd-meta-label" aria-hidden="true">&nbsp;</span>
                 {% endif %}
-                <dd class="entity-detail-value">
-                  <a class="entity-detail-link entity-detail-link--italic"
+                                                          
+              <span class="sd-meta-value">
+                   <a class="entity-detail-link entity-detail-link--italic"
                      href="{% url 'entity' description.id_sealdescription %}">
                     {{description.fk_collection}}{% if description.sealdescription_identifier != null %} ({{description.sealdescription_identifier}}){% endif %}
                   </a>
-                </dd>
+              </span>
               </div>
-              {% endfor %}
-
-            </dl>
+            {% endfor %}
+            </div> -->
           </div>
+
         </div>
       </section>
       {% endif %}
@@ -191,7 +188,7 @@
         
 
 <div class="entity-section-heading entity-section-heading--split">
-          <i class="fas fa-file-alt repr-section-icon"></i>
+          <!-- <i class="fas fa-file-alt repr-section-icon"></i> -->
           <h2 class="entity-section-title">Item</h2>
           <span class="entity-section-rule"></span>
           <button id="entitybutton2" onclick="tbtoggle('entity2', 'entitybutton2')"
@@ -206,46 +203,46 @@
                 Item record <i class="fas fa-arrow-right"></i>
               </a>
             </div>
-            <dl class="entity-detail-list">
-              <div class="entity-detail-row">
-                <dt class="entity-detail-label">
-                  Reference
+
+          <div class="sd-meta-rows">
+            <div class="sd-meta-row">
+              <span class="sd-meta-label">
+                Reference
                   <a class="entity-help-link" href="{% url 'entity' digisig_entity_number=10001567 %}" target="_blank">
                     <i class="fas fa-question-circle"></i>
                   </a>
-                </dt>
-                <dd class="entity-detail-value">
-                  {{representation_dic.repository_fulltitle}}
-                  <span class="entity-detail-link--mono"> {{representation_dic.shelfmark}}</span>
-                </dd>
-              </div>
+              </span>
+              <span class="sd-meta-value">
+                {{representation_dic.repository_fulltitle}} {{representation_dic.shelfmark}}
+              </span>
+            </div>
 
-              {% if representation_dic.object_startdate_repository != null %}
-              <div class="entity-detail-row">
-                <dt class="entity-detail-label">Date (Repository)</dt>
-                <dd class="entity-detail-value">
-                  {% if representation_dic.object_startdate_repository_approx != null %}{{representation_dic.object_startdate_repository_approx}} {% endif %}{{representation_dic.object_startdate_repository}}{% if representation_dic.object_enddate_repository != null %} &ndash; {% if representation_dic.object_enddate_repository_approx != null %}{{representation_dic.object_enddate_repository_approx}} {% endif %}{{representation_dic.object_enddate_repository}}{% endif %}
-                </dd>
-              </div>
-              {% endif %}
+            {% if representation_dic.object_startdate_repository != null %}
+            <div class="sd-meta-row">
+              <span class="sd-meta-label">Date (Repository)</span>
+              <span class="sd-meta-value">{% if representation_dic.object_startdate_repository_approx != null %}{{representation_dic.object_startdate_repository_approx}} {% endif %}{{representation_dic.object_startdate_repository}}{% if representation_dic.object_enddate_repository != null %} &ndash; {% if representation_dic.object_enddate_repository_approx != null %}{{representation_dic.object_enddate_repository_approx}} {% endif %}{{representation_dic.object_enddate_repository}}{% endif %} </span>
+            </div>
+            {% endif %}
 
-              {% if representation_dic.object_startdate != null %}
-              <div class="entity-detail-row">
-                <dt class="entity-detail-label">Date (Digisig)</dt>
-                <dd class="entity-detail-value">
-                  {{representation_dic.object_startdate}}{% if representation_dic.object_enddate != null %} &ndash; {{representation_dic.object_enddate}}{% endif %}
-                </dd>
-              </div>
-              {% endif %}
+            {% if representation_dic.object_startdate != null %}
+            <div class="sd-meta-row">
+              <span class="sd-meta-label">Date (Digisig)</span>
+              <span class="sd-meta-value">{{representation_dic.object_startdate}}{% if representation_dic.object_enddate != null %} &ndash; {{representation_dic.object_enddate}}{% endif %}</span>
+            </div>
+            {% endif %}
 
-              {% if representation_dic.region_label %}
-              <div class="entity-detail-row">
-                <dt class="entity-detail-label">Region</dt>
-                <dd class="entity-detail-value">{{representation_dic.region_label}}</dd>
-              </div>
-              {% endif %}
+            {% if representation_dic.region_label %}
+            <div class="sd-meta-row">
+              <span class="sd-meta-label">Region</span>
+              <span class="sd-meta-value">{{representation_dic.region_label}}</span>
+            </div>
+            {% endif %}
 
-            </dl>
+            <div class="sd-meta-row">
+              <span class="sd-meta-label"></span>
+              <span class="sd-meta-value"></span>
+            </div>
+
           </div>
         </div>
       </section>
@@ -269,6 +266,46 @@
 
         <div id="entity3" style="display:none;">
           <div class="entity-card">
+
+            {% if representation_dic.manifestation_object.label_manifestation_repository %}
+            <div class="sd-meta-row">
+              <span class="sd-meta-label">Reference 
+                  <a class="entity-help-link" href="{% url 'entity' digisig_entity_number=10001567 %}" target="_blank">
+                    <i class="fas fa-question-circle"></i>
+                  </a>
+              </span>
+              <span class="sd-meta-value">
+                
+                  {{representation_dic.manifestation_object.label_manifestation_repository}}
+                  <a class="entity-detail-link manif-external-link"
+                     href="{{representation_dic.manifestation_object.connection}}{{representation_dic.manifestation_object.ui_manifestation_repository}}"
+                     target="_blank">External link <i class="fas fa-external-link-alt"></i></a>
+                
+              </span>
+            </div>
+            {% endif %}
+
+            <div class="sd-meta-row">
+              <span class="sd-meta-label"></span>
+              <span class="sd-meta-value"></span>
+            </div>
+
+            <div class="sd-meta-row">
+              <span class="sd-meta-label"></span>
+              <span class="sd-meta-value"></span>
+            </div>
+
+            <div class="sd-meta-row">
+              <span class="sd-meta-label"></span>
+              <span class="sd-meta-value"></span>
+            </div>
+
+            <div class="sd-meta-row">
+              <span class="sd-meta-label"></span>
+              <span class="sd-meta-value"></span>
+            </div>
+
+
             <dl class="entity-detail-list">
 
               {% if representation_dic.manifestation_object.label_manifestation_repository %}
@@ -337,7 +374,7 @@
       {% if representation_dic.totalrows != 0 %}
       <section class="repr-section">
         <div class="entity-section-heading entity-section-heading--split">
-          <i class="fas fa-images repr-section-icon"></i>
+          <!-- <i class="fas fa-images repr-section-icon"></i> -->
           <h2 class="entity-section-title">Further Representations</h2>
           <span class="entity-section-rule"></span>
           <button id="entitybutton1" onclick="tbtoggle('entity1', 'entitybutton1')"
@@ -419,7 +456,7 @@
             Use the controls to adjust the light direction on this RTI image.
           </p>
         </div>
-      </section>  -->-->
+      </section>  -->
 
 
     </div><!-- /manif-main-col -->
