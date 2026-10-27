@@ -345,7 +345,6 @@ async def parish_page(request, witness_entity_number):
 	individual_object = await individualsearch()
 	individual_object = await parish_fetch(individual_object, witness_entity_number)
 	individual_list = await parish_individuallistfetch(individual_object)
-	#case_value, totalcases = await parishcases_fetch(individual_object)
 
 	mapparishes = await parish_map(witness_entity_number, parish)
 
