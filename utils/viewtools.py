@@ -471,7 +471,7 @@ def personsearch_prepareset(individual_object):
 
 	for i in individual_object:
 		individual_info = {}
-		individual_info['actor_name'] = namecompiler(i)
+		individual_info['actor_name'] = i.display_name
 		individual_info['id_individual'] = i.id_individual
 		individual_set[i.id_individual] = individual_info
 
@@ -570,7 +570,7 @@ def parish_individuallistfetch(individual_object):
 
 	for i in individual_object:
 		individual_info = {}
-		individual_info['actor_name'] = namecompiler(i)
+		individual_info['actor_name'] = i.display_name
 		individual_info['id_individual'] = i.id_individual
 		individual_info['occurences'] = i.occurences
 		individual_info['witnessref'] = i.witnessref
@@ -746,49 +746,25 @@ def mapparishesdata(reference_set):
 
 
 @sync_to_async
-def individualsearch2(witness_entity_number):
-
-	individual_object = Individual.objects.select_related(
-	'fk_group').select_related(
-	'fk_descriptor_title').select_related(
-	'fk_descriptor_name').select_related(
-	'fk_descriptor_prefix1').select_related(
-	'fk_descriptor_descriptor1').select_related(
-	'fk_separator_1').select_related(
-	'fk_descriptor_prefix2').select_related(
-	'fk_descriptor_descriptor2').select_related(
-	'fk_descriptor_prefix3').select_related(
-	'fk_descriptor_descriptor3').select_related(
-	'fk_group__fk_group_order').select_related(
-	'fk_group__fk_group_class')
-
-	individual_object = individual_object.get(id_individual=witness_entity_number)
-
-	return(individual_object)
-
-@sync_to_async
 def relationship_dataset(witness_entity_number):
 		 
-	relationship_object = Digisigrelationshipview.objects.filter(
-		fk_individual = witness_entity_number).select_related(
-		'person2__fk_group').select_related(
-		'person2__fk_descriptor_title').select_related(
-		'person2__fk_descriptor_name').select_related(
-		'person2__fk_descriptor_prefix1').select_related(
-		'person2__fk_descriptor_descriptor1').select_related(
-		'person2__fk_descriptor_prefix2').select_related(
-		'person2__fk_descriptor_descriptor2').select_related(
-		'person2__fk_descriptor_prefix3').select_related(
-		'person2__fk_descriptor_descriptor3').values(
-		'relationship_role',
-		'person2__id_individual',
-		'person2__fk_group__group_name',
-		'person2__fk_descriptor_name__descriptor_modern',
-		'person2__fk_descriptor_prefix1__prefix_english',
-		'person2__fk_descriptor_descriptor1__descriptor_modern',
-		'person2__fk_descriptor_prefix2__prefix_english',
-		'person2__fk_descriptor_descriptor2__descriptor_modern',
-		'person2__fk_descriptor_prefix3__prefix_english').order_by('person2')
+	nodes = RelationshipBranch.objects.filter(
+		fk_individual=witness_entity_number).values('fk_relationshipnode')
+
+	relationship_object = RelationshipBranch.objects.filter(
+		fk_relationshipnode__in=nodes).exclude(
+		fk_individual=witness_entity_number).filter(
+		fk_individual__isnull=False).select_related(
+		'fk_relationshiprole').select_related(
+		'fk_individual__fk_group').select_related(
+		'fk_individual__fk_descriptor_title').select_related(
+		'fk_individual__fk_descriptor_name').select_related(
+		'fk_individual__fk_descriptor_prefix1').select_related(
+		'fk_individual__fk_descriptor_descriptor1').select_related(
+		'fk_individual__fk_descriptor_prefix2').select_related(
+		'fk_individual__fk_descriptor_descriptor2').select_related(
+		'fk_individual__fk_descriptor_prefix3').select_related(
+		'fk_individual__fk_descriptor_descriptor3').order_by('fk_individual')
 
 	relationship_dic = {}
 	relationshipnumber = 0
@@ -797,51 +773,14 @@ def relationship_dataset(witness_entity_number):
 
 		relationshipnumber += 1
 
-		relationshipvalues = {}
+		relationship_dic[r.fk_individual_id] = {
+			'name': r.fk_individual.display_name,
+			'role': r.fk_relationshiprole.relationship_role if r.fk_relationshiprole else None,
+			'id_individual': r.fk_individual_id,
+		}
 
-		nameoriginal = ""
-		if r['person2__fk_group__group_name'] != None:
-			nameoriginal =  r['person2__fk_group__group_name']
-		if r['person2__fk_descriptor_name__descriptor_modern'] != None:
-			nameoriginal =  r['person2__fk_descriptor_name__descriptor_modern']
-		if r['person2__fk_descriptor_prefix1__prefix_english'] != None:
-			nameoriginal = nameoriginal + " " + r['person2__fk_descriptor_prefix1__prefix_english']
-		if r['person2__fk_descriptor_descriptor1__descriptor_modern'] != None:
-			nameoriginal = nameoriginal + " " + r['person2__fk_descriptor_descriptor1__descriptor_modern']
-		if r['person2__fk_descriptor_prefix2__prefix_english'] != None:
-			nameoriginal = nameoriginal + " " + r['person2__fk_descriptor_prefix2__prefix_english']
-		if r['person2__fk_descriptor_descriptor2__descriptor_modern'] != None:
-			nameoriginal = nameoriginal + " " + r['person2__fk_descriptor_descriptor2__descriptor_modern']
-		if r['person2__fk_descriptor_prefix3__prefix_english'] != None:
-			nameoriginal = nameoriginal + " " + r['person2__fk_descriptor_prefix3__prefix_english']
+	return(relationship_dic, relationshipnumber)
 
-		relationshipvalues['name'] = nameoriginal
-		relationshipvalues['role'] = r['relationship_role']
-		relationshipvalues['id_individual'] = r['person2__id_individual']
-
-		relationship_dic[r['person2__id_individual']] = relationshipvalues
-
-	return(relationship_dic, relationshipnumber)    
-
-
-def referencenamegenerator(r):
-
-	nameoriginal = ""
-
-	if r['fk_individual__fk_descriptor_name__descriptor_modern'] != None:
-		nameoriginal =  r['fk_individual__fk_descriptor_name__descriptor_modern']
-	if r['fk_individual__fk_descriptor_prefix1__prefix_english'] != None:
-		nameoriginal = nameoriginal + " " + r['fk_individual__fk_descriptor_prefix1__prefix_english']
-	if r['fk_individual__fk_descriptor_descriptor1__descriptor_modern'] != None:
-		nameoriginal = nameoriginal + " " + r['fk_individual__fk_descriptor_descriptor1__descriptor_modern']
-	if r['fk_individual__fk_descriptor_prefix2__prefix_english'] != None:
-		nameoriginal = nameoriginal + " " + r['fk_individual__fk_descriptor_prefix2__prefix_english']
-	if r['fk_individual__fk_descriptor_descriptor2__descriptor_modern'] != None:
-		nameoriginal = nameoriginal + " " + r['fk_individual__fk_descriptor_descriptor2__descriptor_modern']
-	if r['fk_individual__fk_descriptor_prefix3__prefix_english'] != None:
-		nameoriginal = nameoriginal + " " + r['fk_individual__fk_descriptor_prefix3__prefix_english']
-
-	return (nameoriginal)
 
 ### network diagrams
 def networkgenerator(reference_set):
@@ -851,75 +790,21 @@ def networkgenerator(reference_set):
 
 	reference_dic = {}
 	person_dic = {}
-	personlist = []  
+	personlist = []
 
 	for r in reference_set:
 
-		if r['fk_event'] in reference_dic:
-			eventid = r['fk_event']
-			reference_dic[eventid].append(r['fk_individual'])
-		else:
-			eventid = r['fk_event']
-			reference_dic[eventid] = [r['fk_individual']]
+		eventid = r.fk_event_id
+		person = r.fk_individual_id
 
-		nameoriginal = referencenamegenerator(r)
+		if eventid in reference_dic:
+			reference_dic[eventid].append(person)
+		else:
+			reference_dic[eventid] = [person]
+
+		nameoriginal = r.fk_individual.display_name
 
 		valuetarget = 1
-		person = r['fk_individual']
-
-		if person in personlist:
-			x=personlist.index(person)
-			case = nodelist[x]
-			currentvalue = case['val'] + 1
-			if currentvalue > 1: colour = '#4d4db3'
-			if currentvalue > 3: colour = '#409fbf'
-			if currentvalue > 5: colour = '#c6a339'
-			if currentvalue > 7: colour = '#c68039'
-			if currentvalue > 10: colour = '#d95326'
-			if currentvalue > 15: colour = '#ff0000'
-			nodelist.pop(x)
-			nodelist.insert(x, {'id':person, 'name': nameoriginal, 'val': currentvalue, 'color': colour})
-			# nodelist.insert(x, {'id':person})
-
-		else:
-			personlist.append(person)
-			nodelist.append({'id':person, 'name': nameoriginal, 'val': 1, 'color':'#806c93'})
-
-	for r in reference_dic:
-		targetset = reference_dic[r]
-		numberofpeople = len(reference_dic[r])
-
-		for x in range(numberofpeople):
-			for y in range(x+1, numberofpeople):
-				person1 = targetset[x]
-				person2 = targetset[y]
-				linkslist.append({'source': person1, 'target': person2})
-
-	return (linkslist, nodelist)
-
-### network diagrams
-def networkgenerator2(reference_set):
-
-	linkslist = []
-	nodelist = []
-
-	reference_dic = {}
-	person_dic = {}
-	personlist = []  
-
-	for r in reference_set:
-
-		if r['fk_event'] in reference_dic:
-			eventid = r['fk_event']
-			reference_dic[eventid].append(r['fk_individual'])
-		else:
-			eventid = r['fk_event']
-			reference_dic[eventid] = [r['fk_individual']]
-
-		nameoriginal = referencenamegenerator(r)
-
-		valuetarget = 1
-		person = r['fk_individual']
 
 		if person in personlist:
 			x=personlist.index(person)
@@ -2134,6 +2019,7 @@ def individualsearch(digisig_entity_number=None):
 
 def referencecollectindividual(reference_set):
 	reference_set = reference_set.select_related(
+		'fk_individual__fk_group').select_related(
 		'fk_individual__fk_descriptor_title').select_related(
 		'fk_individual__fk_descriptor_name').select_related(
 		'fk_individual__fk_descriptor_prefix1').select_related(
@@ -2141,16 +2027,7 @@ def referencecollectindividual(reference_set):
 		'fk_individual__fk_descriptor_prefix2').select_related(
 		'fk_individual__fk_descriptor_descriptor2').select_related(
 		'fk_individual__fk_descriptor_prefix3').select_related(
-		'fk_individual__fk_descriptor_descriptor3').values(
-		'fk_individual', 
-		'fk_event', 
-		'fk_individual__fullname_original',
-		'fk_individual__fk_descriptor_name__descriptor_modern',
-		'fk_individual__fk_descriptor_prefix1__prefix_english',
-		'fk_individual__fk_descriptor_descriptor1__descriptor_modern',
-		'fk_individual__fk_descriptor_prefix2__prefix_english',
-		'fk_individual__fk_descriptor_descriptor2__descriptor_modern',
-		'fk_individual__fk_descriptor_prefix3__prefix_english').order_by('pk_referenceindividual')
+		'fk_individual__fk_descriptor_descriptor3').order_by('pk_referenceindividual')
 
 	return(reference_set)
 
@@ -3664,7 +3541,7 @@ def actorfinder(manifestation_set):
 	manifestation = manifestation_set[0]
 	actortarget = Seal.objects.get(id_seal=int(manifestation['fk_face__fk_seal']))
 
-	nameout = namecompiler(actortarget.fk_individual_realizer)
+	nameout = actortarget.fk_individual_realizer.display_name
 
 	return(nameout, actortarget.fk_individual_realizer) 
 
@@ -3676,149 +3553,49 @@ def actornamegenerator(individual_object):
 
 	for i in individual_object:
 		individual_info = {}
-		individual_info['actor_name'] = namecompiler(i)
+		individual_info['actor_name'] = i.display_name
 		individual_info['id_individual'] = i.id_individual
 		individual_set[i.id_individual] = individual_info
 
 	return(individual_set)
 
+@sync_to_async
+def individualsearch2(witness_entity_number):
 
-def namecompiler(individual_target):
+	individual_object = Individual.objects.select_related(
+	'fk_group').select_related(
+	'fk_descriptor_title').select_related(
+	'fk_descriptor_name').select_related(
+	'fk_descriptor_prefix1').select_related(
+	'fk_descriptor_descriptor1').select_related(
+	'fk_separator_1').select_related(
+	'fk_descriptor_prefix2').select_related(
+	'fk_descriptor_descriptor2').select_related(
+	'fk_descriptor_prefix3').select_related(
+	'fk_descriptor_descriptor3').select_related(
+	'fk_group__fk_group_order').select_related(
+	'fk_group__fk_group_class')
 
-	if not isinstance(individual_target, Individual):
-		print(f"Warning: Expected Individual object, but received: {type(individual_target)}")
-		individual_object = Individual.objects.get(id_individual=individual_target
-			).select_related('fk_group', 
-			'fk_descriptor_title', 
-			'fk_descriptor_name',
-			'fk_descriptor_prefix1',
-			'fk_descriptor_descriptor1',
-			'fk_descriptor_prefix2',
-			'fk_descriptor_descriptor2',
-			'fk_descriptor_prefix3', 
-			'fk_descriptor_descriptor3')
+	individual_object = individual_object.get(id_individual=witness_entity_number)
 
-	else:
-		individual_object= individual_target
+	return(individual_object)
 
-	# (foreign key name, attribute on the related object)
-	components = [
-		('fk_group', 'group_name'),
-		('fk_descriptor_title', 'descriptor_modern'),
-		('fk_descriptor_name', 'descriptor_modern'),
-		('fk_descriptor_prefix1', 'prefix_english'),
-		('fk_descriptor_descriptor1', 'descriptor_modern'),
-		('fk_descriptor_prefix2', 'prefix_english'),
-		('fk_descriptor_descriptor2', 'descriptor_modern'),
-		('fk_descriptor_prefix3', 'prefix_english'),
-		('fk_descriptor_descriptor3', 'descriptor_modern'),
-	]
-
-	parts = []
-	for fk_name, attr in components:
-		related = getattr(individual_object, fk_name, None)
-		if related is None:
-			continue
-		value = getattr(related, attr, None)
-		if value:  # skips None and empty strings
-			parts.append(str(value).strip())
-
-	return " ".join(parts)
-
-
-	# namevariable = ''
-
-	# if hasattr(individual_object, 'fk_group') and individual_object.fk_group is not None: namevariable = individual_object.fk_group.group_name
-	# if hasattr(individual_object, 'fk_descriptor_title') and individual_object.fk_descriptor_title is not None: namevariable = namevariable + " " + individual_object.fk_descriptor_title.descriptor_original
-	# if hasattr(individual_object, 'fk_descriptor_name') and individual_object.fk_descriptor_name is not None: namevariable = namevariable + " " + individual_object.fk_descriptor_name.descriptor_original
-	# if hasattr(individual_object, 'fk_descriptor_prefix1') and individual_object.fk_descriptor_prefix1: namevariable = namevariable + " " + individual_object.fk_descriptor_prefix1.prefix_english
-	# if hasattr(individual_object, 'fk_descriptor_descriptor1') and individual_object.fk_descriptor_descriptor1 is not None: namevariable = namevariable + " " + individual_object.fk_descriptor_descriptor1.descriptor_original
-	# if hasattr(individual_object, 'fk_descriptor_prefix2')  and individual_object.fk_descriptor_prefix2: namevariable = namevariable + " " + individual_object.fk_descriptor_prefix2.prefix_english
-	# if hasattr(individual_object, 'fk_descriptor_descriptor2') and individual_object.fk_descriptor_descriptor2 is not None: namevariable = namevariable + " " + individual_object.fk_descriptor_descriptor2.descriptor_original
-	# if hasattr(individual_object, 'fk_descriptor_prefix3') and individual_object.fk_descriptor_prefix3: namevariable = namevariable + " " + individual_object.fk_descriptor_prefix3.prefix_english
-	# if hasattr(individual_object, 'fk_descriptor_descriptor3') and individual_object.fk_descriptor_descriptor3 is not None: namevariable = namevariable + " " + individual_object.fk_descriptor_descriptor3.descriptor_original
-
-	# nameout = namevariable.strip()
-
-	# return(nameout)
 
 @sync_to_async
 def namecompiler_group(listofactors):
 
-	#create the list of people whose names need to be formulated
-	individual_set = Individual.objects.filter(id_individual__in=listofactors).values(
-		'id_individual',
+	individual_set = Individual.objects.select_related(
+		'fk_group',
 		'fk_descriptor_title',
 		'fk_descriptor_name',
 		'fk_descriptor_prefix1',
 		'fk_descriptor_descriptor1',
-		'fk_separator_1',
 		'fk_descriptor_prefix2',
 		'fk_descriptor_descriptor2',
 		'fk_descriptor_prefix3',
-		'fk_descriptor_descriptor3',
-		'fk_group',
-		)
+		'fk_descriptor_descriptor3').filter(id_individual__in=listofactors)
 
-	#gather the information needed to make the names
-	descriptor_list =[]
-	prefix_list= []
-	group_list= []
-
-	for d in individual_set:
-		descriptor_list.append(d['fk_descriptor_title'])
-		descriptor_list.append(d['fk_descriptor_name'])
-		descriptor_list.append(d['fk_descriptor_descriptor1'])
-		descriptor_list.append(d['fk_descriptor_descriptor2'])
-		descriptor_list.append(d['fk_descriptor_descriptor3'])
-
-	for p in individual_set:
-		prefix_list.append(p['fk_descriptor_prefix1'])
-		prefix_list.append(p['fk_descriptor_prefix2'])
-		prefix_list.append(p['fk_descriptor_prefix3'])
-
-	for g in individual_set:
-		group_list.append(g['fk_group'])
-
-	descriptor_set = Descriptor.objects.filter(
-		pk_descriptor__in=descriptor_list).values_list(
-		'pk_descriptor',
-		'descriptor_modern')
-
-	prefix_set = Prefix.objects.filter(
-		pk_prefix__in=prefix_list).values_list(
-		'pk_prefix',
-		'prefix_english')
-
-	group_set = Groupname.objects.filter(
-		id_group__in=group_list).values_list(
-		'id_group',
-		'group_name')
-
-	descriptor_modern_map = dict(descriptor_set)
-	prefix_english_map = dict(prefix_set)
-	group_name_map = dict(group_set)
-
-	# loop each person and construct the name
-	name_set = {}
-
-	for i in individual_set:
-		name_temp = ""
-		group_part = group_name_map.get(i.get('fk_group'), "")
-		if group_part:
-			name_temp += group_part + " "
-		#name_temp += group_name_map.get(i.get('i.fk_group'), "") + " " if group_name_map else ""
-		name_temp += descriptor_modern_map.get(i.get('fk_descriptor_title'), "") + " "
-		name_temp += descriptor_modern_map.get(i.get('fk_descriptor_name'), "") + " "
-		name_temp += prefix_english_map.get(i.get('fk_descriptor_prefix1'), "") + " "
-		name_temp += descriptor_modern_map.get(i.get('fk_descriptor_descriptor1'), "") + " "
-		name_temp += prefix_english_map.get(i.get('fk_descriptor_prefix2'), "") + " "
-		name_temp += descriptor_modern_map.get(i.get('fk_descriptor_descriptor2'), "") + " "
-		name_temp += prefix_english_map.get(i.get('fk_descriptor_prefix3'), "") + " "
-		name_temp += descriptor_modern_map.get(i.get('fk_descriptor_descriptor3'), "")
-		name_set[i['id_individual']] = name_temp.strip()
-
-	return(name_set)
+	return {i.id_individual: i.display_name for i in individual_set}
 
 
 #gets event set
@@ -4663,7 +4440,7 @@ def manifestation_createdic(manifestationcase):
 	externallink_object = Digisiglinkview.objects.filter(fk_digisigentity=digisig_entity_number)
 
 	individualtarget = seal_object.fk_individual_realizer
-	outname = namecompiler(individualtarget)
+	outname = individualtarget.display_name
 
 
 

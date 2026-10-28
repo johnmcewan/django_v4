@@ -230,25 +230,20 @@ async def person_page(request, witness_entity_number):
 	template = loader.get_template('witness/person.html')
 
 	individual_object = await individualsearch2(witness_entity_number)
-	pagetitle= namecompiler(individual_object)
+	pagetitle= individual_object.display_name
 
 	mapparishes, ref_list = await mapparishesdata2(witness_entity_number)
 
 	# list of references to the actor
 	reference_list = await referenceset_references5(witness_entity_number)
-	#reference_list = []
 
 	context = {
 		'pagetitle': pagetitle,
 		'individual_object': individual_object,
-		#'relationship_dic': relationship_dic,
-		#'relationshipnumber' : relationshipnumber,
 		'reference_list' : reference_list,
 		'parishes_dict': mapparishes,
-		#'reference_set': reference_set,
 		}
 
-	template = loader.get_template('witness/person.html')
 	return HttpResponse(template.render(context, request))
 
 async def person_ajax(request, witness_entity_number):
@@ -290,7 +285,15 @@ def parishnetwork_page(request, witness_entity_number):
 
 	parishevents = Location.objects.filter(id_location=qlondonparish).values('locationname__locationreference__fk_event')
 
-	exclusionset = Digisigrelationshipview.objects.filter(Q(person2=10140149)|Q(person2=10140449)|Q(person2=10139569)).values('fk_individual')
+	#10/27/2026 -- these people are "alderman, sheriff, mayor"
+	officeholder_ids = [10140149, 10140449, 10139569]
+
+	officeholder_nodes = RelationshipBranch.objects.filter(
+		fk_individual__in=officeholder_ids).values('fk_relationshipnode')
+
+	exclusionset = RelationshipBranch.objects.filter(
+		fk_relationshipnode__in=officeholder_nodes).exclude(
+		fk_individual__in=officeholder_ids).values('fk_individual')
 
 	reference_set = Referenceindividual.objects.filter(
 		fk_referencerole=1).exclude(
@@ -299,17 +302,6 @@ def parishnetwork_page(request, witness_entity_number):
 		fk_event__in=parishevents)
 
 	reference_set = referencecollectindividual(reference_set)
-
-	reference_set = reference_set.values(
-		'fk_individual', 
-		'fk_event', 
-		'fk_individual__fullname_original',
-		'fk_individual__fk_descriptor_name__descriptor_modern',
-		'fk_individual__fk_descriptor_prefix1__prefix_english',
-		'fk_individual__fk_descriptor_descriptor1__descriptor_modern',
-		'fk_individual__fk_descriptor_prefix2__prefix_english',
-		'fk_individual__fk_descriptor_descriptor2__descriptor_modern',
-		'fk_individual__fk_descriptor_prefix3__prefix_english').order_by('pk_referenceindividual')
 
 	linkslist, nodelist = networkgenerator(reference_set)
 

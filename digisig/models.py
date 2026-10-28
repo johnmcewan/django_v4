@@ -678,8 +678,38 @@ class Individual(models.Model):
 	id_individual = models.AutoField(primary_key=True)
 	fk_group = models.ForeignKey('Groupname', models.DO_NOTHING, related_name="fk_group", db_column='fk_group', blank=True, null=True)
 
-	def __str__(self): 
+	def __str__(self):
 		return self.fullname_original or ''
+
+	# (foreign key name, attribute on the related object) -- order defines word order in the name
+	NAME_COMPONENTS = [
+		('fk_group', 'group_name'),
+		('fk_descriptor_title', 'descriptor_modern'),
+		('fk_descriptor_name', 'descriptor_modern'),
+		('fk_descriptor_prefix1', 'prefix_english'),
+		('fk_descriptor_descriptor1', 'descriptor_modern'),
+		('fk_descriptor_prefix2', 'prefix_english'),
+		('fk_descriptor_descriptor2', 'descriptor_modern'),
+		('fk_descriptor_prefix3', 'prefix_english'),
+		('fk_descriptor_descriptor3', 'descriptor_modern'),
+	]
+
+	@property
+	def display_name(self):
+		"""Builds the person's name out of the group/title/name/prefix/descriptor fields.
+
+		Relies on these FKs being select_related -- otherwise each component triggers its own query.
+		"""
+		parts = []
+		for fk_name, attr in self.NAME_COMPONENTS:
+			related = getattr(self, fk_name, None)
+			if related is None:
+				continue
+			value = getattr(related, attr, None)
+			if value:  # skips None and empty strings
+				parts.append(str(value).strip())
+
+		return " ".join(parts)
 
 	class Meta:
 		managed = False
@@ -1154,10 +1184,10 @@ class Regiondisplay(models.Model):
 
 
 class RelationshipBranch(models.Model):
+	pk_branch = models.AutoField(primary_key=True)
 	fk_relationshipnode = models.ForeignKey('RelationshipNode', models.DO_NOTHING, db_column='fk_relationshipnode', blank=True, null=True)
 	fk_individual = models.ForeignKey('Individual', models.DO_NOTHING, related_name='fk_individual_relationshipbranch', db_column='fk_individual', blank=True, null=True)
 	fk_relationshiprole = models.ForeignKey('RelationshipRole', models.DO_NOTHING, db_column='fk_relationshiprole', blank=True, null=True)
-	pk_branch = models.AutoField(primary_key=True)
 
 	class Meta:
 		managed = False

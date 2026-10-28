@@ -887,7 +887,7 @@ class EntityView(View):
 		manifestation_object, totalmanifestation_count = await manifestation_dataassemble(manifestation_pageobject)
 		relationship_object, relationshipnumber = await relationship_dataset(digisig_entity_number)
 		reference_set = await referenceset_references(digisig_entity_number)
-		pagetitle = namecompiler(individual_object)
+		pagetitle = individual_object.display_name
 
 		context = {
 			'pagetitle': pagetitle,
