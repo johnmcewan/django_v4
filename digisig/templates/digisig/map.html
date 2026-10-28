@@ -140,11 +140,10 @@ var placeslen = Object.keys(geojsonFeature1).length;
 if (placeslen > 1) {
     hideEmptyState();
     var map1 = L.map('mapid1', {scrollWheelZoom:false}).setView([45,15], 4);
-    var layer1 = new L.tileLayer('https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png?key={apikey}', {
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
-        subdomains: 'abcd',
-        maxZoom: 20,
-        apikey:'{{ CARTO_API_KEY|escapejs }}'
+    var layer1 = new L.tileLayer('https://tiles.stadiamaps.com/tiles/stamen_watercolor/{z}/{x}/{y}.jpg', {
+        attribution: '&copy; <a href="https://stadiamaps.com/" target="_blank">Stadia Maps</a> &copy; <a href="https://stamen.com/" target="_blank">Stamen Design</a> &copy; <a href="https://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a>',
+        maxZoom: 16,
+        referrerPolicy: 'strict-origin-when-cross-origin'
     });
     map1.addLayer(layer1);
     L.geoJSON(geojsonFeature1, {onEachFeature: onEachFeature}).addTo(map1);
@@ -157,11 +156,10 @@ var countieslen = Object.keys(geojsonFeature2).length;
 if (countieslen > 1) {
     hideEmptyState();
     var map1 = L.map('mapid1', {scrollWheelZoom:false}).setView([52.5,-2], 7);
-    var layer2 = new L.tileLayer('https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png?key={apikey}', {
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
-        subdomains: 'abcd',
-        maxZoom: 20,
-        apikey:'{{ CARTO_API_KEY|escapejs }}'
+    var layer2 = new L.tileLayer('https://tiles.stadiamaps.com/tiles/stamen_watercolor/{z}/{x}/{y}.jpg', {
+        attribution: '&copy; <a href="https://stadiamaps.com/" target="_blank">Stadia Maps</a> &copy; <a href="https://stamen.com/" target="_blank">Stamen Design</a> &copy; <a href="https://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a>',
+        maxZoom: 16,
+        referrerPolicy: 'strict-origin-when-cross-origin'
     });
     map1.addLayer(layer2);
     L.geoJSON(geojsonFeature2, {style: style}).addTo(map1);
@@ -238,11 +236,10 @@ var regionslen = Object.keys(geojsonFeature3).length;
 if (regionslen > 1) {
     hideEmptyState();
     var map = L.map('mapid1', {scrollWheelZoom:false}).setView([52,0], 5);
-    var layer3 = new L.tileLayer('https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png?key={apikey}', {
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
-        subdomains: 'abcd',
-        maxZoom: 20,
-        apikey:'{{ CARTO_API_KEY|escapejs }}'
+    var layer3 = new L.tileLayer('https://tiles.stadiamaps.com/tiles/stamen_watercolor/{z}/{x}/{y}.jpg', {
+        attribution: '&copy; <a href="https://stadiamaps.com/" target="_blank">Stadia Maps</a> &copy; <a href="https://stamen.com/" target="_blank">Stamen Design</a> &copy; <a href="https://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a>',
+        maxZoom: 16,
+        referrerPolicy: 'strict-origin-when-cross-origin'
     });
     map.addLayer(layer3);
 
