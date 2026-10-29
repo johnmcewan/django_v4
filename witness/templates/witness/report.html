@@ -18,5 +18,94 @@
 
 	<div class="mainpage" id="maingpage"></div>
 
+	<div class="entity_relationship" id="entity_relationship">
+		<div class="div-caption">
+			Officeholders
+		</div>
+
+		<div id="reportEmptyState" style="display:none;">
+			<p>No officeholders were found.</p>
+		</div>
+
+		<style>
+			#reportTable thead th {
+				position: sticky;
+				top: 0;
+				z-index: 1;
+				background-color: #eff8ff;
+				box-shadow: 0 1px 0 black;
+			}
+		</style>
+
+		<div style="max-height:75vh; overflow-y:auto;">
+			<table id="reportTable">
+				<thead>
+				<tr class="even">
+					<th>Name</th>
+					<th>Dates in office</th>
+					<th>Terms</th>
+					<th>Length (years)</th>
+					<th>Served as Sheriff</th>
+					<th>First Sheriff Year</th>
+					<th>Years after Sheriff start</th>
+					<th>Served as Alderman</th>
+					<th>First Alderman Year</th>
+					<th>Years after Alderman start</th>
+				</tr>
+				</thead>
+				<tbody id="reportTableBody">
+				</tbody>
+			</table>
+		</div>
+	</div>
+
+	{{ datareferences|json_script:"reportdata" }}
+
+<script>
+	$(document).ready(function() {
+
+		var items = JSON.parse(document.getElementById('reportdata').textContent);
+
+		// placeholder-based person_page URL; the placeholder id is swapped for the real one per row
+		var personPageUrlTemplate = '{% url "person_page" witness_entity_number=99999999 %}';
+
+		if (items.length === 0) {
+			$('#reportTable').hide();
+			$('#reportEmptyState').show();
+			return;
+		}
+
+		var tableBody = $('#reportTableBody');
+
+		// convert a day count to years, keeping a fraction where the span isn't a whole number of years
+		function daysToYears(days) {
+			if (days === null || days === undefined) {
+				return '';
+			}
+			var years = Math.round((days / 365.25) * 100) / 100;
+			return years + (Math.abs(years) === 1 ? ' year' : ' years');
+		}
+
+		items.forEach(function(item, index) {
+			var row = $('<tr></tr>');
+			row.addClass(index % 2 === 0 ? 'even' : 'odd');
+
+			var personPageUrl = personPageUrlTemplate.replace('99999999', item.id_individual);
+
+			row.append('<td><a href="' + personPageUrl + '">' + item.name + '</a></td>');
+			row.append('<td>' + (item.datespan || '') + '</td>');
+			row.append('<td>' + item.numberofterms + '</td>');
+			row.append('<td>' + daysToYears(item.durationdays) + '</td>');
+			row.append('<td style="text-align:center;"><input type="checkbox" disabled' + (item.wassheriff ? ' checked' : '') + '></td>');
+			row.append('<td>' + (item.sheriffstartyear !== null ? item.sheriffstartyear : '') + '</td>');
+			row.append('<td>' + daysToYears(item.dayssincesheriff) + '</td>');
+			row.append('<td style="text-align:center;"><input type="checkbox" disabled' + (item.wasalderman ? ' checked' : '') + '></td>');
+			row.append('<td>' + (item.aldermanstartyear !== null ? item.aldermanstartyear : '') + '</td>');
+			row.append('<td>' + daysToYears(item.dayssincealderman) + '</td>');
+
+			tableBody.append(row);
+		});
+	});
+</script>
 
 {% endblock %}

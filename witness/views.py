@@ -106,7 +106,7 @@ async def analyze(request, analysistype):
 
 	if analysistype == "report":
 
-		# default value
+		# default value -- office of mayor
 		witness_entity_number = 10139569
 
 		try:
@@ -117,11 +117,86 @@ async def analyze(request, analysistype):
 		individual_object = await individualsearch2(witness_entity_number)
 		pagetitle = individual_object.display_name
 
-		# list of relationships for each actor
-		relationship_dic, relationshipnumber = await relationship_dataset(witness_entity_number)	
+		# list of people who have held this office (one entry per term)
+		relationship_dic, relationshipnumber = await relationship_dataset(witness_entity_number)
+
+		# cross-reference against other offices, to test career progression
+		# (e.g. whether mayors tended to have served as sheriff or alderman first)
+		crossreference_offices = {
+			'sheriff': 10140449,
+			'alderman': 10140149,
+		}
+
+		crossreference_startdates = {}
+		for key, office_entity_number in crossreference_offices.items():
+			office_dic, officenumber = await relationship_dataset(office_entity_number)
+
+			# earliest start date in that office, per individual
+			startdates = {}
+			for value in office_dic.values():
+				startdate = value['startdatefull']
+				if startdate is None:
+					continue
+				id_individual = value['id_individual']
+				if id_individual not in startdates or startdate < startdates[id_individual]:
+					startdates[id_individual] = startdate
+
+			crossreference_startdates[key] = startdates
+
+		# consolidate multiple terms held by the same man into a single row
+		consolidated = {}
+		for value in relationship_dic.values():
+			id_individual = value['id_individual']
+			if id_individual not in consolidated:
+				consolidated[id_individual] = {
+					'name': value['name'],
+					'id_individual': id_individual,
+					'terms': [],
+				}
+			consolidated[id_individual]['terms'].append(value)
+
+		report_list = list(consolidated.values())
+
+		for person in report_list:
+
+			# this man's own terms, in chronological order (undated terms last)
+			person['terms'].sort(key=lambda t: (t['datestart'] is None, t['datestart'] or 0))
+
+			person['numberofterms'] = len(person['terms'])
+
+			durations = [t['durationdays'] for t in person['terms'] if t['durationdays'] is not None]
+			person['durationdays'] = sum(durations) if durations else None
+
+			spans = []
+			for t in person['terms']:
+				startlabel = t['datestart'] if t['datestart'] is not None else '?'
+				endlabel = t['dateend'] if t['dateend'] is not None else '?'
+				spans.append('{}–{}'.format(startlabel, endlabel))
+			person['datespan'] = ', '.join(spans)
+
+			# earliest term's start, used for sorting and for the cross-office comparisons
+			person['datestart'] = person['terms'][0]['datestart']
+			earliest_start = person['terms'][0]['startdatefull']
+
+			for key, startdates in crossreference_startdates.items():
+				office_startdate = startdates.get(person['id_individual'])
+				person['was' + key] = person['id_individual'] in startdates
+				person[key + 'startyear'] = office_startdate.year if office_startdate is not None else None
+				if office_startdate is not None and earliest_start is not None:
+					# positive: became mayor that many days AFTER starting in that office
+					person['dayssince' + key] = (earliest_start - office_startdate).days
+				else:
+					person['dayssince' + key] = None
+
+			del person['terms']
+
+		# chronological order by (first) start date, undated entries last
+		report_list.sort(key=lambda value: (value['datestart'] is None, value['datestart'] or 0))
 
 		context = {
 			'pagetitle': pagetitle,
+			'datareferences': report_list,
+			'witness_entity_number': witness_entity_number,
 			}
 
 		template = loader.get_template('witness/report.html')

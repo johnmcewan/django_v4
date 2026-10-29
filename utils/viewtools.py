@@ -9,14 +9,15 @@ from django.db.models import Q, F
 import statistics
 import math
 import os
-import pandas as pd 
+import pandas as pd
 import json
 import numbers
+import calendar
 
 from django.conf import settings
 
 from time import time
-from datetime import datetime
+from datetime import datetime, date
 from asgiref.sync import sync_to_async
 
 from django.urls import reverse
@@ -745,9 +746,54 @@ def mapparishesdata(reference_set):
 	return(reference_list, mapparishes)
 
 
+def relationshipnode_duration_days(node):
+	"""Length of a relationship_node's term in days, from whatever start/end
+	precision is available (year only, year+month, or full date).
+
+	Missing day/month pieces are filled with the widest reasonable bound:
+	the 1st of the month for a start, the last day of the month for an end.
+	Returns None when the year itself is missing on either end.
+	"""
+	if node.start_year is None or node.end_year is None:
+		return None
+
+	start_month = node.fk_start_month or 1
+	start_day = node.start_day or 1
+
+	end_month = node.fk_end_month or 12
+	end_day = node.end_day or calendar.monthrange(node.end_year, end_month)[1]
+
+	try:
+		date_start = date(node.start_year, start_month, start_day)
+		date_end = date(node.end_year, end_month, end_day)
+	except ValueError:
+		return None
+
+	return (date_end - date_start).days
+
+
+def relationshipnode_start_date(node):
+	"""The first day of a relationship_node's term, from whatever start
+	precision is available (year only, year+month, or full date).
+
+	Missing month/day default to January 1st. Returns None when the
+	start year itself is missing.
+	"""
+	if node.start_year is None:
+		return None
+
+	start_month = node.fk_start_month or 1
+	start_day = node.start_day or 1
+
+	try:
+		return date(node.start_year, start_month, start_day)
+	except ValueError:
+		return None
+
+
 @sync_to_async
 def relationship_dataset(witness_entity_number):
-		 
+
 	nodes = RelationshipBranch.objects.filter(
 		fk_individual=witness_entity_number).values('fk_relationshipnode')
 
@@ -770,7 +816,8 @@ def relationship_dataset(witness_entity_number):
 		fk_relationshipnode__in=nodes).exclude(
 		fk_individual=witness_entity_number).filter(
 		fk_individual__isnull=False).select_related(
-		'fk_relationshiprole').order_by('fk_individual')
+		'fk_relationshiprole').select_related(
+		'fk_relationshipnode').order_by('fk_individual')
 
 	relationship_dic = {}
 	relationshipnumber = 0
@@ -785,6 +832,8 @@ def relationship_dataset(witness_entity_number):
 			'id_individual': r.fk_individual_id,
 			'datestart': r.fk_relationshipnode.start_year,
 			'dateend': r.fk_relationshipnode.end_year,
+			'durationdays': relationshipnode_duration_days(r.fk_relationshipnode),
+			'startdatefull': relationshipnode_start_date(r.fk_relationshipnode),
 		}
 
 	return(relationship_dic, relationshipnumber)
@@ -4018,6 +4067,24 @@ def referenceset_references4(witness_entity_number, ref_dic_locations):
 
 	return reference_list
 
+#a helper function added to assist referenceset_references5 handle date cases 10/29/2026
+def _format_year_range(start, end):
+	"""Return 'YYYY' or 'YYYY - YYYY' from two dates, either of which may be None.
+	Returns None if both are missing."""
+	if start is None and end is None:
+		return None
+	if start is None:
+		start = end
+	if end is None:
+		end = start
+
+	startyear = start.year
+	endyear = end.year
+
+	if endyear > startyear:
+		return f"{startyear} - {endyear}"
+	return str(startyear)
+
 
 @sync_to_async
 def referenceset_references5(witness_entity_number):
@@ -4069,30 +4136,31 @@ def referenceset_references5(witness_entity_number):
 			reference_row = {}
 
 			#date
-			if r['fk_event__startdate'] != None:
-				#reference_row['startyear'] = r['fk_event__startdate']
-				#reference_row['endyear'] = r['fk_event__enddate']
+			reference_row['date'] = (
+				_format_year_range(r['fk_event__startdate'], r['fk_event__enddate'])
+				or _format_year_range(r['fk_event__repository_startdate'], r['fk_event__repository_enddate'])
+				or "20000"
+			)
 
-				startyear = int(str(r['fk_event__startdate'])[:4])
-				endyear = int(str(r['fk_event__enddate'])[:4])
+			# if r['fk_event__startdate'] != None:
+			# 	startyear = int(str(r['fk_event__startdate'])[:4])
+			# 	endyear = int(str(r['fk_event__enddate'])[:4])
 
-				if endyear > startyear:
-					reference_row['date'] = str(startyear) + " - " + str(endyear)
-				else:
-					reference_row['date'] = str(startyear)
-			elif r['fk_event__repository_startdate'] != None:
-				#reference_row['startyear'] = r['fk_event__repository_startdate']
-				#reference_row['endyear'] = r['fk_event__repository_enddate']
+			# 	if endyear > startyear:
+			# 		reference_row['date'] = str(startyear) + " - " + str(endyear)
+			# 	else:
+			# 		reference_row['date'] = str(startyear)
+			# elif r['fk_event__repository_startdate'] != None:
+			# 	startyear = int(str(r['fk_event__repository_startdate'])[:4])
+			# 	endyear = int(str(r['fk_event__repository_enddate'])[:4])
 
-				startyear = int(str(r['fk_event__repository_startdate'])[:4])
-				endyear = int(str(r['fk_event__repository_enddate'])[:4])
+			# 	if endyear > startyear:
+			# 		reference_row['date'] = str(startyear) + " - " + str(endyear)
+			# 	else:
+			# 		reference_row['date'] = str(startyear)
+			# else:
+			# 	reference_row['date'] = "20000"
 
-				if endyear > startyear:
-					reference_row['date'] = str(startyear) + " - " + str(endyear)
-				else:
-					reference_row['date'] = str(startyear)
-			else:
-				reference_row['date'] = "20000"
 			#role
 			reference_row["role"] = r['fk_referencerole__referencerole']
 
@@ -4107,12 +4175,17 @@ def referenceset_references5(witness_entity_number):
 			reference_row["item_id"] = r['fk_event__part__fk_item__id_item']
 			reference_row["part_id"] = r['fk_event__part__id_part']
 			reference_row["part_url"] = reverse('entity', kwargs={'witness_entity_number': r['fk_event__part__id_part']})
+
+			reference_row["location"] = (
+				r['fk_event__fk_event_locationreference__fk_locationname__fk_location__location']
+				or "*Undetermined"
+			)
 			
-			try:
-				reference_row["location"] = r['fk_event__fk_event_locationreference__fk_locationname__fk_location__location']
+			# try:
+			# 	reference_row["location"] = r['fk_event__fk_event_locationreference__fk_locationname__fk_location__location']
 			
-			except:
-				reference_row["location"] = "*Undetermined"
+			# except:
+			# 	reference_row["location"] = "*Undetermined"
 
 			reference_list.append(reference_row)
 	
