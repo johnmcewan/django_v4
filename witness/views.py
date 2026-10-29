@@ -26,17 +26,13 @@ import pickle
 
 from asgiref.sync import sync_to_async
 
-# Create your views here.
 def index(request):
 
 	pagetitle = 'title'
 	template = loader.get_template('witness/index.html')
-
-	#londoners_total = Individual.objects.filter(fk_individual_event__gt=1).distinct('id_individual').count()
-
+	
 	context = {
 		'pagetitle': pagetitle,
-		#'londoners_total': londoners_total,
 		}
 
 	return HttpResponse(template.render(context, request))
@@ -63,12 +59,74 @@ def discover(request, discovertype):
 
 	return redirect(targetphrase, 50013947)
 
-def analyze(request, analyzetype):
+async def analyze(request, analysistype):
 
-	print (request)
-	targetphrase = "parish_page"
+	if analysistype == "timeline":
 
-	return redirect(targetphrase, 50013947)
+		# default value
+		witness_entity_number = 10000029
+
+		try:
+			witness_entity_number = int(request.GET.get('witness_entity_number', witness_entity_number))
+		except ValueError:
+			pass
+
+		individual_object = await individualsearch2(witness_entity_number)
+		pagetitle = individual_object.display_name
+
+		# list of relationships for each actor
+		relationship_dic, relationshipnumber = await relationship_dataset(witness_entity_number)
+
+		# keep only relationships that carry temporal information
+		timeline_list = [
+			value for value in relationship_dic.values()
+			if value['datestart'] is not None or value['dateend'] is not None
+		]
+
+		# fall back to the known date when one end of the range is missing,
+		# so every entry still renders as a bar (or a point, via minBarLength)
+		for value in timeline_list:
+			if value['datestart'] is None:
+				value['datestart'] = value['dateend']
+			if value['dateend'] is None:
+				value['dateend'] = value['datestart']
+
+			value['label'] = '{} ({})'.format(value['role'], value['name']) if value['role'] else value['name']
+
+		timeline_list.sort(key=lambda value: value['datestart'])
+
+		context = {
+			'pagetitle': pagetitle,
+			'datareferences': timeline_list,
+			'witness_entity_number': witness_entity_number,
+			}
+
+		template = loader.get_template('witness/timeline.html')
+		return HttpResponse(template.render(context, request))
+
+	if analysistype == "report":
+
+		# default value
+		witness_entity_number = 10139569
+
+		try:
+			witness_entity_number = int(request.GET.get('witness_entity_number', witness_entity_number))
+		except ValueError:
+			pass
+
+		individual_object = await individualsearch2(witness_entity_number)
+		pagetitle = individual_object.display_name
+
+		# list of relationships for each actor
+		relationship_dic, relationshipnumber = await relationship_dataset(witness_entity_number)	
+
+		context = {
+			'pagetitle': pagetitle,
+			}
+
+		template = loader.get_template('witness/report.html')
+		return HttpResponse(template.render(context, request))
+
 
 def about(request):
 
@@ -87,7 +145,7 @@ def exhibit(request):
 
 async def search(request, searchtype):
 
-### Parish
+	### Parish
 
 	if searchtype == "parish":
 
@@ -117,9 +175,7 @@ async def search(request, searchtype):
 
 		return HttpResponse(template.render(context, request))
 
-### Actor (Person)
-
-### Actor (Person)
+	### Actor (Person)
 
 	if searchtype == "person":
 
@@ -147,12 +203,10 @@ async def search(request, searchtype):
 
 		individual_object = await individualsearch()
 
-		#individual_object = await personsearch_people(qnamelen, qname, qpagination, londonevents, individual_object)
 		individual_object = await personsearch_people(qnamelen, qname, londonevents, individual_object)
 
 		individual_object, totalrows, totaldisplay, has_next, has_previous = await defaultpagination(individual_object, qpagination)
 
-		# Use the page number defaultpagination actually served (it may have been clamped)
 		pagecountercurrent = individual_object.number
 		lastpage = individual_object.paginator.num_pages
 		pagecounternext = pagecountercurrent + 1 if pagecountercurrent + 1 <= lastpage else None
@@ -175,55 +229,6 @@ async def search(request, searchtype):
 
 		template = loader.get_template('witness/search_person.html')
 		return HttpResponse(template.render(context, request))
-
-
-
-	# if searchtype == "person":
-
-	# 	pagetitle = 'title'
-
-	# 	londonevents = await personsearch_events()
-
-	# 	form = PeopleForm(request.POST or None)
-
-	# 	if request.method == "POST":
-	# 		#form = PeopleForm(request.POST)
-	# 		if form.is_valid():
-	# 			qpagination = form.cleaned_data['pagination']
-	# 			qname = form.cleaned_data['name']
-	# 			qnamelen = len(qname)
-	# 			form = PeopleForm(request.POST)
-
-	# 	else:
-	# 		qnamelen = 0
-	# 		qname = ""
-	# 		qpagination = 1
-
-	# 	individual_object = await individualsearch()
-
-	# 	individual_object = await personsearch_people(qnamelen, qname, qpagination, londonevents, individual_object) 
-
-	# 	individual_object, totalrows, totaldisplay, has_next, has_previous = await defaultpagination(individual_object, qpagination) 
-
-	# 	pagecountercurrent = qpagination
-	# 	pagecounternext = qpagination + 1
-	# 	pagecounternextnext = qpagination +2  
-
-	# 	individual_set = await personsearch_prepareset(individual_object)
-
-	# 	context = {
-	# 		'pagetitle': pagetitle,
-	# 		'individual_set': individual_set,
-	# 		'totalrows': totalrows,
-	# 		'totaldisplay': totaldisplay,
-	# 		'form': form,
-	# 		'pagecountercurrent': pagecountercurrent,
-	# 		'pagecounternext': pagecounternext,
-	# 		'pagecounternextnext': pagecounternextnext,
-	# 		}
-
-	# 	template = loader.get_template('witness/search_person.html')
-	# 	return HttpResponse(template.render(context, request))
 
 async def person_page(request, witness_entity_number):
 

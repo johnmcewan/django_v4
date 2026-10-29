@@ -751,20 +751,26 @@ def relationship_dataset(witness_entity_number):
 	nodes = RelationshipBranch.objects.filter(
 		fk_individual=witness_entity_number).values('fk_relationshipnode')
 
+	# relationship_object = RelationshipBranch.objects.filter(
+	# 	fk_relationshipnode__in=nodes).exclude(
+	# 	fk_individual=witness_entity_number).filter(
+	# 	fk_individual__isnull=False).select_related(
+	# 	'fk_relationshiprole').select_related(
+	# 	'fk_individual__fk_group').select_related(
+	# 	'fk_individual__fk_descriptor_title').select_related(
+	# 	'fk_individual__fk_descriptor_name').select_related(
+	# 	'fk_individual__fk_descriptor_prefix1').select_related(
+	# 	'fk_individual__fk_descriptor_descriptor1').select_related(
+	# 	'fk_individual__fk_descriptor_prefix2').select_related(
+	# 	'fk_individual__fk_descriptor_descriptor2').select_related(
+	# 	'fk_individual__fk_descriptor_prefix3').select_related(
+	# 	'fk_individual__fk_descriptor_descriptor3').order_by('fk_individual')
+
 	relationship_object = RelationshipBranch.objects.filter(
 		fk_relationshipnode__in=nodes).exclude(
 		fk_individual=witness_entity_number).filter(
 		fk_individual__isnull=False).select_related(
-		'fk_relationshiprole').select_related(
-		'fk_individual__fk_group').select_related(
-		'fk_individual__fk_descriptor_title').select_related(
-		'fk_individual__fk_descriptor_name').select_related(
-		'fk_individual__fk_descriptor_prefix1').select_related(
-		'fk_individual__fk_descriptor_descriptor1').select_related(
-		'fk_individual__fk_descriptor_prefix2').select_related(
-		'fk_individual__fk_descriptor_descriptor2').select_related(
-		'fk_individual__fk_descriptor_prefix3').select_related(
-		'fk_individual__fk_descriptor_descriptor3').order_by('fk_individual')
+		'fk_relationshiprole').order_by('fk_individual')
 
 	relationship_dic = {}
 	relationshipnumber = 0
@@ -773,10 +779,12 @@ def relationship_dataset(witness_entity_number):
 
 		relationshipnumber += 1
 
-		relationship_dic[r.fk_individual_id] = {
+		relationship_dic[r.pk_branch] = {
 			'name': r.fk_individual.display_name,
 			'role': r.fk_relationshiprole.relationship_role if r.fk_relationshiprole else None,
 			'id_individual': r.fk_individual_id,
+			'datestart': r.fk_relationshipnode.start_year,
+			'dateend': r.fk_relationshipnode.end_year,
 		}
 
 	return(relationship_dic, relationshipnumber)
@@ -3853,11 +3861,11 @@ def referenceset_references2(witness_entity_number):
 
 @sync_to_async
 def referenceset_references3(witness_entity_number):
-	# Use a single query to get all relevant events
+	# All relevant events
 	eventset = Event.objects.filter(
 		fk_event_event__fk_individual=witness_entity_number).values('pk_event')
 	
-	# Query references with the necessary fields and related data all at once
+	# Query references
 	reference_dic = Referenceindividual.objects.filter(
 		fk_event__in=eventset
 	).select_related(

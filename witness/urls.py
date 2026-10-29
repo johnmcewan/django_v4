@@ -23,8 +23,6 @@ urlpatterns = [
 	path('page/letterbook/graph/<int:page_number>/', views.personletterbooknetwork_page, name='personletterbooknetwork_page'),
 	path('page/letterbook/search', views.searchletterbook, name='searchletterbook'),
 
-
-
 	re_path(r'page/person/(?P<witness_entity_number>[0-9]{8})', views.person_page, name='person_page'),
 	re_path(r'page/person/graph/(?P<witness_entity_number>[0-9]{8})', views.personnetwork_page, name='personnetwork_page'),
 	re_path(r'person_ajax/(?P<witness_entity_number>[0-9]{8})', views.person_ajax, name='person_ajax'),

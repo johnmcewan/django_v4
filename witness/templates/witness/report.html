@@ -1,0 +1,22 @@
+{% extends "witness/base.html" %}
+
+{% load static %}
+
+{% block content %}
+
+<!-- Include jQuery from a CDN (ensure this is placed before your custom script) -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.1"></script>
+
+	<div class="search-people-banner"></div>
+	<div class="sidepanel-left"></div>
+	<div class="sidepanel-right"></div>
+
+	<div class="main-title"><h1>{{pagetitle}}</h1></div>
+
+	<div class="mainpage" id="maingpage"></div>
+
+
+{% endblock %}

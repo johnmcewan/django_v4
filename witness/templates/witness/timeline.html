@@ -1,0 +1,205 @@
+{% extends "witness/base.html" %}
+
+{% load static %}
+
+{% block content %}
+
+<!-- Include jQuery from a CDN (ensure this is placed before your custom script) -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.1"></script>
+
+	<div class="search-people-banner"></div>
+	<div class="sidepanel-left"></div>
+	<div class="sidepanel-right"></div>
+
+	<div class="main-title"><h1>{{pagetitle}}</h1></div>
+
+	<div class="mainpage" id="maingpage"></div>
+
+	<div class="entity_relationship" id="entity_relationship">
+		<div class="div-caption">
+			Relationships
+		</div>
+
+		<div style="display:flex; gap:20px; align-items:flex-start;">
+
+			<div style="flex:1; min-width:0;">
+
+				<div id="timelineEmptyState" style="display:none;">
+					<p>No relationships with date information were found.</p>
+				</div>
+
+				<div id="timelineChartContainer">
+					<canvas id="relationshipTimelineChart"></canvas>
+				</div>
+
+			</div>
+
+			<div style="flex:0 0 220px; border: 1px solid black; background-color: white; padding: 15px;">
+				<form action="{% url 'analyze' analysistype='timeline' %}" method="get">
+					<label for="witness_entity_number">Person ID</label><br>
+					<input type="number" id="witness_entity_number" name="witness_entity_number" value="{{witness_entity_number}}" style="width:100%; margin-top:5px; margin-bottom:10px;">
+					<input type="submit" value="Show timeline">
+				</form>
+			</div>
+
+		</div>
+	</div>
+
+	{{ datareferences|json_script:"timelinedata" }}
+
+<script>
+	$(document).ready(function() {
+
+		var items = JSON.parse(document.getElementById('timelinedata').textContent);
+
+		// placeholder-based person_page URL; the placeholder id is swapped for the real one per item
+		var personPageUrlTemplate = '{% url "person_page" witness_entity_number=99999999 %}';
+
+		if (items.length === 0) {
+			$('#timelineChartContainer').hide();
+			$('#timelineEmptyState').show();
+			return;
+		}
+
+		// x-axis range: 10 below the lowest date to 10 above the highest, with a minimum span of 50
+		var allDates = [];
+		items.forEach(function(item) {
+			allDates.push(item.datestart, item.dateend);
+		});
+		var xMin = Math.min.apply(null, allDates) - 10;
+		var xMax = Math.max.apply(null, allDates) + 10;
+
+		var minimumSpan = 40;
+		var span = xMax - xMin;
+		if (span < minimumSpan) {
+			var deficit = (minimumSpan - span) / 2;
+			xMin -= deficit;
+			xMax += deficit;
+		}
+		// round outward to the nearest multiple of 10, so the axis bounds stay tidy
+		// without ever cutting off a date (floor the low end, ceil the high end)
+		xMin = Math.floor(xMin / 10) * 10;
+		xMax = Math.ceil(xMax / 10) * 10;
+
+		// group items that share a label onto the same row, in first-seen order
+		var labelOrder = [];
+		var groups = {};
+		items.forEach(function(item) {
+			if (!groups[item.label]) {
+				groups[item.label] = [];
+				labelOrder.push(item.label);
+			}
+			groups[item.label].push(item);
+		});
+
+		// within a row, order each label's periods chronologically
+		labelOrder.forEach(function(label) {
+			groups[label].sort(function(a, b) { return a.datestart - b.datestart; });
+		});
+
+		// one Chart.js dataset per "slot" so repeated periods for the same label
+		// render as separate bars, with a gap, rather than one merged bar
+		var maxSlots = Math.max.apply(null, labelOrder.map(function(label) {
+			return groups[label].length;
+		}));
+
+		var datasets = [];
+		var itemsForDataset = [];
+
+		for (var slot = 0; slot < maxSlots; slot++) {
+			var data = [];
+			var slotItems = [];
+
+			labelOrder.forEach(function(label) {
+				var period = groups[label][slot];
+				data.push(period ? [period.datestart, period.dateend] : null);
+				slotItems.push(period || null);
+			});
+
+			datasets.push({
+				label: 'Relationship period',
+				data: data,
+				backgroundColor: '#4b000b',
+				borderWidth: 0,
+				minBarLength: 6,
+				// don't divide the row's height among slot datasets - each bar
+				// should draw at full row height, positioned only by its own x-range
+				grouped: false
+			});
+			itemsForDataset.push(slotItems);
+		}
+
+		// give the chart enough height to show one row per distinct label
+		var container = document.getElementById('timelineChartContainer');
+		container.style.height = Math.max(300, labelOrder.length * 40 + 60) + 'px';
+
+		var ctx = document.getElementById('relationshipTimelineChart').getContext('2d');
+
+		var chart = new Chart(ctx, {
+			type: 'bar',
+			data: {
+				labels: labelOrder,
+				datasets: datasets
+			},
+			options: {
+				indexAxis: 'y',
+				responsive: true,
+				maintainAspectRatio: false,
+				plugins: {
+					legend: {
+						display: false
+					},
+					tooltip: {
+						callbacks: {
+							label: function(context) {
+								var item = itemsForDataset[context.datasetIndex][context.dataIndex];
+								if (!item) {
+									return '';
+								}
+								if (item.datestart === item.dateend) {
+									return item.datestart;
+								}
+								return item.datestart + ' – ' + item.dateend;
+							}
+						}
+					}
+				},
+				onClick: function(evt, elements) {
+					if (elements.length === 0) {
+						return;
+					}
+					var el = elements[0];
+					var item = itemsForDataset[el.datasetIndex][el.index];
+					if (!item) {
+						return;
+					}
+					var personPageUrl = personPageUrlTemplate.replace('99999999', item.id_individual);
+					window.location.href = personPageUrl;
+				},
+				scales: {
+					x: {
+						min: xMin,
+						max: xMax,
+						ticks: {
+							stepSize: 10
+						},
+						title: {
+							display: true,
+							text: 'Year'
+						}
+					},
+					y: {
+						title: {
+							display: false
+						}
+					}
+				}
+			}
+		});
+	});
+</script>
+
+{% endblock %}

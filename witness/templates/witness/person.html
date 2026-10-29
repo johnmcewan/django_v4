@@ -85,6 +85,11 @@
 			{% endfor %} -->
 
 			<thead>
+			<tr class="even">
+				<th>Role</th>
+				<th>Name</th>
+				<th>Dates</th>
+			</tr>
 			</thead>
 			<tbody>
 			</tbody>
@@ -161,22 +166,38 @@
                     // Parse the response assuming it's a JSON string
                     const data = JSON.parse(response);
 
+                    // Placeholder-based person_page URL; the placeholder id is swapped for the real one per row
+                    var personPageUrlTemplate = '{% url "person_page" witness_entity_number=99999999 %}';
+
                     // Check if we have any data
                     if (Object.keys(data).length > 0) {
                         var tableBody = $('#entity2 tbody');
                         tableBody.empty();  // Clear existing table rows
-                        
+
                         // Loop through the data and add rows to the table
                         for (var key in data) {
                             if (data.hasOwnProperty(key)) {
                                 var item = data[key];
-                                
+
                                 // Create a new table row
                                 var row = $('<tr></tr>');
 
-                                // Add table cells for name, role, and id
+                                // Build a date range string, omitting null/undefined start or end years
+                                var dateParts = [];
+                                if (item.datestart !== null && item.datestart !== undefined) {
+                                    dateParts.push(item.datestart);
+                                }
+                                if (item.dateend !== null && item.dateend !== undefined) {
+                                    dateParts.push(item.dateend);
+                                }
+                                var dateText = dateParts.join(' - ');
+
+                                var personPageUrl = personPageUrlTemplate.replace('99999999', item.id_individual);
+
+                                // Add table cells for role, name, and dates
                                 row.append('<td>' + item.role + '</td>');
-                                row.append('<td> <a href="' + item.id_individual + '">' + item.name + '</a></td>');
+                                row.append('<td><a href="' + personPageUrl + '">' + item.name + '</a></td>');
+                                row.append('<td>' + dateText + '</td>');
 
                                 // Append the row to the table body
                                 tableBody.append(row);
