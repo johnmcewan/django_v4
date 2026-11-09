@@ -827,7 +827,8 @@ def relationship_dataset(witness_entity_number):
 		relationshipnumber += 1
 
 		relationship_dic[r.pk_branch] = {
-			'name': r.fk_individual.display_name,
+			#'name': r.fk_individual.display_name,
+			'name': r.fk_individual.fullname_original,
 			'role': r.fk_relationshiprole.relationship_role if r.fk_relationshiprole else None,
 			'id_individual': r.fk_individual_id,
 			'datestart': r.fk_relationshipnode.start_year,
