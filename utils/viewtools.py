@@ -797,20 +797,8 @@ def relationship_dataset(witness_entity_number):
 	nodes = RelationshipBranch.objects.filter(
 		fk_individual=witness_entity_number).values('fk_relationshipnode')
 
-	# relationship_object = RelationshipBranch.objects.filter(
-	# 	fk_relationshipnode__in=nodes).exclude(
-	# 	fk_individual=witness_entity_number).filter(
-	# 	fk_individual__isnull=False).select_related(
-	# 	'fk_relationshiprole').select_related(
-	# 	'fk_individual__fk_group').select_related(
-	# 	'fk_individual__fk_descriptor_title').select_related(
-	# 	'fk_individual__fk_descriptor_name').select_related(
-	# 	'fk_individual__fk_descriptor_prefix1').select_related(
-	# 	'fk_individual__fk_descriptor_descriptor1').select_related(
-	# 	'fk_individual__fk_descriptor_prefix2').select_related(
-	# 	'fk_individual__fk_descriptor_descriptor2').select_related(
-	# 	'fk_individual__fk_descriptor_prefix3').select_related(
-	# 	'fk_individual__fk_descriptor_descriptor3').order_by('fk_individual')
+	# nodes = RelationshipBranch.objects.filter(
+	# 	fk_individual=10000099).values('fk_relationshipnode')
 
 	relationship_object = RelationshipBranch.objects.filter(
 		fk_relationshipnode__in=nodes).exclude(
@@ -818,6 +806,15 @@ def relationship_dataset(witness_entity_number):
 		fk_individual__isnull=False).select_related(
 		'fk_relationshiprole').select_related(
 		'fk_relationshipnode').order_by('fk_individual')
+
+	## this allows for quality control -- limit to a particular individual
+	# relationship_object = RelationshipBranch.objects.filter(
+	# 	fk_relationshipnode__in=nodes).exclude(
+	# 	fk_individual=witness_entity_number).filter(
+	# 	fk_individual__isnull=False).filter(
+	# 	fk_individual=10147479).select_related(
+	# 	'fk_relationshiprole').select_related(
+	# 	'fk_relationshipnode').order_by('fk_individual')
 
 	relationship_dic = {}
 	relationshipnumber = 0
@@ -827,7 +824,6 @@ def relationship_dataset(witness_entity_number):
 		relationshipnumber += 1
 
 		relationship_dic[r.pk_branch] = {
-			#'name': r.fk_individual.display_name,
 			'name': r.fk_individual.fullname_original,
 			'role': r.fk_relationshiprole.relationship_role if r.fk_relationshiprole else None,
 			'id_individual': r.fk_individual_id,
@@ -836,6 +832,8 @@ def relationship_dataset(witness_entity_number):
 			'durationdays': relationshipnode_duration_days(r.fk_relationshipnode),
 			'startdatefull': relationshipnode_start_date(r.fk_relationshipnode),
 		}
+
+	print (relationship_dic)
 
 	return(relationship_dic, relationshipnumber)
 
@@ -4109,6 +4107,7 @@ def referenceset_references5(witness_entity_number):
 	'fk_event__part__fk_item__shelfmark',
 	'fk_event__part__fk_item__id_item',
 	'fk_event__part__id_part',
+	'fk_event__part__part_description',
 	'fk_event__fk_event_locationreference__fk_locationname__fk_location__location')
 
 	position_dic = {}
@@ -4175,6 +4174,7 @@ def referenceset_references5(witness_entity_number):
 			reference_row["item_shelfmark"] = r['fk_event__part__fk_item__shelfmark']
 			reference_row["item_id"] = r['fk_event__part__fk_item__id_item']
 			reference_row["part_id"] = r['fk_event__part__id_part']
+			reference_row["part_description"] = r['fk_event__part__part_description']
 			reference_row["part_url"] = reverse('entity', kwargs={'witness_entity_number': r['fk_event__part__id_part']})
 
 			reference_row["location"] = (

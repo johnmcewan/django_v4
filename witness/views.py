@@ -95,9 +95,13 @@ async def analyze(request, analysistype):
 
 		timeline_list.sort(key=lambda value: value['datestart'])
 
+		# events linked via referenceindividual.fk_individual = witness_entity_number
+		reference_list = await referenceset_references5(str(witness_entity_number))
+
 		context = {
 			'pagetitle': pagetitle,
 			'datareferences': timeline_list,
+			'reference_list': reference_list,
 			'witness_entity_number': witness_entity_number,
 			}
 
@@ -135,7 +139,12 @@ async def analyze(request, analysistype):
 			startdates = {}
 			for value in office_dic.values():
 				startdate = value['startdatefull']
+				#testvalue = value['id_individual']
+				#if testvalue == 10000099:
+					#print (value)
+				exit
 				if startdate is None:
+					#print ("error in start date office")
 					continue
 				id_individual = value['id_individual']
 				if id_individual not in startdates or startdate < startdates[id_individual]:

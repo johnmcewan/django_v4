@@ -48,7 +48,40 @@
 		</div>
 	</div>
 
+	<div class="entity_event" id="entity_event">
+		<div class="div-caption">
+			Events
+		</div>
+
+		<div id="eventEmptyState" style="display:none;">
+			<p>No events were found.</p>
+		</div>
+
+		<div id="eventViewer" style="border: 1px solid black; background-color: white; padding: 15px;">
+
+			<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+				<button type="button" id="eventPrevBtn">&laquo; Previous</button>
+				<span id="eventCounter"></span>
+				<button type="button" id="eventNextBtn">Next &raquo;</button>
+			</div>
+
+			<div id="eventPartDescription" style="font-size:1.1em; line-height:1.5; white-space:pre-wrap; margin-bottom:15px;"></div>
+
+			<table>
+				<tbody>
+					<tr><th style="text-align:left; padding-right:10px;">Item</th><td id="eventItem"></td></tr>
+					<tr><th style="text-align:left; padding-right:10px;">Date</th><td id="eventDate"></td></tr>
+					<tr><th style="text-align:left; padding-right:10px;">Location</th><td id="eventLocation"></td></tr>
+					<tr><th style="text-align:left; padding-right:10px;">Role</th><td id="eventRole"></td></tr>
+					<tr><th style="text-align:left; padding-right:10px;">Witness position</th><td id="eventPosition"></td></tr>
+				</tbody>
+			</table>
+
+		</div>
+	</div>
+
 	{{ datareferences|json_script:"timelinedata" }}
+	{{ reference_list|json_script:"eventlistdata" }}
 
 <script>
 	$(document).ready(function() {
@@ -57,6 +90,45 @@
 
 		// placeholder-based person_page URL; the placeholder id is swapped for the real one per item
 		var personPageUrlTemplate = '{% url "person_page" witness_entity_number=99999999 %}';
+
+		// ---- Event viewer: cycle through events one at a time, part_description as the main element ----
+		var events = JSON.parse(document.getElementById('eventlistdata').textContent);
+		var eventIndex = 0;
+
+		function renderEvent() {
+			if (events.length === 0) {
+				$('#eventViewer').hide();
+				$('#eventEmptyState').show();
+				return;
+			}
+
+			var ev = events[eventIndex];
+
+			$('#eventCounter').text('Event ' + (eventIndex + 1) + ' of ' + events.length);
+
+			$('#eventPartDescription').text(ev.part_description || '(No description available)');
+
+			$('#eventItem').empty().append(
+				$('<a>').attr('href', ev.part_url).text(ev.item_shelfmark)
+			);
+
+			$('#eventDate').text(ev.date === '20000' ? 'Undetermined' : ev.date);
+			$('#eventLocation').text(ev.location);
+			$('#eventRole').text(ev.role);
+			$('#eventPosition').text(ev.position != null ? (ev.position + ' of ' + ev.total) : '');
+		}
+
+		$('#eventPrevBtn').on('click', function() {
+			eventIndex = (eventIndex - 1 + events.length) % events.length;
+			renderEvent();
+		});
+
+		$('#eventNextBtn').on('click', function() {
+			eventIndex = (eventIndex + 1) % events.length;
+			renderEvent();
+		});
+
+		renderEvent();
 
 		if (items.length === 0) {
 			$('#timelineChartContainer').hide();
