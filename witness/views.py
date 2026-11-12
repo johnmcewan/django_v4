@@ -95,8 +95,10 @@ async def analyze(request, analysistype):
 
 		timeline_list.sort(key=lambda value: value['datestart'])
 
+		#temporarily deactivating
 		# events linked via referenceindividual.fk_individual = witness_entity_number
-		reference_list = await referenceset_references5(str(witness_entity_number))
+		#reference_list = await referenceset_references5(str(witness_entity_number))
+		reference_list = []
 
 		context = {
 			'pagetitle': pagetitle,
@@ -109,6 +111,10 @@ async def analyze(request, analysistype):
 		return HttpResponse(template.render(context, request))
 
 	if analysistype == "report":
+
+		#temporary fix to stop page from rendering
+		targetphrase = "parish_page"
+		return redirect(targetphrase, 50013947)
 
 		# default value -- office of mayor
 		witness_entity_number = 10139569
